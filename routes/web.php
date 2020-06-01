@@ -50,6 +50,16 @@ Route::post('/article/articlemerge', 'Article\ArticleController@articlemerge');
 
 
 
+Route::get('/article/traindateapi', 'Article\ArticleController@traindateapi');
+Route::get('/article/{yearmonth}/trainmonthdataapi', 'Article\ArticleController@trainmonthdataapi');
+Route::get('/article/{ymd}/traindataapi', 'Article\ArticleController@traindataapi');
+Route::get('/article/kotowazaapi', 'Article\ArticleController@kotowazaapi');
+
+
+
+
+
+
 //[money]
 Route::get('/money/index', 'Money\MoneyController@index');
 
@@ -107,7 +117,8 @@ Route::get('/money/{yearmonth}/spenditemapi', 'Money\MoneyController@spenditemap
 Route::get('/money/{yearmonth}/monthlistapi', 'Money\MoneyController@monthlistapi');
 Route::get('/money/{yearmonth}/monthitemapi', 'Money\MoneyController@monthitemapi');
 Route::get('/money/{yearmonth}/monthkoumokuapi', 'Money\MoneyController@monthkoumokuapi');
-
+Route::get('/money/{data}/onedayinputapi', 'Money\MoneyController@onedayinputapi');
+Route::get('/money/monthscoreapi', 'Money\MoneyController@monthscoreapi');
 
 //[other]
 Route::get('/other/tuning', 'Other\OtherController@tuning');
@@ -145,6 +156,8 @@ Route::get('/other/kinmu', 'Other\OtherController@kinmu');
 Route::get('/other/{yearmonth}/kinmu', 'Other\OtherController@kinmu');
 
 Route::post('/other/kinmuinput', 'Other\OtherController@kinmuinput');
+
+Route::get('/other/{yearmonth}/weathermonthapi', 'Other\OtherController@weathermonthapi');
 
 
 

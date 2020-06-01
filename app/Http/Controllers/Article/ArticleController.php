@@ -1354,4 +1354,115 @@ DB::statement($sql);
 
 
 
+    public function traindateapi()
+    {
+        $articleTables = $this->Utility->getArticleTable();
+
+        $traindata = [];
+
+        foreach ($articleTables as $table) {
+            $result = DB::table($table)
+                ->where('tag', '=', '電車乗車')
+                ->orderBy('year')
+                ->orderBy('month')
+                ->orderBy('day')
+                ->get(['year', 'month', 'day', 'article', 'num']);
+
+            foreach ($result as $v) {
+                $_traindata[$v->year . "-" . $v->month . "-" . $v->day] = "";
+            }
+        }
+
+        $__traindata = array_keys($_traindata);
+        sort($__traindata);
+
+        foreach ($__traindata as $date){
+            if (strtotime($date) >= strtotime("2019-10-01")){
+                $traindata['data'][] = ['date' => $date];
+            }
+        }
+
+        echo json_encode($traindata);
+    }
+
+
+
+    public function trainmonthdataapi($yearmonth)
+    {
+        list($year, $month, $day) = explode("-", $yearmonth);
+
+        $table = "t_article" . $year;
+
+        $result = DB::table($table)
+            ->where('year', '=', $year)
+            ->where('month', '=', $month)
+            ->where('tag', '=', '電車乗車')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get(['year', 'month', 'day', 'article']);
+
+        $traindata = [];
+
+        foreach ($result as $v){
+            $traindata['data'][$v->year . "-" . $v->month . "-" . $v->day]['date'] = $v->year . "-" . $v->month . "-" . $v->day;
+            $traindata['data'][$v->year . "-" . $v->month . "-" . $v->day]['article'] = $v->article;
+        }
+
+        echo json_encode($traindata);
+    }
+
+
+
+    public function traindataapi($ymd)
+    {
+        list($year, $month, $day) = explode("-", $ymd);
+
+        $table = "t_article" . $year;
+
+        $result = DB::table($table)
+            ->where('year', '=', $year)
+            ->where('month', '=', $month)
+            ->where('day', '=', $day)
+            ->where('tag', '=', '電車乗車')
+            ->get(['article']);
+
+        $traindata['data'][0]['article'] = $result[0]->article;
+
+        echo json_encode($traindata);
+    }
+
+
+
+    public function kotowazaapi()
+    {
+
+        //-----------------------------------------//
+        $kotowaza = [];
+
+        $file = public_path() . "/mySetting/kotowaza.data";
+        $content = file_get_contents($file);
+
+        if (!empty($content)) {
+            $ex_content = explode("\n", $content);
+            if (!empty($ex_content)) {
+                $p=0;
+                foreach ($ex_content as $v) {
+                    if (trim($v) == "") {continue;}
+
+                    list($word, $mean) = explode("|", trim($v));
+
+                    $kotowaza['data'][$p]['no'] = $p;
+                    $kotowaza['data'][$p]['word'] = $word;
+                    $kotowaza['data'][$p]['mean'] = $mean;
+
+                    $p++;
+                }
+            }
+        }
+        //-----------------------------------------//
+
+        echo json_encode($kotowaza);
+    }
+
 }

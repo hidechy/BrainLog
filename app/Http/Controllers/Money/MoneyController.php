@@ -1474,6 +1474,48 @@ class MoneyController extends Controller
     {
     }
 
+    public function spendinput()
+    {
+
+        if (isset($_POST['spenddata'])) {
+            $ex_spenddata = explode("\n", $_POST['spenddata']);
+
+            list($year, $month, $day) = explode("/", trim($ex_spenddata[0]));
+            $month = sprintf("%02d", $month);
+            $day = sprintf("%02d", $day);
+
+            DB::table('t_dailyspend')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->delete();
+
+            $input = [];
+            $i = 0;
+
+            foreach ($ex_spenddata as $k => $v) {
+                if ($k == 0) {continue;}
+                if (trim($v) == "") {continue;}
+
+                $input[$i]['year'] = $year;
+                $input[$i]['month'] = $month;
+                $input[$i]['day'] = $day;
+
+                $ex_v = explode("\t", trim($v));
+
+                $input[$i]['koumoku'] = trim($ex_v[0]);
+                $input[$i]['price'] = trim($ex_v[1]);
+                $input[$i]['flag'] = "";
+                $i++;
+            }
+
+            DB::table('t_dailyspend')->insert($input);
+        }
+
+        return redirect('/money/' . $_POST['thisMonth'] . '/index');
+
+    }
+
+
+
+
+
     public function api($ymd)
     {
 
@@ -1565,6 +1607,10 @@ class MoneyController extends Controller
             ->with('moneydata', $moneydata);
     }
 
+
+
+
+
     public function samedayapi($ymd)
     {
 
@@ -1617,12 +1663,43 @@ class MoneyController extends Controller
         $keys = array_keys($moneydata2['sameday']);
         rsort($keys);
         foreach ($keys as $v) {
-            $moneydata['sameday'][$v] = $moneydata2['sameday'][$v];
+
+$ary = [];
+$ary['date'] = $v;
+$ary['sum'] = $moneydata2['sameday'][$v];
+$ary['bg'] = (strtotime($v) < strtotime("2019-10-01")) ? 0 : 1;
+$moneydata['data'][] = $ary;
+
         }
+
+/*
+print_r($moneydata);
+
+Array
+(
+    [data] => Array
+        (
+            [0] => Array
+                (
+                    [date] => 2020-05
+                    [sum] => 　149,268
+                )
+
+            [1] => Array
+                (
+                    [date] => 2020-04
+                    [sum] => 　150,075
+                )
+
+*/
 
         return view('money.api')
             ->with('moneydata', $moneydata);
     }
+
+
+
+
 
     public function spenditemapi($ymd)
     {
@@ -1661,17 +1738,52 @@ class MoneyController extends Controller
         }
 
         foreach ($ary as $_ymd => $v) {
-            $moneydata['data'][$_ymd] = "　" . number_format(array_sum($price[$_ymd])) . "\n" . implode("\n", $v);
+//$moneydata['data'][$_ymd] = "　" . number_format(array_sum($price[$_ymd])) . "\n" . implode("\n", $v);
+
+$ary = [];
+$ary['date'] = $_ymd;
+$ary['sum'] = number_format(array_sum($price[$_ymd]));
+$ary['item'] = implode("\n", $v);
+$moneydata['data'][] = $ary;
+
         }
 
         if (!isset($moneydata['data'])) {
             $moneydata['data'] = "nodata";
         }
 
+/*
+print_r($moneydata);
+
+Array
+(
+    [data] => Array
+        (
+            [0] => Array
+                (
+                    [date] => 2020-05-01
+                    [sum] => 27,487
+                    [item] => 食費　862
+国民年金基金　26,625
+                )
+
+            [1] => Array
+                (
+                    [date] => 2020-05-02
+                    [sum] => 0
+                    [item] => 食費　0
+                )
+
+*/
+
         return view('money.api')
             ->with('moneydata', $moneydata);
 
     }
+
+
+
+
 
     public function monthlistapi($ymd)
     {
@@ -1709,12 +1821,43 @@ class MoneyController extends Controller
         $keys = array_keys($ary);
         rsort($keys);
         foreach ($keys as $v) {
-            $moneydata['data'][$v] = "　" . number_format(array_sum($ary[$v]));
+//$moneydata['data'][$v] = "　" . number_format(array_sum($ary[$v]));
+
+$ary2 = [];
+$ary2['date'] = $v;
+$ary2['sum'] = number_format(array_sum($ary[$v]));
+$ary2['bg'] = (strtotime($v) < strtotime("2019-10-01")) ? 0 : 1;
+$moneydata['data'][] = $ary2;
+
         }
+
+/*
+print_r($moneydata);
+
+Array
+(
+    [data] => Array
+        (
+            [0] => Array
+                (
+                    [date] => 2020-05
+                    [sum] => 134,055
+                )
+
+            [1] => Array
+                (
+                    [date] => 2020-04
+                    [sum] => 510,231
+                )
+*/
 
         return view('money.api')
             ->with('moneydata', $moneydata);
     }
+
+
+
+
 
     public function monthitemapi($ymd)
     {
@@ -1756,17 +1899,52 @@ class MoneyController extends Controller
         $moneydata['total'] = number_format(array_sum($total));
 
         foreach ($ary as $_ymd => $v) {
-            $moneydata['data'][$_ymd] = "　" . number_format(array_sum($price[$_ymd])) . "\n" . implode("\n", $v);
+//$moneydata['data'][$_ymd] = "　" . number_format(array_sum($price[$_ymd])) . "\n" . implode("\n", $v);
+
+$ary2 = [];
+$ary2['date'] = $_ymd;
+$ary2['sum'] = number_format(array_sum($price[$_ymd]));
+$ary2['item'] = implode("\n", $v);
+$moneydata['data'][] = $ary2;
+
         }
 
         if (!isset($moneydata['data'])) {
             $moneydata['data'] = "nodata";
         }
 
+/*
+print_r($moneydata);
+
+Array
+(
+    [total] => 134,055
+    [data] => Array
+        (
+            [0] => Array
+                (
+                    [date] => 2020-05-01
+                    [sum] => 27,487
+                    [item] => 食費　862
+国民年金基金　26,625
+                )
+
+            [1] => Array
+                (
+                    [date] => 2020-05-02
+                    [sum] => 0
+                    [item] => 食費　0
+                )
+*/
+
         return view('money.api')
             ->with('moneydata', $moneydata);
 
     }
+
+
+
+
 
     public function monthkoumokuapi($ymd)
     {
@@ -1805,8 +1983,11 @@ class MoneyController extends Controller
 
         $ary = [];
         $existData = false;
+        $j=0;
         foreach ($price as $koumoku => $v) {
             $sum = array_sum($v);
+
+/*
             $str = "";
             $str .= $koumoku;
             $str .= "|";
@@ -1814,6 +1995,13 @@ class MoneyController extends Controller
             $str .= "|";
             $str .= ($koumoku == "プラス") ? "" : "（" . ceil($sum / $_total * 100) . "%）";
             $ary[] = $str;
+*/
+
+$ary[$j]['item'] = $koumoku;
+$ary[$j]['sum'] = $sum;
+$ary[$j]['percentage'] = ($koumoku == "プラス") ? "" : "（" . ceil($sum / $_total * 100) . "%）";
+
+            $j++;
 
             $existData = true;
         }
@@ -1824,47 +2012,155 @@ class MoneyController extends Controller
             $moneydata['data'] = "nodata";
         }
 
+/*
+print_r($moneydata);
+
+Array
+(
+    [total] => 134,055
+    [data] => Array
+        (
+            [0] => Array
+                (
+                    [item] => 食費
+                    [sum] => 6738
+                    [percentage] => （6%）
+                )
+
+            [1] => Array
+                (
+                    [item] => 交通費
+                    [sum] => 2183
+                    [percentage] => （2%）
+                )
+*/
+
         return view('money.api')
             ->with('moneydata', $moneydata);
 
     }
 
-    public function spendinput()
+
+
+    public function onedayinputapi($data)
     {
 
-        if (isset($_POST['spenddata'])) {
-            $ex_spenddata = explode("\n", $_POST['spenddata']);
+        list($date, $yen) = explode(":", $data);
+        list($year, $month, $day) = explode("-", $date);
+        list($yen_10000, $yen_5000, $yen_2000, $yen_1000, $yen_500, $yen_100, $yen_50, $yen_10, $yen_5, $yen_1) = explode("|", $yen);
 
-            list($year, $month, $day) = explode("/", trim($ex_spenddata[0]));
-            $month = sprintf("%02d", $month);
-            $day = sprintf("%02d", $day);
+        $result2 = DB::table('t_money')
+        ->where('year', '=', $year)
+        ->where('month', '=', $month)
+        ->where('day', '=', $day)
+        ->get(['id']);
 
-            DB::table('t_dailyspend')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->delete();
+        if (isset($result2[0])){
+            //update
+            $update = [];
+            $update['yen_10000'] = $yen_10000;
+            $update['yen_5000'] = $yen_5000;
+            $update['yen_2000'] = $yen_2000;
+            $update['yen_1000'] = $yen_1000;
+            $update['yen_500'] = $yen_500;
+            $update['yen_100'] = $yen_100;
+            $update['yen_50'] = $yen_50;
+            $update['yen_10'] = $yen_10;
+            $update['yen_5'] = $yen_5;
+            $update['yen_1'] = $yen_1;
 
-            $input = [];
-            $i = 0;
+            DB::table('t_money')->where('id', '=', $result2[0]->id)->update($update);
+        }else{
+            //insert
+            $insert = [];
 
-            foreach ($ex_spenddata as $k => $v) {
-                if ($k == 0) {continue;}
-                if (trim($v) == "") {continue;}
+            $insert['year'] = $year;
+            $insert['month'] = $month;
+            $insert['day'] = $day;
 
-                $input[$i]['year'] = $year;
-                $input[$i]['month'] = $month;
-                $input[$i]['day'] = $day;
+            $insert['yen_10000'] = $yen_10000;
+            $insert['yen_5000'] = $yen_5000;
+            $insert['yen_2000'] = $yen_2000;
+            $insert['yen_1000'] = $yen_1000;
+            $insert['yen_500'] = $yen_500;
+            $insert['yen_100'] = $yen_100;
+            $insert['yen_50'] = $yen_50;
+            $insert['yen_10'] = $yen_10;
+            $insert['yen_5'] = $yen_5;
+            $insert['yen_1'] = $yen_1;
 
-                $ex_v = explode("\t", trim($v));
+            $yesterday = date("Y-m-d", strtotime($date) - 1);
+            list($y_year, $y_month, $y_day) = explode("-", $yesterday);
+            $oneBefore = DB::table('t_money')
+                ->where('year', '=', $y_year)
+                ->where('month', '=', $y_month)
+                ->where('day', '=', $y_day)
+                ->get();
 
-                $input[$i]['koumoku'] = trim($ex_v[0]);
-                $input[$i]['price'] = trim($ex_v[1]);
-                $input[$i]['flag'] = "";
-                $i++;
+            foreach (['bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b'] as $copy){
+                $insert[$copy] = $oneBefore[0]->$copy;
             }
 
-            DB::table('t_dailyspend')->insert($input);
+            DB::table('t_money')->insert($insert);
+        }
+    }
+
+
+
+    public function monthscoreapi()
+    {
+        
+        $data = [];
+        $totalAry = [];
+        $file = "/var/www/html/BrainLog/public/mySetting/MoneyTotal.data";
+        if (file_exists($file)) {
+            $content = file_get_contents($file);
+            $ex_content = explode("\n", $content);
+
+            if (!empty($ex_content)) {
+                foreach ($ex_content as $k=>$v) {
+                    
+                    if (trim($v) == "") {continue;}
+                    
+                    list($date, $youbi, $total, $spend) = explode("|", trim($v));
+                    list($data_year, $data_month, $data_day) = explode("-", $date);
+                    
+                    $totalAry[$date] = $total;
+
+                    if ((int)$data_day == 1){
+                        $data[$data_year . "-" . $data_month]['startdate'] = date("Y-m-d", strtotime($date) - 86400);
+                    }
+
+                    $end_day = date("t", strtotime($data_year . "-" . $data_month . "-01"));
+                    if ($data_day == $end_day){
+                        $data[$data_year . "-" . $data_month]['end'] = $total;
+                    }
+                }
+            }
         }
 
-        return redirect('/money/' . $_POST['thisMonth'] . '/index');
+        $ymAry = [];
+        foreach ($data as $ym=>$value){
+            $data[$ym]['start'] = (isset($totalAry[$value['startdate']])) ? $totalAry[$value['startdate']] : 0;
+            $ymAry[] = $ym;
+        }
 
+        $data2 = $data;
+        $data = [];
+
+        rsort($ymAry);
+
+        $i=0;
+        foreach ($ymAry as $ym){
+            $data['data'][$i]['ym'] = $ym;
+            $data['data'][$i]['start'] = $data2[$ym]['start'];
+            $data['data'][$i]['end'] = (isset($data2[$ym]['end'])) ? $data2[$ym]['end'] : "";
+            $data['data'][$i]['score'] = (isset($data2[$ym]['end'])) ? ($data2[$ym]['start'] - $data2[$ym]['end']) * -1 : "";
+            $i++;
+        }
+
+        return view('money.api')
+            ->with('moneydata', $data);
     }
 
 }
