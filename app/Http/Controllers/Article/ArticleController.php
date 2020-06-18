@@ -1404,10 +1404,21 @@ DB::statement($sql);
 
         $traindata = [];
 
+        $i=0;
         foreach ($result as $v){
-            $traindata['data'][$v->year . "-" . $v->month . "-" . $v->day]['date'] = $v->year . "-" . $v->month . "-" . $v->day;
-            $traindata['data'][$v->year . "-" . $v->month . "-" . $v->day]['article'] = $v->article;
+            $traindata['data'][$i]['date'] = $v->year . "-" . $v->month . "-" . $v->day;
+            $traindata['data'][$i]['article'] = $v->article;
+            $i++;
         }
+
+//print_r($traindata);
+
+
+
+
+
+
+
 
         echo json_encode($traindata);
     }

@@ -119,6 +119,9 @@ Route::get('/money/{yearmonth}/monthitemapi', 'Money\MoneyController@monthitemap
 Route::get('/money/{yearmonth}/monthkoumokuapi', 'Money\MoneyController@monthkoumokuapi');
 Route::get('/money/{data}/onedayinputapi', 'Money\MoneyController@onedayinputapi');
 Route::get('/money/monthscoreapi', 'Money\MoneyController@monthscoreapi');
+Route::get('/money/{bank}/bankapi', 'Money\MoneyController@bankapi');
+
+
 
 //[other]
 Route::get('/other/tuning', 'Other\OtherController@tuning');

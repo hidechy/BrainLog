@@ -2163,4 +2163,33 @@ Array
             ->with('moneydata', $data);
     }
 
+
+
+    public function bankapi($bank)
+    {
+        $moneydata = [];
+
+        $result = DB::table('t_money')
+            ->where('year', '=', '2019')
+            ->where('month', '=', '10')
+            ->where('day', '=', '01')
+            ->get(['id']);
+
+        $result2 = DB::table('t_money')
+            ->where('id', '>=', $result[0]->id)
+            ->orderBy('id')
+            ->get(['year', 'month', 'day', 'bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b']);
+
+        $bkYen = 0;
+        foreach ($result2 as $k=>$v){
+            $moneydata['data'][$k]['date'] = trim($v->year) . "-" . trim($v->month) . "-" . trim($v->day);
+            $moneydata['data'][$k]['yen'] = $v->$bank;
+            $moneydata['data'][$k]['mark'] = ($v->$bank == $bkYen) ? 0 : 1;
+            $bkYen = $v->$bank;
+        }
+
+        return view('money.api')
+            ->with('moneydata', $moneydata);
+    }
+
 }
