@@ -404,7 +404,7 @@ class MoneyController extends Controller
     {
         $result = DB::table('t_money')->orderBy('year')->orderBy('month')->orderBy('day')
 
-            ->get(['year', 'month', 'day', 'bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b']);
+            ->get(['year', 'month', 'day', 'bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b', 'pay_c']);
 
         $data = [];
         if (isset($result[0])) {
@@ -414,6 +414,7 @@ class MoneyController extends Controller
             $bankD = [];
             $payA = [];
             $payB = [];
+            $payC = [];
 
             foreach ($result as $v) {
                 $bankA[$v->bank_a][] = $v->year . "-" . $v->month . "-" . $v->day;
@@ -422,9 +423,10 @@ class MoneyController extends Controller
                 $bankD[$v->bank_d][] = $v->year . "-" . $v->month . "-" . $v->day;
                 $payA[$v->pay_a][] = $v->year . "-" . $v->month . "-" . $v->day;
                 $payB[$v->pay_b][] = $v->year . "-" . $v->month . "-" . $v->day;
+                $payC[$v->pay_c][] = $v->year . "-" . $v->month . "-" . $v->day;
             }
 
-            $bankAry = ['bankA', 'bankB', 'bankC', 'bankD', 'payA', 'payB'];
+            $bankAry = ['bankA', 'bankB', 'bankC', 'bankD', 'payA', 'payB', 'payC'];
 
             foreach ($bankAry as $v) {
                 $i = 0;
@@ -1563,7 +1565,7 @@ class MoneyController extends Controller
             'yen_10000', 'yen_5000', 'yen_2000', 'yen_1000',
             'yen_500', 'yen_100', 'yen_50', 'yen_10', 'yen_5', 'yen_1',
             'bank_a', 'bank_b', 'bank_c', 'bank_d',
-            'pay_a', 'pay_b',
+            'pay_a', 'pay_b', 'pay_c'
         ];
 
         $hand = [];
@@ -2097,7 +2099,7 @@ Array
                 ->where('day', '=', $y_day)
                 ->get();
 
-            foreach (['bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b'] as $copy){
+            foreach (['bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b', 'pay_c'] as $copy){
                 $insert[$copy] = $oneBefore[0]->$copy;
             }
 
@@ -2178,7 +2180,7 @@ Array
         $result2 = DB::table('t_money')
             ->where('id', '>=', $result[0]->id)
             ->orderBy('id')
-            ->get(['year', 'month', 'day', 'bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b']);
+            ->get(['year', 'month', 'day', 'bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b', 'pay_c']);
 
         $bkYen = 0;
         foreach ($result2 as $k=>$v){
