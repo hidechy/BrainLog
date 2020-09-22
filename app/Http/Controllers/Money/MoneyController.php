@@ -157,7 +157,22 @@ class MoneyController extends Controller
 
                 $DailySpend .= "</table>";
 
-                $DailySpend .= "<div>" . ($_mt[$thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)] - array_sum($spent)) . "</div>";
+
+
+
+
+                $linestyle = "";
+                if (($_mt[$thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)] - array_sum($spent)) != 0){
+                    $linestyle = "style=\"color: #ff3333; font-weight: bold;\"";
+                }
+
+
+
+
+
+
+
+                $DailySpend .= "<div " . $linestyle . ">" . ($_mt[$thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)] - array_sum($spent)) . "</div>";
 
                 $lastDay = $i;
             } else {
@@ -854,6 +869,7 @@ class MoneyController extends Controller
                                     $data .= "<div>";
                                     $data .= (isset($monthTotal[$year][$month][$day])) ? number_format($monthTotal[$year][$month][$day]) : "";
                                     $data .= "</div>";
+
 
                                     $data .= "<div>";
                                     $data .= (isset($monthTotal[$year][$month][$day])) ? number_format(floor($monthTotal[$year][$month][$day] / $day)) : "";
@@ -1729,13 +1745,13 @@ Array
 
         foreach ($result3 as $v) {
             if ($v->day > $day) {continue;}
-            $ary[$v->year . "-" . $v->month . "-" . $v->day][] = $v->koumoku . "　" . number_format($v->price);
+            $ary[$v->year . "-" . $v->month . "-" . $v->day][] = $v->koumoku . "|" . $v->price;
             $price[$v->year . "-" . $v->month . "-" . $v->day][] = $v->price;
         }
 
         foreach ($result4 as $v) {
             if ($v->day > $day) {continue;}
-            $ary[$v->year . "-" . $v->month . "-" . $v->day][] = $v->item . "　" . number_format($v->price);
+            $ary[$v->year . "-" . $v->month . "-" . $v->day][] = $v->item . "|" . $v->price;
             $price[$v->year . "-" . $v->month . "-" . $v->day][] = $v->price;
         }
 
@@ -1745,8 +1761,8 @@ Array
 $ary = [];
 $ary['date'] = $_ymd;
 $ary['sum'] = number_format(array_sum($price[$_ymd]));
-$ary['item'] = implode("\n", $v);
-$moneydata['data'][] = $ary;
+$ary['item'] = implode(";", $v);
+$moneydata['data'] = $ary;
 
         }
 
@@ -1754,9 +1770,10 @@ $moneydata['data'][] = $ary;
             $moneydata['data'] = "nodata";
         }
 
-/*
-print_r($moneydata);
 
+//print_r($moneydata);
+
+/*
 Array
 (
     [data] => Array

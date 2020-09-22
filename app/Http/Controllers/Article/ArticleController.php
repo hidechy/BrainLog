@@ -1438,8 +1438,13 @@ DB::statement($sql);
             ->where('tag', '=', '電車乗車')
             ->get(['article']);
 
-        $traindata['data'][0]['article'] = $result[0]->article;
+        $traindata['data']['article'] = "";
+        if (isset($result[0])){
+            $ex_article = explode("\n", $result[0]->article);
+            $traindata['data']['article'] = $ex_article;
+        }
 
+//print_r($traindata);
         echo json_encode($traindata);
     }
 
