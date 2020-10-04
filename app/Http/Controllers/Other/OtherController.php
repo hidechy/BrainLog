@@ -768,4 +768,239 @@ class OtherController extends Controller
         echo json_encode($WeatherData);
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public function kabukaapi()
+    {
+
+        $data = [];
+
+        $create_count = [];
+
+        $sql = "select code, sum(point) goukei, count(code) cnt from t_stock group by code order by goukei desc, cnt desc;";
+        $result = DB::select($sql);
+
+        foreach ($result as $k=>$v){
+            $result2 = DB::table('t_stock')
+                ->where('code', '=', $v->code)
+                ->orderBy('created_at', 'desc')
+                ->take(1)
+                ->get();
+
+            $data['data'][$k]['code'] = $v->code;
+
+            $data['data'][$k]['company'] = $result2[0]->company;
+            $data['data'][$k]['industry'] = $result2[0]->industry;
+            $data['data'][$k]['market'] = $result2[0]->market;
+            $data['data'][$k]['torihikichi'] = $result2[0]->torihikichi;
+            $data['data'][$k]['grade'] = $result2[0]->grade;
+            $data['data'][$k]['percentage'] = $result2[0]->percentage;
+
+            $data['data'][$k]['goukei'] = $v->goukei;
+            $data['data'][$k]['cnt'] = $v->cnt;
+
+            $create_count[$result2[0]->created_at] = "";
+        }
+
+        foreach ($data['data'] as $k=>$v){
+            $data['data'][$k]['average'] = (51 - ceil($v['goukei'] / count($create_count)));
+        }
+
+echo "<pre>";
+print_r($data);
+echo "</pre>";
+
+    }
+
+
+
+
+
+    public function kabukaselectapi($str)
+    {
+
+        $data = [];
+
+        $create_count = [];
+
+        /////////////////////////////////////////
+        $ex_str = explode("|", $str);
+        if ($ex_str[0] == "D" || $ex_str[0] == "G"){
+
+            switch ($ex_str[0]){
+                case "D":
+                    //日付指定
+                    $sql = "select code, sum(point) goukei, count(code) cnt from t_stock where created_at like '" . $ex_str[1] . "%' group by code order by goukei desc, cnt desc;";
+                    break;
+
+                case "G":
+                    //グレード指定
+                    $sql = "select code, sum(point) goukei, count(code) cnt from t_stock where grade = '" . $ex_str[1] . "' group by code order by goukei desc, cnt desc;";
+                    break;
+            }
+
+            $result = DB::select($sql);
+
+            foreach ($result as $k=>$v){
+
+                $data['data'][$v->code]['code'] = $v->code;
+
+                switch ($ex_str[0]){
+                    case "D":
+                        //日付指定
+                        $result2 = DB::table('t_stock')
+                            ->where('code', '=', $v->code)
+                            ->where('created_at', 'like', $ex_str[1].'%')
+                            ->orderBy('id')->get();
+                        break;
+
+                    case "G":
+                        //グレード指定
+                        $result2 = DB::table('t_stock')
+                            ->where('code', '=', $v->code)
+                            ->where('grade', '=', $ex_str[1])
+                            ->orderBy('id')->get();
+                        break;
+                }
+
+                $ary = [];
+                foreach ($result2 as $k2=>$v2){
+                    $data['data'][$v->code]['company'] = $v2->company;
+                    $data['data'][$v->code]['industry'] = $v2->industry;
+                    $data['data'][$v->code]['market'] = $v2->market;
+
+                    $ary[$k2]['created_at'] = date("Y-m-d H", strtotime($v2->created_at));
+                    $ary[$k2]['rank'] = $v2->rank;
+                    $ary[$k2]['torihikichi'] = $v2->torihikichi;
+                    $ary[$k2]['grade'] = $v2->grade;
+                    $ary[$k2]['percentage'] = $v2->percentage;
+                    $ary[$k2]['zenjitsuhi'] = $v2->zenjitsuhi;
+                    $ary[$k2]['dekidaka'] = $v2->dekidaka;
+                    $ary[$k2]['point'] = $v2->point;
+
+                    $create_count[$v2->created_at] = "";
+                }
+
+                $data['data'][$v->code]['record'] = $ary;
+            }
+        }else{
+
+            switch ($ex_str[0]){
+                case "C":
+                    //コード指定
+                    $result = DB::table('t_stock')->where('code', '=', $ex_str[1])->orderBy('id')->get();
+                    break;
+
+                case "CD":
+                    //コード、日付指定
+                    $ex_str_1 = explode("]", $ex_str[1]);
+                    $result = DB::table('t_stock')
+                        ->where('code', '=', $ex_str_1[0])
+                        ->where('created_at', 'like', $ex_str_1[1].'%')->orderBy('id')->get();
+                    break;
+            }
+
+            foreach ($result as $k=>$v){
+
+                $data['data'][$v->code]['code'] = $v->code;
+                $data['data'][$v->code]['company'] = $v->company;
+                $data['data'][$v->code]['industry'] = $v->industry;
+                $data['data'][$v->code]['market'] = $v->market;
+
+                $ary = [];
+                $ary['created_at'] = date("Y-m-d H", strtotime($v->created_at));
+                $ary['rank'] = $v->rank;
+                $ary['torihikichi'] = $v->torihikichi;
+                $ary['grade'] = $v->grade;
+                $ary['percentage'] = $v->percentage;
+                $ary['zenjitsuhi'] = $v->zenjitsuhi;
+                $ary['dekidaka'] = $v->dekidaka;
+                $ary['point'] = $v->point;
+
+                $data['data'][$v->code]['record'][$k] = $ary;
+
+                $create_count[$v->created_at] = "";
+            }
+        }
+        /////////////////////////////////////////
+
+        $sum = [];
+        foreach ($data['data'] as $code=>$value){
+            foreach ($value['record'] as $v){
+                $sum[$code][] = $v['point'];
+            }
+        }
+
+        foreach ($sum as $code=>$value){
+            $data['data'][$code]['sum'] = array_sum($value);
+            $data['data'][$code]['count'] = count($value);
+
+            $data['data'][$code]['average'] = (51 - ceil($data['data'][$code]['sum'] / count($create_count)));
+        }
+
+        //配列のキーをシーケンスに変更
+        $data2 = $data;
+        $data = [];
+
+        $i=0;
+        foreach ($data2['data'] as $value){
+            $data['data'][$i] = $value;
+            $i++;
+        }
+
+echo "<pre>";
+print_r($data);
+echo "</pre>";
+
+    }
+
 }

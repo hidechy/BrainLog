@@ -92,6 +92,8 @@ Route::get('/other/kinmu', 'Other\OtherController@kinmu');
 Route::get('/other/{yearmonth}/kinmu', 'Other\OtherController@kinmu');
 Route::post('/other/kinmuinput', 'Other\OtherController@kinmuinput');
 Route::get('/other/{yearmonth}/weathermonthapi', 'Other\OtherController@weathermonthapi');
+Route::get('/other/kabukaapi', 'Other\OtherController@kabukaapi');
+Route::get('/other/{str}/kabukaselectapi', 'Other\OtherController@kabukaselectapi');
 
 
 
