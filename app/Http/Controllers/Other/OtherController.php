@@ -842,7 +842,14 @@ class OtherController extends Controller
             $data['data'][$k]['industry'] = $result2[0]->industry;
             $data['data'][$k]['market'] = $result2[0]->market;
             $data['data'][$k]['torihikichi'] = $result2[0]->torihikichi;
+
+
+
             $data['data'][$k]['grade'] = $result2[0]->grade;
+
+
+
+            $data['data'][$k]['tangen'] = $result2[0]->tangen;
             $data['data'][$k]['percentage'] = $result2[0]->percentage;
 
             $data['data'][$k]['goukei'] = $v->goukei;
@@ -854,6 +861,15 @@ class OtherController extends Controller
         foreach ($data['data'] as $k=>$v){
             $data['data'][$k]['average'] = (51 - ceil($v['goukei'] / count($create_count)));
         }
+
+
+
+$data2 = $data;
+$data = [];
+
+for ($i=0; $i<30; $i++){
+$data['data'][$i] = $data2['data'][$i];
+}
 
 echo "<pre>";
 print_r($data);

@@ -11,11 +11,12 @@ class ArticleController extends Controller
 {
     public $Utility;
     public $user;
+
     public function __construct()
     {
 
-$sql = "SET sql_mode = '';";
-DB::statement($sql);
+        $sql = "SET sql_mode = '';";
+        DB::statement($sql);
 
         $this->Utility = new Utility;
 
@@ -36,7 +37,9 @@ DB::statement($sql);
         /////////////////////////////////
         $file = public_path() . "/mySetting/weather.data";
         $weatherFileUpdateDate = date("Y-m-d", filemtime($file));
-        if ($weatherFileUpdateDate != date("Y-m-d")) {return redirect('/other/weather');}
+        if ($weatherFileUpdateDate != date("Y-m-d")) {
+            return redirect('/other/weather');
+        }
         /////////////////////////////////
 
         //------------------//
@@ -45,7 +48,9 @@ DB::statement($sql);
         $content = file_get_contents($file);
         $ex_content = explode("\n", mb_convert_encoding($content, "utf8", "sjis-win"));
         foreach ($ex_content as $v) {
-            if (trim($v) == "") {continue;}
+            if (trim($v) == "") {
+                continue;
+            }
             $holiday[] = trim($v);
         }
         sort($holiday);
@@ -295,6 +300,26 @@ DB::statement($sql);
 
         list($year, $month, $day) = explode("-", $dispdate);
 
+        //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+        $result = DB::table('t_timeplace')
+            ->where('year', $year)
+            ->where('month', $month)
+            ->where('day', $day)
+            ->orderBy('time')->get();
+
+        $timeTable = "";
+        $timeTable .= "<table>";
+        foreach ($result as $v) {
+            $bg = ($v->place == "移動中") ? 'background: #ffcccc;' : 'background: #ffffff;';
+            $timeTable .= "<tr style='" . $bg . "'>";
+            $timeTable .= "<td style='border: 1px solid #cccccc; padding: 2px;'>" . $v->time . "</td>";
+            $timeTable .= "<td style='border: 1px solid #cccccc; padding: 2px;'>" . $v->place . "</td>";
+            $timeTable .= "<td style='border: 1px solid #cccccc; padding: 2px; text-align: right;'>" . number_format($v->price) . "</td>";
+            $timeTable .= "</tr>";
+        }
+        $timeTable .= "</table>";
+        //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+
         //---------------------------------------// credit
         $credit = [];
         $result = DB::table('t_credit')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->get();
@@ -348,7 +373,9 @@ DB::statement($sql);
         $content = file_get_contents($file);
         $ex_content = explode("\n", $content);
         foreach ($ex_content as $v) {
-            if (trim($v) == "") {continue;}
+            if (trim($v) == "") {
+                continue;
+            }
             $ex_v = explode("|", trim($v));
             $weather[trim($ex_v[0])] = trim($ex_v[1]);
         }
@@ -427,12 +454,16 @@ DB::statement($sql);
             $ex_content = explode("\n", $content);
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     $ex_v = explode("|", trim($v));
                     if ($dispdate == $ex_v[0]) {
                         array_shift($ex_v);
                         $ary = [];
-                        foreach ($ex_v as $v2) {$ary[] = strtr($v2, ['。' => '。<br>']);}
+                        foreach ($ex_v as $v2) {
+                            $ary[] = strtr($v2, ['。' => '。<br>']);
+                        }
                         $uranai = implode("<br>", $ary);
                         break;
                     }
@@ -442,6 +473,7 @@ DB::statement($sql);
         //-----------------------------------------//
 
         $appUrl = "http://" . $_SERVER['HTTP_HOST'] . "/BrainLog/public";
+
 
         return view('article.display')
             ->with('dispdate', $dispdate)
@@ -458,7 +490,8 @@ DB::statement($sql);
             ->with('folderPhoto', $folderPhoto)
             ->with('credit', $credit)
             ->with('uranai', $uranai)
-            ->with('appUrl', $appUrl);
+            ->with('appUrl', $appUrl)
+            ->with('timeTable', $timeTable);
     }
 
     public function edit($dispdate = null)
@@ -497,7 +530,9 @@ DB::statement($sql);
             $ary = [];
             $i = 0;
             foreach ($ex_article as $v) {
-                if (trim($v) == "") {continue;}
+                if (trim($v) == "") {
+                    continue;
+                }
 
                 if ((trim($v) == "@") and (strlen(trim($v)) == 1)) {
                     $i++;
@@ -532,7 +567,9 @@ DB::statement($sql);
             $ex_content = explode("\n", $content);
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     $tag[] = trim($v);
                 }
             }
@@ -581,9 +618,13 @@ DB::statement($sql);
                 $ary1 = [];
 
                 for ($i = 0; $i < 100; $i++) {
-                    if (isset($_POST['del'][$i])) {continue;}
+                    if (isset($_POST['del'][$i])) {
+                        continue;
+                    }
 
-                    if (!isset($_POST['article'][$i])) {continue;}
+                    if (!isset($_POST['article'][$i])) {
+                        continue;
+                    }
 
                     $tmp = [];
 
@@ -749,7 +790,9 @@ DB::statement($sql);
                             $ex_content = explode("\n", $content);
                             if (!empty($ex_content)) {
                                 foreach ($ex_content as $v) {
-                                    if (trim($v) == "") {continue;}
+                                    if (trim($v) == "") {
+                                        continue;
+                                    }
                                     $tag_[trim($v)] = "";
                                 }
                             }
@@ -798,7 +841,9 @@ DB::statement($sql);
                 $articleTables = $this->Utility->getArticleTable();
 
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
 
                     foreach ($articleTables as $table) {
                         $result = DB::table($table)->where('tag', '=', trim($v))->get(['id']);
@@ -1008,7 +1053,9 @@ DB::statement($sql);
         if (isset($_POST['photoOrder'])) {
             foreach ($_POST['photoOrder'] as $k => $v) {
 
-                if (in_array($k, $_deleteKeys, true)) {continue;}
+                if (in_array($k, $_deleteKeys, true)) {
+                    continue;
+                }
 
                 if (trim($v) != "") {
                     $_order[$v][] = $k;
@@ -1022,7 +1069,9 @@ DB::statement($sql);
 
         if (!empty($_order)) {
             foreach ($_order as $num => $v) {
-                if ($num == 999) {continue;}
+                if ($num == 999) {
+                    continue;
+                }
                 foreach ($v as $ord) {
                     $_order2[] = $ord;
                 }
@@ -1074,11 +1123,15 @@ DB::statement($sql);
         switch ($_POST['flag']) {
             case "back":
                 $pickNum = ($fileNum - 1);
-                if ($pickNum < 0) {$pickNum = 0;}
+                if ($pickNum < 0) {
+                    $pickNum = 0;
+                }
                 break;
             case "next":
                 $pickNum = ($fileNum + 1);
-                if ($pickNum > (count($photoList) - 1)) {$pickNum = (count($photoList) - 1);}
+                if ($pickNum > (count($photoList) - 1)) {
+                    $pickNum = (count($photoList) - 1);
+                }
                 break;
         }
 
@@ -1129,7 +1182,9 @@ DB::statement($sql);
             $ex_content = explode("\n", $content);
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     $tag[] = trim($v);
                 }
             }
@@ -1145,7 +1200,9 @@ DB::statement($sql);
         if (!empty($_POST['insert_article'])) {
 
             foreach ($_POST['insert_article'] as $k => $v) {
-                if (trim($v) == "") {continue;}
+                if (trim($v) == "") {
+                    continue;
+                }
 
                 list($year, $month, $day) = explode("-", $_POST['insert_date'][$k]);
 
@@ -1174,7 +1231,9 @@ DB::statement($sql);
         $result = DB::select("show tables;");
         foreach ($result as $v) {
             if (preg_match("/^t_article(.+)/", $v->Tables_in_brain, $m)) {
-                if ($m[1] < date("Y")) {continue;}
+                if ($m[1] < date("Y")) {
+                    continue;
+                }
                 $ta[$v->Tables_in_brain] = "";
             }
         }
@@ -1227,12 +1286,16 @@ DB::statement($sql);
 
         $prevMonth = "0";
         $prev = date('Y-m', strtotime(($yearmonth . "-01") . "-1 month"));
-        if (strtotime($startYM . "-01") <= strtotime($prev)) {$prevMonth = $prev;}
+        if (strtotime($startYM . "-01") <= strtotime($prev)) {
+            $prevMonth = $prev;
+        }
 //var_dump($prevMonth);
 
         $nextMonth = "0";
         $next = date('Y-m', strtotime(($yearmonth . "-01") . "+1 month"));
-        if (strtotime($next) <= strtotime($endYM . "-01")) {$nextMonth = $next;}
+        if (strtotime($next) <= strtotime($endYM . "-01")) {
+            $nextMonth = $next;
+        }
 //var_dump($nextMonth);
         //------------------------------------------------//
 
@@ -1261,7 +1324,9 @@ DB::statement($sql);
             $ex_content = explode("\n", $content);
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     $tag[] = trim($v);
                 }
             }
@@ -1336,22 +1401,20 @@ DB::statement($sql);
     }
 
 
-
     public function articledelete()
     {
 
         $ex_mergedata = explode("/", $_POST['merge_data']);
         foreach ($ex_mergedata as $k => $v) {
-			list($del_date, $del_num) = explode(":", $v);
-			list($del_year, $del_month, $del_day) = explode("-", $del_date);
-			$del_table = "t_article" . $del_year;
+            list($del_date, $del_num) = explode(":", $v);
+            list($del_year, $del_month, $del_day) = explode("-", $del_date);
+            $del_table = "t_article" . $del_year;
 
-			DB::table($del_table)->where('year' , '=' , $del_year)->where('month' , '=' , $del_month)->where('day' , '=' , $del_day)->where('num' , '=' , $del_num)->delete();
+            DB::table($del_table)->where('year', '=', $del_year)->where('month', '=', $del_month)->where('day', '=', $del_day)->where('num', '=', $del_num)->delete();
         }
 
         return redirect("/article/search");
     }
-
 
 
     public function traindateapi()
@@ -1376,15 +1439,14 @@ DB::statement($sql);
         $__traindata = array_keys($_traindata);
         sort($__traindata);
 
-        foreach ($__traindata as $date){
-            if (strtotime($date) >= strtotime("2019-10-01")){
+        foreach ($__traindata as $date) {
+            if (strtotime($date) >= strtotime("2019-10-01")) {
                 $traindata['data'][] = ['date' => $date];
             }
         }
 
         echo json_encode($traindata);
     }
-
 
 
     public function trainmonthdataapi($yearmonth)
@@ -1404,8 +1466,8 @@ DB::statement($sql);
 
         $traindata = [];
 
-        $i=0;
-        foreach ($result as $v){
+        $i = 0;
+        foreach ($result as $v) {
             $traindata['data'][$i]['date'] = $v->year . "-" . $v->month . "-" . $v->day;
             $traindata['data'][$i]['article'] = $v->article;
             $i++;
@@ -1414,15 +1476,8 @@ DB::statement($sql);
 //print_r($traindata);
 
 
-
-
-
-
-
-
         echo json_encode($traindata);
     }
-
 
 
     public function traindataapi($ymd)
@@ -1439,7 +1494,7 @@ DB::statement($sql);
             ->get(['article']);
 
         $traindata['data']['article'] = "";
-        if (isset($result[0])){
+        if (isset($result[0])) {
             $ex_article = explode("\n", $result[0]->article);
             $traindata['data']['article'] = $ex_article;
         }
@@ -1447,7 +1502,6 @@ DB::statement($sql);
 //print_r($traindata);
         echo json_encode($traindata);
     }
-
 
 
     public function kotowazaapi()
@@ -1462,9 +1516,11 @@ DB::statement($sql);
         if (!empty($content)) {
             $ex_content = explode("\n", $content);
             if (!empty($ex_content)) {
-                $p=0;
+                $p = 0;
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
 
                     list($word, $mean) = explode("|", trim($v));
 

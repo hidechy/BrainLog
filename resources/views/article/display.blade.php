@@ -125,6 +125,10 @@ $nextLink = "/article/" . $nextDate . "/display";
         </div>
         @endif
 
+        @if($timeTable)
+                <div id="div_timeTable">{!! $timeTable !!}</div>
+        @endif
+
         <?php
         if (!empty($uranai)){
             echo "<div>";
@@ -208,6 +212,7 @@ $nextLink = "/article/" . $nextDate . "/display";
     #div_credit {padding : 5px; background : #ffffee; border : 1px dotted #cccccc; border-radius : 5px;}
     #div_uranai {padding : 0px 5px; margin : 10px 0px; }
     #btn_uranai {float : right; background : #ff9900; color : #ffffff; margin : 3px 10px; padding : 5px; cursor : pointer; }
+    #div_timeTable {background: #fff0f5; margin: 5px;}
     -->
     </style>
 
