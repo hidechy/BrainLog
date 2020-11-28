@@ -87,6 +87,18 @@ echo "</td>";
                                 echo "<td class='midashiTd' style='text-align : center;'>paypay</td>";
                                 break;
 
+
+
+                            case "pay_c":
+                                echo "<td class='midashiTd' style='text-align : center;'>Pasumo</td>";
+                                break;
+
+                            case "pay_d":
+                                echo "<td class='midashiTd' style='text-align : center;'>Suica2</td>";
+                                break;
+
+
+
                             default:
                                 echo "<td class='midashiTd' style='text-align : center;'>" . $col . "</td>";
                                 break;
@@ -198,6 +210,7 @@ echo "</td>";
     }
     ?>
 
+    <button id="btn_summary_open">summary</button>
     <div><br><br><br></div>
 
     <style type="text/css">
@@ -249,6 +262,10 @@ echo "</td>";
 
     $("#btn_money_history").width(38);
     $("#btn_money_history").click(function (){location.href = "{{ url('/money/history') }}";});
+
+    $("#btn_summary_open").click(function (){
+        window.open("{{ url('/money/' . $year . "-" . $month . '/itemsummary') }}");
+    });
 
 
 

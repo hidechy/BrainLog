@@ -11,6 +11,7 @@ class OtherController extends Controller
 {
 
     public $Utility;
+
     public function __construct()
     {
 
@@ -33,7 +34,9 @@ class OtherController extends Controller
         $content = file_get_contents($file);
         $ex_content = explode("\n", mb_convert_encoding($content, "utf8", "sjis-win"));
         foreach ($ex_content as $v) {
-            if (trim($v) == "") {continue;}
+            if (trim($v) == "") {
+                continue;
+            }
             $holiday[] = trim($v);
         }
         sort($holiday);
@@ -81,7 +84,9 @@ class OtherController extends Controller
         $a = 0;
         $b = 0;
         foreach ($ex_content as $k => $v) {
-            if (preg_match("/日付/", trim($v))) {$a = $k;}
+            if (preg_match("/日付/", trim($v))) {
+                $a = $k;
+            }
 
             if (preg_match("/降水確率/", trim($v))) {
                 $b = $k;
@@ -90,7 +95,9 @@ class OtherController extends Controller
         }
 
         $AAA = "";
-        for ($i = $a; $i < $b; $i++) {$AAA .= trim($ex_content[$i]);}
+        for ($i = $a; $i < $b; $i++) {
+            $AAA .= trim($ex_content[$i]);
+        }
 
         $ex_AAA = explode("tr", $AAA);
 
@@ -126,14 +133,18 @@ class OtherController extends Controller
                 $ex_content = explode("\n", $content);
 
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     $ex_v = explode("|", trim($v));
                     $DDD[trim($ex_v[0])] = trim($ex_v[1]);
                 }
             }
 
             foreach ($weather as $k => $v) {
-                if (trim($v) == "") {continue;}
+                if (trim($v) == "") {
+                    continue;
+                }
                 $DDD[date("Y-m-d", strtotime(date("Y-m-d")) + (86400 * $k))] = $v;
             }
 
@@ -141,7 +152,9 @@ class OtherController extends Controller
 
             $EEE = array();
             foreach ($DDD as $k => $v) {
-                if (trim($v) == "") {continue;}
+                if (trim($v) == "") {
+                    continue;
+                }
                 $EEE[] = $k . "|" . $v;
             }
 
@@ -164,7 +177,9 @@ class OtherController extends Controller
             $ex_content = explode("\n", $content);
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     $tag[] = trim($v);
                 }
             }
@@ -195,12 +210,16 @@ class OtherController extends Controller
             if (!empty($ex_content)) {
                 $i = 0;
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
 
                     $ex_v = explode("|", trim($v));
 
                     foreach ($cols as $k2 => $v2) {
-                        if (!isset($ex_v[$k2])) {continue;}
+                        if (!isset($ex_v[$k2])) {
+                            continue;
+                        }
                         $data[$i][$v2] = $ex_v[$k2];
                     }
 
@@ -233,15 +252,21 @@ class OtherController extends Controller
             if (!empty($ex_content)) {
                 $i = 0;
                 foreach ($ex_content as $k => $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
 
                     //削除
-                    if (!empty($_POST['delete'][$k])) {continue;}
+                    if (!empty($_POST['delete'][$k])) {
+                        continue;
+                    }
 
                     $ex_v = explode("|", trim($v));
 
                     foreach ($cols as $k2 => $v2) {
-                        if (!isset($ex_v[$k2])) {continue;}
+                        if (!isset($ex_v[$k2])) {
+                            continue;
+                        }
                         $data[$i][$v2] = $ex_v[$k2];
                     }
 
@@ -253,7 +278,9 @@ class OtherController extends Controller
 
         if (!empty($_POST['url'])) {
             foreach ($_POST['url'] as $k => $v) {
-                if (trim($v) == "") {continue;}
+                if (trim($v) == "") {
+                    continue;
+                }
                 $data[$k][0] = "";
                 $data[$k][1] = "";
                 $data[$k][2] = "";
@@ -262,7 +289,9 @@ class OtherController extends Controller
         }
 
         $out = [];
-        foreach ($data as $v) {$out[] = implode("|", $v);}
+        foreach ($data as $v) {
+            $out[] = implode("|", $v);
+        }
 
         file_put_contents($file, implode("\n", $out));
 
@@ -288,12 +317,16 @@ class OtherController extends Controller
             if (!empty($ex_content)) {
                 $i = 0;
                 foreach ($ex_content as $k => $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
 
                     $ex_v = explode("|", trim($v));
 
                     foreach ($cols as $k2 => $v2) {
-                        if (!isset($ex_v[$k2])) {continue;}
+                        if (!isset($ex_v[$k2])) {
+                            continue;
+                        }
                         $data[$i][$v2] = $ex_v[$k2];
                     }
 
@@ -313,7 +346,11 @@ class OtherController extends Controller
         }
 
         //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        $result = DB::table('t_article' . date("Y"))->where('year', '=', date("Y"))->where('month', '=', date("m"))->where('day', '=', date("d"))->get(['id']);
+        $result = DB::table('t_article' . date("Y"))
+            ->where('year', '=', date("Y"))
+            ->where('month', '=', date("m"))
+            ->where('day', '=', date("d"))
+            ->get(['id']);
 
         $insert = [];
         $insert['year'] = date("Y");
@@ -348,8 +385,12 @@ class OtherController extends Controller
 
             $param = [];
             foreach ($ex_work as $k => $v) {
-                if ($k == 0) {continue;}
-                if ($k == 1) {continue;}
+                if ($k == 0) {
+                    continue;
+                }
+                if ($k == 1) {
+                    continue;
+                }
 
                 $ex_value = explode("\t", trim($v));
                 $ary = [];
@@ -368,7 +409,9 @@ class OtherController extends Controller
             if (!empty($param)) {
                 $insert = [];
                 foreach ($param as $date => $v) {
-                    if (empty($v)) {continue;}
+                    if (empty($v)) {
+                        continue;
+                    }
 
                     list($insert[$date]['year'], $insert[$date]['month'], $insert[$date]['day']) = explode("-", $date);
                     $insert[$date]['work_start'] = $v[0];
@@ -421,7 +464,9 @@ class OtherController extends Controller
                 $YM = [];
                 $hanrei .= "<table class='dispTable'>";
                 foreach ($ex_content as $k => $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     list($flag, $term, $company) = explode("\t", trim($v));
                     $bgColor = "background : " . $color[$flag] . ";";
                     $hanrei .= "<tr style='" . $bgColor . "'>";
@@ -429,7 +474,9 @@ class OtherController extends Controller
                     $hanrei .= "<td>" . $term . "</td>";
                     $hanrei .= "<td>" . $company . "</td>";
                     $hanrei .= "</tr>";
-                    if ($k == ($count - 2)) {$term .= date("Y/m");}
+                    if ($k == ($count - 2)) {
+                        $term .= date("Y/m");
+                    }
                     list($termStart, $termEnd) = explode(" - ", $term);
                     $startDate = strtr($termStart, ['/' => '']) . "01";
                     $endDate = strtr($termEnd, ['/' => '']) . "20";
@@ -506,7 +553,9 @@ class OtherController extends Controller
         $content = file_get_contents($file);
         $ex_content = explode("\n", mb_convert_encoding($content, "utf8", "sjis-win"));
         foreach ($ex_content as $v) {
-            if (trim($v) == "") {continue;}
+            if (trim($v) == "") {
+                continue;
+            }
             $holiday[] = strtr(trim($v), ['-' => '']);
         }
         sort($holiday);
@@ -524,7 +573,12 @@ class OtherController extends Controller
         //------------------//
         $workTime = [];
         $table_exists = [];
-        $result = DB::table('t_worktime')->where('year', '=', $thisMonthYear)->where('month', '=', $thisMonthMonth)->orderBy('day')->get(['year', 'month', 'day', 'work_start', 'work_end']);
+        $result = DB::table('t_worktime')
+            ->where('year', '=', $thisMonthYear)
+            ->where('month', '=', $thisMonthMonth)
+            ->orderBy('day')
+            ->get(['year', 'month', 'day', 'work_start', 'work_end']);
+
         if (!empty($result)) {
             foreach ($result as $v) {
                 $workTime[$v->year . $v->month . $v->day]['work_start'] = date("H:i", strtotime($v->work_start));
@@ -545,7 +599,9 @@ class OtherController extends Controller
         $workShoukei = [];
         for ($i = 1; $i <= $thisMonthEnd; $i++) {
 
-            if (!checkdate($thisMonthMonth, $i, $thisMonthYear)) {continue;}
+            if (!checkdate($thisMonthMonth, $i, $thisMonthYear)) {
+                continue;
+            }
 
             $Ymd = $thisMonthYear . $thisMonthMonth . sprintf("%02d", $i);
             $ymdAry[] = $Ymd;
@@ -575,13 +631,19 @@ class OtherController extends Controller
                 $bgColorStyle = "background : #ffcccc;";
             }
 
-            if (isset($workTime[$Ymd]['work_start'])) {$defaultStart = $workTime[$Ymd]['work_start'];}
-            if (isset($workTime[$Ymd]['work_end'])) {$defaultEnd = $workTime[$Ymd]['work_end'];}
+            if (isset($workTime[$Ymd]['work_start'])) {
+                $defaultStart = $workTime[$Ymd]['work_start'];
+            }
+            if (isset($workTime[$Ymd]['work_end'])) {
+                $defaultEnd = $workTime[$Ymd]['work_end'];
+            }
 
             $calender .= "<tr style='" . $bgColorStyle . "'>";
             $calender .= "<td>";
             $calender .= sprintf("%02d", $i);
-            if (isset($table_exists[$Ymd])) {$calender .= "*";}
+            if (isset($table_exists[$Ymd])) {
+                $calender .= "*";
+            }
             $calender .= "</td>";
             $calender .= "<td>" . $youbi[$_youbi] . "</td>";
 
@@ -645,7 +707,9 @@ class OtherController extends Controller
         $workTime = [];
         foreach ($_POST['StartTime'] as $date => $time) {
             if (isset($_POST['EndTime'][$date])) {
-                if (strtotime($date) > strtotime(date("Ymd"))) {continue;}
+                if (strtotime($date) > strtotime(date("Ymd"))) {
+                    continue;
+                }
 
                 //両方入っている場合のみ
                 if (trim($_POST['StartTime'][$date]) != "" and trim($_POST['EndTime'][$date]) != "") {
@@ -740,7 +804,9 @@ class OtherController extends Controller
             $ex_content = explode("\n", $content);
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
 
                     list($date, $weather) = explode("|", trim($v));
                     list($data_year, $data_month, $data_day) = explode("-", $date);
@@ -769,56 +835,6 @@ class OtherController extends Controller
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public function kabukaapi()
     {
 
@@ -829,7 +845,7 @@ class OtherController extends Controller
         $sql = "select code, sum(point) goukei, count(code) cnt from t_stock group by code order by goukei desc, cnt desc;";
         $result = DB::select($sql);
 
-        foreach ($result as $k=>$v){
+        foreach ($result as $k => $v) {
             $result2 = DB::table('t_stock')
                 ->where('code', '=', $v->code)
                 ->orderBy('created_at', 'desc')
@@ -844,9 +860,7 @@ class OtherController extends Controller
             $data['data'][$k]['torihikichi'] = $result2[0]->torihikichi;
 
 
-
             $data['data'][$k]['grade'] = $result2[0]->grade;
-
 
 
             $data['data'][$k]['tangen'] = $result2[0]->tangen;
@@ -858,27 +872,23 @@ class OtherController extends Controller
             $create_count[$result2[0]->created_at] = "";
         }
 
-        foreach ($data['data'] as $k=>$v){
+        foreach ($data['data'] as $k => $v) {
             $data['data'][$k]['average'] = (51 - ceil($v['goukei'] / count($create_count)));
         }
 
 
+        $data2 = $data;
+        $data = [];
 
-$data2 = $data;
-$data = [];
+        for ($i = 0; $i < 30; $i++) {
+            $data['data'][$i] = $data2['data'][$i];
+        }
 
-for ($i=0; $i<30; $i++){
-$data['data'][$i] = $data2['data'][$i];
-}
-
-echo "<pre>";
-print_r($data);
-echo "</pre>";
+        echo "<pre>";
+        print_r($data);
+        echo "</pre>";
 
     }
-
-
-
 
 
     public function kabukaselectapi($str)
@@ -890,9 +900,9 @@ echo "</pre>";
 
         /////////////////////////////////////////
         $ex_str = explode("|", $str);
-        if ($ex_str[0] == "D" || $ex_str[0] == "G"){
+        if ($ex_str[0] == "D" || $ex_str[0] == "G") {
 
-            switch ($ex_str[0]){
+            switch ($ex_str[0]) {
                 case "D":
                     //日付指定
                     $sql = "select code, sum(point) goukei, count(code) cnt from t_stock where created_at like '" . $ex_str[1] . "%' group by code order by goukei desc, cnt desc;";
@@ -906,16 +916,16 @@ echo "</pre>";
 
             $result = DB::select($sql);
 
-            foreach ($result as $k=>$v){
+            foreach ($result as $k => $v) {
 
                 $data['data'][$v->code]['code'] = $v->code;
 
-                switch ($ex_str[0]){
+                switch ($ex_str[0]) {
                     case "D":
                         //日付指定
                         $result2 = DB::table('t_stock')
                             ->where('code', '=', $v->code)
-                            ->where('created_at', 'like', $ex_str[1].'%')
+                            ->where('created_at', 'like', $ex_str[1] . '%')
                             ->orderBy('id')->get();
                         break;
 
@@ -929,7 +939,7 @@ echo "</pre>";
                 }
 
                 $ary = [];
-                foreach ($result2 as $k2=>$v2){
+                foreach ($result2 as $k2 => $v2) {
                     $data['data'][$v->code]['company'] = $v2->company;
                     $data['data'][$v->code]['industry'] = $v2->industry;
                     $data['data'][$v->code]['market'] = $v2->market;
@@ -948,12 +958,15 @@ echo "</pre>";
 
                 $data['data'][$v->code]['record'] = $ary;
             }
-        }else{
+        } else {
 
-            switch ($ex_str[0]){
+            switch ($ex_str[0]) {
                 case "C":
                     //コード指定
-                    $result = DB::table('t_stock')->where('code', '=', $ex_str[1])->orderBy('id')->get();
+                    $result = DB::table('t_stock')
+                        ->where('code', '=', $ex_str[1])
+                        ->orderBy('id')
+                        ->get();
                     break;
 
                 case "CD":
@@ -961,11 +974,13 @@ echo "</pre>";
                     $ex_str_1 = explode("]", $ex_str[1]);
                     $result = DB::table('t_stock')
                         ->where('code', '=', $ex_str_1[0])
-                        ->where('created_at', 'like', $ex_str_1[1].'%')->orderBy('id')->get();
+                        ->where('created_at', 'like', $ex_str_1[1] . '%')
+                        ->orderBy('id')
+                        ->get();
                     break;
             }
 
-            foreach ($result as $k=>$v){
+            foreach ($result as $k => $v) {
 
                 $data['data'][$v->code]['code'] = $v->code;
                 $data['data'][$v->code]['company'] = $v->company;
@@ -990,13 +1005,13 @@ echo "</pre>";
         /////////////////////////////////////////
 
         $sum = [];
-        foreach ($data['data'] as $code=>$value){
-            foreach ($value['record'] as $v){
+        foreach ($data['data'] as $code => $value) {
+            foreach ($value['record'] as $v) {
                 $sum[$code][] = $v['point'];
             }
         }
 
-        foreach ($sum as $code=>$value){
+        foreach ($sum as $code => $value) {
             $data['data'][$code]['sum'] = array_sum($value);
             $data['data'][$code]['count'] = count($value);
 
@@ -1007,15 +1022,15 @@ echo "</pre>";
         $data2 = $data;
         $data = [];
 
-        $i=0;
-        foreach ($data2['data'] as $value){
+        $i = 0;
+        foreach ($data2['data'] as $value) {
             $data['data'][$i] = $value;
             $i++;
         }
 
-echo "<pre>";
-print_r($data);
-echo "</pre>";
+        echo "<pre>";
+        print_r($data);
+        echo "</pre>";
 
     }
 

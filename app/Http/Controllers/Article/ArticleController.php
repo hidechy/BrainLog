@@ -141,7 +141,11 @@ class ArticleController extends Controller
         $oneBefore_year = date("Y", (strtotime($calStartDate) - 86400));
         $oneBefore_month = date("m", (strtotime($calStartDate) - 86400));
         $oneBefore_day = date("d", (strtotime($calStartDate) - 86400));
-        $oneBefore = DB::table('t_money')->where('year', '=', $oneBefore_year)->where('month', '=', $oneBefore_month)->where('day', '=', $oneBefore_day)->get();
+        $oneBefore = DB::table('t_money')
+            ->where('year', '=', $oneBefore_year)
+            ->where('month', '=', $oneBefore_month)
+            ->where('day', '=', $oneBefore_day)
+            ->get();
 
         $oneBefore_date = $oneBefore_year . "-" . $oneBefore_month . "-" . $oneBefore_day;
 
@@ -160,7 +164,12 @@ class ArticleController extends Controller
                 list($sYear, $sMonth) = explode("-", $v);
 
                 //------------------------//
-                $result = DB::table('t_money')->where('year', '=', $sYear)->where('month', '=', $sMonth)->orderBy('day')->get();
+                $result = DB::table('t_money')
+                    ->where('year', '=', $sYear)
+                    ->where('month', '=', $sMonth)
+                    ->orderBy('day')
+                    ->get();
+
                 if (isset($result[0])) {
                     foreach ($result as $v2) {
                         $lineSum = $this->Utility->makeLineSum($v2);
@@ -221,9 +230,18 @@ class ArticleController extends Controller
                 ///////////////////////////////////////////////////
 
                 if ($this->user == "hidechy") {
-                    $result = DB::table($table)->where('year', '=', $sYear)->where('month', '=', $sMonth)->orderBy('day')->get();
+                    $result = DB::table($table)
+                        ->where('year', '=', $sYear)
+                        ->where('month', '=', $sMonth)
+                        ->orderBy('day')
+                        ->get();
                 } else {
-                    $result = DB::table($table)->where('year', '=', $sYear)->where('month', '=', $sMonth)->where('hide', '=', 0)->orderBy('day')->get();
+                    $result = DB::table($table)
+                        ->where('year', '=', $sYear)
+                        ->where('month', '=', $sMonth)
+                        ->where('hide', '=', 0)
+                        ->orderBy('day')
+                        ->get();
                 }
 
                 if (isset($result[0])) {
@@ -248,7 +266,12 @@ class ArticleController extends Controller
         for ($i = 0; $i < 200; $i++) {
             if (isset($calDate[$i])) {
                 list($year, $month, $day) = explode("-", $calDate[$i]);
-                $result = DB::table('t_worktime')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->get(['id']);
+                $result = DB::table('t_worktime')
+                    ->where('year', '=', $year)
+                    ->where('month', '=', $month)
+                    ->where('day', '=', $day)
+                    ->get(['id']);
+
                 if (isset($result[0])) {
                     $startId = $result[0]->id;
                     break;
@@ -260,7 +283,12 @@ class ArticleController extends Controller
         for ($i = 200; $i > 0; $i--) {
             if (isset($calDate[$i])) {
                 list($year, $month, $day) = explode("-", $calDate[$i]);
-                $result = DB::table('t_worktime')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->get(['id']);
+                $result = DB::table('t_worktime')
+                    ->where('year', '=', $year)
+                    ->where('month', '=', $month)
+                    ->where('day', '=', $day)
+                    ->get(['id']);
+
                 if (isset($result[0])) {
                     $endId = $result[0]->id;
                     break;
@@ -268,7 +296,10 @@ class ArticleController extends Controller
             }
         }
 
-        $result = DB::table('t_worktime')->where('id', '>=', $startId)->where('id', '<=', $endId)->get(['year', 'month', 'day', 'work_start', 'work_end']);
+        $result = DB::table('t_worktime')
+            ->where('id', '>=', $startId)
+            ->where('id', '<=', $endId)
+            ->get(['year', 'month', 'day', 'work_start', 'work_end']);
 
         if (isset($result[0])) {
             foreach ($result as $v) {
@@ -322,7 +353,12 @@ class ArticleController extends Controller
 
         //---------------------------------------// credit
         $credit = [];
-        $result = DB::table('t_credit')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->get();
+        $result = DB::table('t_credit')
+            ->where('year', '=', $year)
+            ->where('month', '=', $month)
+            ->where('day', '=', $day)
+            ->get();
+
         if (isset($result[0])) {
             foreach ($result as $v) {
                 $credit[] = $v->item . "　(" . number_format($v->price) . "円)";
@@ -351,9 +387,20 @@ class ArticleController extends Controller
         ///////////////////////////////////////////////////
 
         if ($this->user == "hidechy") {
-            $result = DB::table($table)->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->orderBy('num')->get();
+            $result = DB::table($table)
+                ->where('year', '=', $year)
+                ->where('month', '=', $month)
+                ->where('day', '=', $day)
+                ->orderBy('num')
+                ->get();
         } else {
-            $result = DB::table($table)->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->where('hide', '=', 0)->orderBy('num')->get();
+            $result = DB::table($table)
+                ->where('year', '=', $year)
+                ->where('month', '=', $month)
+                ->where('day', '=', $day)
+                ->where('hide', '=', 0)
+                ->orderBy('num')
+                ->get();
         }
 
         $data = [];
@@ -393,7 +440,12 @@ class ArticleController extends Controller
 
         $average = "";
 
-        $result = DB::table('t_money')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->get();
+        $result = DB::table('t_money')
+            ->where('year', '=', $year)
+            ->where('month', '=', $month)
+            ->where('day', '=', $day)
+            ->get();
+
         if (isset($result[0])) {
             $lineSum = $this->Utility->makeLineSum($result[0]);
             $sum = $lineSum[0];
@@ -402,7 +454,13 @@ class ArticleController extends Controller
             $todayMoney = (array_sum($sum) + array_sum($bank) + array_sum($pay));
 
             list($prevY, $prevM, $prevD) = explode("-", $prevDate);
-            $result2 = DB::table('t_money')->where('year', '=', $prevY)->where('month', '=', $prevM)->where('day', '=', $prevD)->get();
+
+            $result2 = DB::table('t_money')
+                ->where('year', '=', $prevY)
+                ->where('month', '=', $prevM)
+                ->where('day', '=', $prevD)
+                ->get();
+
             if (isset($result2[0])) {
                 $lineSum = $this->Utility->makeLineSum($result2[0]);
                 $sum = $lineSum[0];
@@ -415,7 +473,13 @@ class ArticleController extends Controller
 
             $beforeMonthEnd = date("Y-m-d", strtotime($year . "-" . $month . "-01") - 1);
             list($bmY, $bmM, $bmD) = explode("-", $beforeMonthEnd);
-            $result3 = DB::table('t_money')->where('year', '=', $bmY)->where('month', '=', $bmM)->where('day', '=', $bmD)->get();
+
+            $result3 = DB::table('t_money')
+                ->where('year', '=', $bmY)
+                ->where('month', '=', $bmM)
+                ->where('day', '=', $bmD)
+                ->get();
+
             if (isset($result3[0])) {
                 $lineSum = $this->Utility->makeLineSum($result3[0]);
                 $sum = $lineSum[0];
@@ -501,9 +565,20 @@ class ArticleController extends Controller
         $table = "t_article" . $year;
 
         if ($this->user == "hidechy") {
-            $result = DB::table($table)->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->orderBy('num')->get();
+            $result = DB::table($table)
+                ->where('year', '=', $year)
+                ->where('month', '=', $month)
+                ->where('day', '=', $day)
+                ->orderBy('num')
+                ->get();
         } else {
-            $result = DB::table($table)->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->where('hide', '=', 0)->orderBy('num')->get();
+            $result = DB::table($table)
+                ->where('year', '=', $year)
+                ->where('month', '=', $month)
+                ->where('day', '=', $day)
+                ->where('hide', '=', 0)
+                ->orderBy('num')
+                ->get();
         }
 
         $data = [];
@@ -578,7 +653,13 @@ class ArticleController extends Controller
 
         $tagval = [];
         $table = "t_article" . $year;
-        $result = DB::table($table)->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->where('tag', '!=', '')->get(['article', 'tag']);
+        $result = DB::table($table)
+            ->where('year', '=', $year)
+            ->where('month', '=', $month)
+            ->where('day', '=', $day)
+            ->where('tag', '!=', '')
+            ->get(['article', 'tag']);
+
         if (isset($result[0])) {
             foreach ($result as $v) {
                 $ex_article = explode("\n", $v->article);
@@ -604,9 +685,18 @@ class ArticleController extends Controller
             $table = "t_article" . $_POST['input_year'];
 
             if ($this->user == "hidechy") {
-                DB::table($table)->where('year', '=', $_POST['input_year'])->where('month', '=', $_POST['input_month'])->where('day', '=', $_POST['input_day'])->delete();
+                DB::table($table)
+                    ->where('year', '=', $_POST['input_year'])
+                    ->where('month', '=', $_POST['input_month'])
+                    ->where('day', '=', $_POST['input_day'])
+                    ->delete();
             } else {
-                DB::table($table)->where('year', '=', $_POST['input_year'])->where('month', '=', $_POST['input_month'])->where('day', '=', $_POST['input_day'])->where('hide', '=', 0)->delete();
+                DB::table($table)
+                    ->where('year', '=', $_POST['input_year'])
+                    ->where('month', '=', $_POST['input_month'])
+                    ->where('day', '=', $_POST['input_day'])
+                    ->where('hide', '=', 0)
+                    ->delete();
             }
 
             DB::statement('ALTER TABLE ' . $table . ' AUTO_INCREMENT = 1;');
@@ -660,7 +750,13 @@ class ArticleController extends Controller
                         foreach ($_POST['move_date'] as $v) {
                             if (!empty($v)) {
                                 list($mYear, $mMonth, $mDay) = explode("-", $v);
-                                $result = DB::table('t_article' . $mYear)->where('year', '=', $mYear)->where('month', '=', $mMonth)->where('day', '=', $mDay)->orderBy('num', 'desc')->take(1)->get(['num']);
+                                $result = DB::table('t_article' . $mYear)
+                                    ->where('year', '=', $mYear)
+                                    ->where('month', '=', $mMonth)
+                                    ->where('day', '=', $mDay)
+                                    ->orderBy('num', 'desc')
+                                    ->take(1)
+                                    ->get(['num']);
                                 $maxNum[$v] = (isset($result[0])) ? $result[0]->num : 0;
                             }
                         }
@@ -708,7 +804,11 @@ class ArticleController extends Controller
                                     $copyDate_m = date("m", (strtotime($data[$order]['year'] . "-" . $data[$order]['month'] . "-" . $data[$order]['day']) + (86400 * $i)));
                                     $copyDate_d = date("d", (strtotime($data[$order]['year'] . "-" . $data[$order]['month'] . "-" . $data[$order]['day']) + (86400 * $i)));
 
-                                    $result = DB::table('t_article' . $copyDate_y)->where('year', '=', $copyDate_y)->where('month', '=', $copyDate_m)->where('day', '=', $copyDate_d)->get(['id']);
+                                    $result = DB::table('t_article' . $copyDate_y)
+                                        ->where('year', '=', $copyDate_y)
+                                        ->where('month', '=', $copyDate_m)
+                                        ->where('day', '=', $copyDate_d)
+                                        ->get(['id']);
 
                                     if ($_POST['input_year'] == $copyDate_y) {
                                         $data[$dataCnt + $addCnt]['year'] = $copyDate_y;
@@ -846,7 +946,9 @@ class ArticleController extends Controller
                     }
 
                     foreach ($articleTables as $table) {
-                        $result = DB::table($table)->where('tag', '=', trim($v))->get(['id']);
+                        $result = DB::table($table)
+                            ->where('tag', '=', trim($v))
+                            ->get(['id']);
 
                         if (isset($result[0])) {
                             $ary1[trim($v)][] = count($result);
@@ -879,9 +981,13 @@ class ArticleController extends Controller
             //タグ検索
             $i = 0;
             foreach ($articleTables as $table) {
-                $result = DB::table($table)->where('tag', '=', $word)->orderBy('year')->orderBy('month')->orderBy('day')->get(['year', 'month', 'day', 'article'
-                    , 'num',
-                ]);
+                $result = DB::table($table)
+                    ->where('tag', '=', $word)
+                    ->orderBy('year')
+                    ->orderBy('month')
+                    ->orderBy('day')
+                    ->get(['year', 'month', 'day', 'article', 'num']);
+
                 if (isset($result[0])) {
                     foreach ($result as $v) {
                         $data[$word][$i]['year'] = $v->year;
@@ -904,9 +1010,13 @@ class ArticleController extends Controller
                     foreach ($ex_word as $v) {
                         $search_word = "%" . trim($v) . "%";
                         foreach ($articleTables as $table) {
-                            $result = DB::table($table)->where('article', 'like', $search_word)->orderBy('year')->orderBy('month')->orderBy('day')->get(['year', 'month', 'day', 'article'
-                                , 'num',
-                            ]);
+                            $result = DB::table($table)
+                                ->where('article', 'like', $search_word)
+                                ->orderBy('year')
+                                ->orderBy('month')
+                                ->orderBy('day')
+                                ->get(['year', 'month', 'day', 'article', 'num']);
+
                             if (isset($result[0])) {
                                 foreach ($result as $v2) {
                                     $data[$v][$i]['year'] = $v2->year;
@@ -1160,7 +1270,7 @@ class ArticleController extends Controller
 
                 $exif_data = exif_read_data($photoPath);
 
-//print $exif_data['Orientation'];
+                //print $exif_data['Orientation'];
 
                 print_r($exif_data);
 
@@ -1206,7 +1316,11 @@ class ArticleController extends Controller
 
                 list($year, $month, $day) = explode("-", $_POST['insert_date'][$k]);
 
-                $result = DB::table('t_article' . $year)->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->get(['id']);
+                $result = DB::table('t_article' . $year)
+                    ->where('year', '=', $year)
+                    ->where('month', '=', $month)
+                    ->where('day', '=', $day)
+                    ->get(['id']);
 
                 $data = [];
                 $data['year'] = $year;
@@ -1246,14 +1360,24 @@ class ArticleController extends Controller
             preg_match("/^t_article(.+)/", $v, $m);
 
             if ($m[1] == date("Y")) {
-                $result = DB::table($v)->orderBy('year')->orderBy('month')->orderBy('day')->get();
+                $result = DB::table($v)
+                    ->orderBy('year')
+                    ->orderBy('month')
+                    ->orderBy('day')
+                    ->get();
+
                 foreach ($result as $v2) {
                     if (strtotime($v2->year . "-" . $v2->month . "-" . $v2->day) >= strtotime(date("Y-m-d"))) {
                         $article[$v2->year . "-" . $v2->month . "-" . $v2->day][] = $v2->article;
                     }
                 }
             } else {
-                $result = DB::table($v)->orderBy('year')->orderBy('month')->orderBy('day')->get();
+                $result = DB::table($v)
+                    ->orderBy('year')
+                    ->orderBy('month')
+                    ->orderBy('day')
+                    ->get();
+
                 foreach ($result as $v2) {
                     $article[$v2->year . "-" . $v2->month . "-" . $v2->day][] = $v2->article;
                 }
@@ -1276,11 +1400,11 @@ class ArticleController extends Controller
             }
         }
         sort($articleY);
-//print_r($articleY);
+        //print_r($articleY);
 
         $startYM = $articleY[0] . "-01";
         $endYM = $articleY[count($articleY) - 1] . "-12";
-//var_dump($yearmonth);
+        //var_dump($yearmonth);
         //var_dump($startYM);
         //var_dump($endYM);
 
@@ -1289,14 +1413,14 @@ class ArticleController extends Controller
         if (strtotime($startYM . "-01") <= strtotime($prev)) {
             $prevMonth = $prev;
         }
-//var_dump($prevMonth);
+        //var_dump($prevMonth);
 
         $nextMonth = "0";
         $next = date('Y-m', strtotime(($yearmonth . "-01") . "+1 month"));
         if (strtotime($next) <= strtotime($endYM . "-01")) {
             $nextMonth = $next;
         }
-//var_dump($nextMonth);
+        //var_dump($nextMonth);
         //------------------------------------------------//
 
         $monthEnd = date("t", strtotime($yearmonth . "-01"));
@@ -1352,7 +1476,12 @@ class ArticleController extends Controller
                     $update = [];
                     $update['tag'] = $tag;
 
-                    DB::table('t_article' . $year)->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->where('num', '=', $num)->update($update);
+                    DB::table('t_article' . $year)
+                        ->where('year', '=', $year)
+                        ->where('month', '=', $month)
+                        ->where('day', '=', $day)
+                        ->where('num', '=', $num)
+                        ->update($update);
                 }
             }
             return redirect("/article/" . $year . "-" . $month . "/taging");
@@ -1363,7 +1492,14 @@ class ArticleController extends Controller
     {
         list($after_year, $after_month, $after_day) = explode("-", $_POST['merge_date']);
         $after_table = "t_article" . $after_year;
-        $result = DB::table($after_table)->where('year', '=', $after_year)->where('month', '=', $after_month)->where('day', '=', $after_day)->orderBy('num', 'desc')->take(1)->get(['num']);
+        $result = DB::table($after_table)
+            ->where('year', '=', $after_year)
+            ->where('month', '=', $after_month)
+            ->where('day', '=', $after_day)
+            ->orderBy('num', 'desc')
+            ->take(1)
+            ->get(['num']);
+
         $max_num = (isset($result[0])) ? $result[0]->num : 0;
 
         $ex_mergedata = explode("/", $_POST['merge_data']);
@@ -1372,7 +1508,12 @@ class ArticleController extends Controller
             list($before_year, $before_month, $before_day) = explode("-", $before_date);
             $before_table = "t_article" . $before_year;
 
-            $result2 = DB::table($before_table)->where('year', '=', $before_year)->where('month', '=', $before_month)->where('day', '=', $before_day)->where('num', '=', $before_num)->get(['id', 'article']);
+            $result2 = DB::table($before_table)
+                ->where('year', '=', $before_year)
+                ->where('month', '=', $before_month)
+                ->where('day', '=', $before_day)
+                ->where('num', '=', $before_num)
+                ->get(['id', 'article']);
 
             if ($before_table != $after_table) {
                 //テーブル移動が必要な場合
@@ -1385,7 +1526,9 @@ class ArticleController extends Controller
                 $insert['article'] = trim($result2[0]->article);
                 DB::table($after_table)->insert($insert);
 
-                DB::table($before_table)->where('id', '=', $result2[0]->id)->delete();
+                DB::table($before_table)
+                    ->where('id', '=', $result2[0]->id)
+                    ->delete();
             } else {
                 //日付移動だけの場合
                 $update = [];
@@ -1393,7 +1536,9 @@ class ArticleController extends Controller
                 $update['month'] = $after_month;
                 $update['day'] = $after_day;
                 $update['num'] = ($max_num + $k + 1);
-                DB::table($after_table)->where('id', '=', $result2[0]->id)->update($update);
+                DB::table($after_table)
+                    ->where('id', '=', $result2[0]->id)
+                    ->update($update);
             }
         }
 
@@ -1410,7 +1555,12 @@ class ArticleController extends Controller
             list($del_year, $del_month, $del_day) = explode("-", $del_date);
             $del_table = "t_article" . $del_year;
 
-            DB::table($del_table)->where('year', '=', $del_year)->where('month', '=', $del_month)->where('day', '=', $del_day)->where('num', '=', $del_num)->delete();
+            DB::table($del_table)
+                ->where('year', '=', $del_year)
+                ->where('month', '=', $del_month)
+                ->where('day', '=', $del_day)
+                ->where('num', '=', $del_num)
+                ->delete();
         }
 
         return redirect("/article/search");
@@ -1473,7 +1623,7 @@ class ArticleController extends Controller
             $i++;
         }
 
-//print_r($traindata);
+        //print_r($traindata);
 
 
         echo json_encode($traindata);
@@ -1499,7 +1649,7 @@ class ArticleController extends Controller
             $traindata['data']['article'] = $ex_article;
         }
 
-//print_r($traindata);
+        //print_r($traindata);
         echo json_encode($traindata);
     }
 

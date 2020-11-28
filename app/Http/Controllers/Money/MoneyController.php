@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Money;
 use App\Http\Controllers\Controller;
 use App\MyClass\Utility;
 use DB;
+use Illuminate\Http\Request;
 
 class MoneyController extends Controller
 {
     public $Utility;
+
     public function __construct()
     {
         $this->Utility = new Utility;
@@ -23,7 +25,13 @@ class MoneyController extends Controller
         $thisMonthYear = (!empty($gYear)) ? $gYear : date("Y");
         $thisMonthMonth = (!empty($gMonth)) ? $gMonth : date("m");
 
-        $result = DB::table('t_money')->where('year', '=', $thisMonthYear)->where('month', '=', $thisMonthMonth)->orderBy('day')->get();
+
+        $result = DB::table('t_money')
+            ->where('year', '=', $thisMonthYear)
+            ->where('month', '=', $thisMonthMonth)
+            ->orderBy('day')
+            ->get();
+
 
         $yAry = [];
         $yNum = [];
@@ -67,7 +75,9 @@ class MoneyController extends Controller
         $content = file_get_contents($file);
         $ex_content = explode("\n", mb_convert_encoding($content, "utf8", "sjis-win"));
         foreach ($ex_content as $v) {
-            if (trim($v) == "") {continue;}
+            if (trim($v) == "") {
+                continue;
+            }
             $holiday[] = trim($v);
         }
         sort($holiday);
@@ -82,7 +92,9 @@ class MoneyController extends Controller
 
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     list($date, $youbi, $total, $spend) = explode("|", trim($v));
                     $_mt[$date] = $spend;
                 }
@@ -122,12 +134,7 @@ class MoneyController extends Controller
                 //----------------------------------------------------//
 
                 //----------------------------------------------------//
-                $result = DB::table('t_dailyspend')
-                    ->where('year', '=', $thisMonthYear)
-                    ->where('month', '=', $thisMonthMonth)
-                    ->where('day', '=', sprintf("%02d", $i))
-                    ->orderBy('id')
-                    ->get();
+                $result = $this->getYmdSpend($thisMonthYear, $thisMonthMonth, sprintf("%02d", $i));
 
                 if (isset($result)) {
                     foreach ($result as $v) {
@@ -139,12 +146,7 @@ class MoneyController extends Controller
                 //----------------------------------------------------//
 
                 //----------------------------------------------------//
-                $result2 = DB::table('t_credit')
-                    ->where('year', '=', $thisMonthYear)
-                    ->where('month', '=', $thisMonthMonth)
-                    ->where('day', '=', sprintf("%02d", $i))
-                    ->orderBy('id')
-                    ->get();
+                $result2 = $this->getYmdCredit($thisMonthYear, $thisMonthMonth, sprintf("%02d", $i));
 
                 if (isset($result2)) {
                     foreach ($result2 as $v) {
@@ -158,18 +160,10 @@ class MoneyController extends Controller
                 $DailySpend .= "</table>";
 
 
-
-
-
                 $linestyle = "";
-                if (($_mt[$thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)] - array_sum($spent)) != 0){
+                if (($_mt[$thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)] - array_sum($spent)) != 0) {
                     $linestyle = "style=\"color: #ff3333; font-weight: bold;\"";
                 }
-
-
-
-
-
 
 
                 $DailySpend .= "<div " . $linestyle . ">" . ($_mt[$thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)] - array_sum($spent)) . "</div>";
@@ -220,7 +214,7 @@ class MoneyController extends Controller
         $today = date("Y-m-d");
         $yesterday = date("Y-m-d", strtotime($today) - 1);
 
-        $oneBefore = DB::table('t_money')->orderBy('year', 'desc')->orderBy('month', 'desc')->orderBy('day', 'desc')->take(1)->get();
+        $oneBefore = $this->getLastMoney();
 
         $ob_date = "";
         $ob_yen = [];
@@ -243,7 +237,9 @@ class MoneyController extends Controller
             //--------------------//
 
             foreach ($oneBefore[0] as $k => $v) {
-                if (preg_match("/^yen/", $k)) {$ob_yen[$k] = $v;}
+                if (preg_match("/^yen/", $k)) {
+                    $ob_yen[$k] = $v;
+                }
             }
 
             $lineSum = $this->Utility->makeLineSum($oneBefore[0]);
@@ -313,7 +309,9 @@ class MoneyController extends Controller
     {
         $ary1 = [];
         foreach ($_POST['date_select'] as $k => $v) {
-            if (trim($_POST['spend_money'][$k]) == "") {continue;}
+            if (trim($_POST['spend_money'][$k]) == "") {
+                continue;
+            }
             $ary1[$v][] = $_POST['spend_money'][$k];
         }
 
@@ -342,7 +340,9 @@ class MoneyController extends Controller
             $ary4[$k]['day'] = $day;
 
             $yenCount = $this->getYenCount($v, $YENTYPE);
-            foreach ($yenCount as $k2 => $v2) {$ary4[$k]['yen_' . $k2] = $v2;}
+            foreach ($yenCount as $k2 => $v2) {
+                $ary4[$k]['yen_' . $k2] = $v2;
+            }
         }
 
         $maxDate = max($dateAry);
@@ -352,15 +352,19 @@ class MoneyController extends Controller
             $ary4[$maxDate][$cYen] = $cVal;
         }
 
-        $oneBefore = DB::table('t_money')->orderBy('year', 'desc')->orderBy('month', 'desc')->orderBy('day', 'desc')->take(1)->get();
+        $oneBefore = $this->getLastMoney();
 
         foreach ($oneBefore[0] as $k => $v) {
             if (preg_match("/^bank/", $k)) {
-                foreach ($dateAry as $v2) {$ary4[$v2][$k] = $v;}
+                foreach ($dateAry as $v2) {
+                    $ary4[$v2][$k] = $v;
+                }
             }
 
             if (preg_match("/^pay/", $k)) {
-                foreach ($dateAry as $v2) {$ary4[$v2][$k] = $v;}
+                foreach ($dateAry as $v2) {
+                    $ary4[$v2][$k] = $v;
+                }
             }
         }
 
@@ -400,11 +404,15 @@ class MoneyController extends Controller
 
         list($data['year'], $data['month'], $data['day']) = explode("-", $_POST['input_date']);
 
-        $oneBefore = DB::table('t_money')->orderBy('year', 'desc')->orderBy('month', 'desc')->orderBy('day', 'desc')->take(1)->get();
+        $oneBefore = $this->getLastMoney();
 
         foreach ($oneBefore[0] as $k => $v) {
-            if (preg_match("/^bank/", $k)) {$data[$k] = $v;}
-            if (preg_match("/^pay/", $k)) {$data[$k] = $v;}
+            if (preg_match("/^bank/", $k)) {
+                $data[$k] = $v;
+            }
+            if (preg_match("/^pay/", $k)) {
+                $data[$k] = $v;
+            }
         }
 
         $data['created_at'] = date("Y-m-d H:i:s");
@@ -417,9 +425,14 @@ class MoneyController extends Controller
 
     public function bank()
     {
-        $result = DB::table('t_money')->orderBy('year')->orderBy('month')->orderBy('day')
 
-            ->get(['year', 'month', 'day', 'bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b', 'pay_c']);
+
+        $result = DB::table('t_money')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get(['year', 'month', 'day', 'bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b', 'pay_c', 'pay_d']);
+
 
         $data = [];
         if (isset($result[0])) {
@@ -430,6 +443,7 @@ class MoneyController extends Controller
             $payA = [];
             $payB = [];
             $payC = [];
+            $payD = [];
 
             foreach ($result as $v) {
                 $bankA[$v->bank_a][] = $v->year . "-" . $v->month . "-" . $v->day;
@@ -439,14 +453,17 @@ class MoneyController extends Controller
                 $payA[$v->pay_a][] = $v->year . "-" . $v->month . "-" . $v->day;
                 $payB[$v->pay_b][] = $v->year . "-" . $v->month . "-" . $v->day;
                 $payC[$v->pay_c][] = $v->year . "-" . $v->month . "-" . $v->day;
+                $payD[$v->pay_d][] = $v->year . "-" . $v->month . "-" . $v->day;
             }
 
-            $bankAry = ['bankA', 'bankB', 'bankC', 'bankD', 'payA', 'payB', 'payC'];
+            $bankAry = ['bankA', 'bankB', 'bankC', 'bankD', 'payA', 'payB', 'payC', 'payD'];
 
             foreach ($bankAry as $v) {
                 $i = 0;
                 foreach ($$v as $k2 => $v2) {
-                    if (trim($k2) == "") {continue;}
+                    if (trim($k2) == "") {
+                        continue;
+                    }
                     $data[$v][sprintf("%04d", $i)] = $v2[0] . " : " . number_format($k2);
                     $i++;
                 }
@@ -465,7 +482,7 @@ class MoneyController extends Controller
             foreach ($_POST['bankradio'] as $k => $v) {
                 list($year, $month, $day) = explode("-", $_POST['bankdate'][$k]);
 
-                $result = DB::table('t_money')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->get(['id']);
+                $result = $this->getYmdMoney($year, $month, $day);
 
                 if (isset($result[0])) {
                     $SQL = " update t_money set " . $v . " = " . $_POST['bankmoney'][$k] . " where id >= " . $result[0]->id . "; ";
@@ -483,14 +500,23 @@ class MoneyController extends Controller
 
     public function summary()
     {
-        $result = DB::table('t_money')->groupBy('year')->groupBy('month')->get(['year', 'month']);
+
+
+        $result = DB::table('t_money')
+            ->groupBy('year')
+            ->groupBy('month')
+            ->get(['year', 'month']);
+
 
         $data = [];
         $end_all_money = [];
         if (isset($result[0])) {
             foreach ($result as $v) {
                 $monthEnd = date("t", strtotime($v->year . "-" . $v->month . "-01"));
-                $result_end = DB::table('t_money')->where('year', '=', $v->year)->where('month', '=', $v->month)->where('day', '=', $monthEnd)->get();
+
+//sql in roop
+                $result_end = $this->getYmdMoney($v->year, $v->month, $monthEnd);
+
                 $end_all = 0;
                 if (isset($result_end[0])) {
                     $lineSum = $this->Utility->makeLineSum($result_end[0]);
@@ -507,7 +533,13 @@ class MoneyController extends Controller
                 $ary[] = $end_all;
 
                 $salary__ = 0;
-                $result_salary = DB::table('t_salary')->where('year', '=', $v->year)->where('month', '=', $v->month)->get(['salary']);
+
+//sql in roop
+                $result_salary = DB::table('t_salary')
+                    ->where('year', '=', $v->year)
+                    ->where('month', '=', $v->month)
+                    ->get(['salary']);
+
                 if (isset($result_salary[0])) {
                     $sal = [];
                     foreach ($result_salary as $v2) {
@@ -550,7 +582,11 @@ class MoneyController extends Controller
 
     public function salary()
     {
-        $result = DB::table('t_salary')->orderBy('year')->orderBy('month')->orderBy('day')->get();
+        $result = DB::table('t_salary')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
 
         $data = [];
         if (isset($result[0])) {
@@ -581,7 +617,12 @@ class MoneyController extends Controller
 
     public function credit()
     {
-        $result = DB::table('t_credit')->orderBy('year')->orderBy('month')->orderBy('day')->orderBy('item')->get();
+        $result = DB::table('t_credit')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->orderBy('item')
+            ->get();
 
         $_itemAry = [];
 
@@ -622,7 +663,9 @@ class MoneyController extends Controller
             $data = [];
             $i = 0;
             foreach ($ex_credit as $v) {
-                if (trim($v) == "") {continue;}
+                if (trim($v) == "") {
+                    continue;
+                }
 
 //list($date, $data[$i]['item'], $data[$i]['price']) = explode("/", trim($v));
                 //list($data[$i]['year'], $data[$i]['month'], $data[$i]['day']) = explode("-", trim($date));
@@ -650,7 +693,9 @@ class MoneyController extends Controller
     {
         $ret = [];
         $yenCount = $this->getYenCount($_POST['jogai_money'], explode("/", $_POST['yenType']));
-        foreach ($yenCount as $k => $v) {$ret[] = "yen_" . $k . "|" . $v;}
+        foreach ($yenCount as $k => $v) {
+            $ret[] = "yen_" . $k . "|" . $v;
+        }
         echo implode("/", $ret);
     }
 
@@ -674,7 +719,9 @@ class MoneyController extends Controller
         /////////////////////////
         $beforeDate = date("Y-m-d", strtotime($search_from) - 86400);
         list($year, $month, $day) = explode("-", $beforeDate);
-        $result2 = DB::table('t_money')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->get();
+
+        $result2 = $this->getYmdMoney($year, $month, $day);
+
         $lineSum = $this->Utility->makeLineSum($result2[0]);
         $sagakuBase = array_sum($lineSum[0]);
         $beforeMoney = array_sum($lineSum[0]);
@@ -686,7 +733,9 @@ class MoneyController extends Controller
         for ($i = strtotime($search_from); $i <= strtotime($search_to); $i += 86400) {
             $date = date("Y-m-d", $i);
             list($year, $month, $day) = explode("-", $date);
-            $result = DB::table('t_money')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->get();
+
+            $result = $this->getYmdMoney($year, $month, $day);
+
             $ary = [0 => 'date:' . $date];
             if (isset($result[0])) {
                 $j = 1;
@@ -730,7 +779,12 @@ class MoneyController extends Controller
 
                     list($year, $month, $day) = explode("-", $v['date']);
 
-                    DB::table('t_money')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->update($update);
+//sql in roop
+                    DB::table('t_money')
+                        ->where('year', '=', $year)
+                        ->where('month', '=', $month)
+                        ->where('day', '=', $day)
+                        ->update($update);
                 }
             }
         }
@@ -750,7 +804,9 @@ class MoneyController extends Controller
                 $param = [];
                 $_mt = [];
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
 
                     list($date, $youbi, $total, $spend) = explode("|", trim($v));
                     list($year, $month, $day) = explode("-", $date);
@@ -768,13 +824,17 @@ class MoneyController extends Controller
                     foreach ($v as $month => $v2) {
                         foreach ($v2 as $day => $_ms) {
 
-                            if ($day == 1) {$ary = [];}
+                            if ($day == 1) {
+                                $ary = [];
+                            }
 
                             $ary[] = $_ms;
 
                             $monthTotal[$year][$month][$day] = array_sum($ary);
 
-                            if ($_ms >= 3000) {$over3000[$year][$month][] = $day;}
+                            if ($_ms >= 3000) {
+                                $over3000[$year][$month][] = $day;
+                            }
 
                         }
                     }
@@ -802,7 +862,9 @@ class MoneyController extends Controller
                         $content = file_get_contents($file);
                         $ex_content = explode("\n", mb_convert_encoding($content, "utf8", "sjis-win"));
                         foreach ($ex_content as $v) {
-                            if (trim($v) == "") {continue;}
+                            if (trim($v) == "") {
+                                continue;
+                            }
                             $holiday[] = trim($v);
                         }
                         sort($holiday);
@@ -825,7 +887,9 @@ class MoneyController extends Controller
                             $data .= "<table id='table_history'>";
                             $data .= "<tr>";
                             $data .= "<td class='td_date' style='border : 1px solid #ffffff; background : #ffffff;'></td>";
-                            for ($i = 1; $i <= 12; $i++) {$data .= "<td class='td_month' style='text-align : center;'>" . sprintf("%02d", $i) . "</td>";}
+                            for ($i = 1; $i <= 12; $i++) {
+                                $data .= "<td class='td_month' style='text-align : center;'>" . sprintf("%02d", $i) . "</td>";
+                            }
                             $data .= "</tr>";
                             foreach ($v as $day => $v2) {
                                 $data .= "<tr>";
@@ -836,7 +900,9 @@ class MoneyController extends Controller
 
                                     $bgColor = "";
 
-                                    if ($month % 2 == 0) {$bgColor = "background : #ffffcc;";}
+                                    if ($month % 2 == 0) {
+                                        $bgColor = "background : #ffffcc;";
+                                    }
 
                                     if (in_array(sprintf("%04d", $year) . "-" . sprintf("%02d", $month) . "-" . sprintf("%02d", $day), $holiday)) {
                                         $bgColor = "background : #ffcccc;";
@@ -851,7 +917,9 @@ class MoneyController extends Controller
                                             break;
                                     }
 
-                                    if (trim($total) == "") {$bgColor = "";}
+                                    if (trim($total) == "") {
+                                        $bgColor = "";
+                                    }
 
                                     $data .= "<td style='" . $bgColor . "'>";
                                     $data .= "<div>";
@@ -935,7 +1003,9 @@ class MoneyController extends Controller
             if (!empty($ex_content)) {
                 $param = [];
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     $ex_v = explode("|", trim($v));
                     $param[trim($ex_v[0])] = trim($ex_v[2]);
                 }
@@ -948,7 +1018,9 @@ class MoneyController extends Controller
             }
         }
 
-        if (empty($data)) {exit();}
+        if (empty($data)) {
+            exit();
+        }
 
         $min = min($data) - 30000;
         $max = max($data) + 30000;
@@ -980,7 +1052,9 @@ class MoneyController extends Controller
 
         //-----------------------------------//（前月末の合計金額）
         list($bYear, $bMonth, $bDay) = explode("-", $beforeMonthEnd);
-        $result2 = DB::table('t_money')->where('year', '=', $bYear)->where('month', '=', $bMonth)->where('day', '=', $bDay)->get();
+
+        $result2 = $this->getYmdMoney($bYear, $bMonth, $bDay);
+
         $sum = [];
         $bank = [];
         if (isset($result2[0])) {
@@ -1008,7 +1082,9 @@ class MoneyController extends Controller
                         list(, $yen) = $m;
                         $column[] = $yen;
 
-                        if ($yen == 1) {$column[] = "sum";}
+                        if ($yen == 1) {
+                            $column[] = "sum";
+                        }
 
                     }
 
@@ -1104,7 +1180,9 @@ class MoneyController extends Controller
 
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     list($date, $youbi, $total, $spend) = explode("|", trim($v));
                     $_mt[$date] = $spend;
                 }
@@ -1114,7 +1192,9 @@ class MoneyController extends Controller
 
         ////////////////////////////////////////////
         $salary = [];
-        $result = DB::table('t_salary')->get(['year', 'month', 'day', 'salary']);
+        $result = DB::table('t_salary')
+            ->get(['year', 'month', 'day', 'salary']);
+
         foreach ($result as $v) {
             $salary[$v->year . "-" . $v->month . "-" . $v->day] = $v->salary;
         }
@@ -1123,9 +1203,9 @@ class MoneyController extends Controller
         $Spend = [];
         $_koumoku = [];
         for ($i = strtotime($ymd); $i < (strtotime($ymd) + (86400 * 7)); $i += 86400) {
-            $result = DB::table('t_dailyspend')
-                ->where('year', '=', date("Y", $i))->where('month', '=', date("m", $i))->where('day', '=', date("d", $i))
-                ->get(['price', 'koumoku', 'flag']);
+
+            $result = $this->getYmdSpend(date("Y", $i), date("m", $i), date("d", $i));
+
             if (isset($result[0])) {
                 foreach ($result as $v) {
                     $Spend[date("Y-m-d", $i)][$v->koumoku][] = $v->price;
@@ -1143,8 +1223,12 @@ class MoneyController extends Controller
 
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
-                    if (!isset($koumoku[trim($v)])) {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
+                    if (!isset($koumoku[trim($v)])) {
+                        continue;
+                    }
                     $kakeiKoumoku[] = trim($v);
                 }
             }
@@ -1170,11 +1254,8 @@ class MoneyController extends Controller
             $sal = (isset($salary[date("Y-m-d", $i)])) ? $salary[date("Y-m-d", $i)] : 0;
             $dispTable .= "<td class='align_right bg_green1'>" . ($spent + $sal) . "</td>";
 
-            $result = DB::table('t_credit')
-                ->where('year', '=', date("Y", $i))
-                ->where('month', '=', date("m", $i))
-                ->where('day', '=', date("d", $i))
-                ->get(['year', 'month', 'day', 'item', 'price']);
+            $result = $this->getYmdCredit(date("Y", $i), date("m", $i), date("d", $i));
+
             $credit = 0;
             if (isset($result[0])) {
                 $cre = [];
@@ -1204,10 +1285,8 @@ class MoneyController extends Controller
         return view('money.weeklydisp')
             ->with('ymd', $ymd)
             ->with('dispTable', $dispTable)
-
             ->with('Spend', $Spend)
             ->with('CreditItems', $CreditItems)
-
             ->with('prev', $prev)
             ->with('prev_sunday', $prev_sunday)
             ->with('next', $next)
@@ -1232,7 +1311,9 @@ class MoneyController extends Controller
 
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     list($date, $youbi, $total, $spend) = explode("|", trim($v));
                     $_mt[$date] = $spend;
                 }
@@ -1242,7 +1323,9 @@ class MoneyController extends Controller
 
         ////////////////////////////////////////////
         $salary = [];
-        $result = DB::table('t_salary')->get(['year', 'month', 'day', 'salary']);
+        $result = DB::table('t_salary')
+            ->get(['year', 'month', 'day', 'salary']);
+
         foreach ($result as $v) {
             $salary[$v->year . "-" . $v->month . "-" . $v->day] = $v->salary;
         }
@@ -1257,7 +1340,9 @@ class MoneyController extends Controller
 
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     $kakeiKoumoku[] = trim($v);
                 }
             }
@@ -1269,6 +1354,8 @@ class MoneyController extends Controller
         for ($i = strtotime($ymd); $i < (strtotime($ymd) + (86400 * 7)); $i += 86400) {
             $j = 0;
             foreach ($kakeiKoumoku as $koumoku) {
+
+//sql in roop
                 $result = DB::table('t_dailyspend')
                     ->where('year', '=', date("Y", $i))
                     ->where('month', '=', date("m", $i))
@@ -1278,7 +1365,9 @@ class MoneyController extends Controller
                     ->get(['price']);
                 if (isset($result[0])) {
                     $aaa = [];
-                    foreach ($result as $v) {$aaa[] = $v->price;}
+                    foreach ($result as $v) {
+                        $aaa[] = $v->price;
+                    }
                     $data[date("Y-m-d", $i)][$j]['price'] = array_sum($aaa);
                     $data[date("Y-m-d", $i)][$j]['koumoku'] = $koumoku;
                     $j++;
@@ -1321,11 +1410,8 @@ class MoneyController extends Controller
             $sal = (isset($salary[date("Y-m-d", $i)])) ? $salary[date("Y-m-d", $i)] : 0;
             $inputTable .= "<td class='align_right'>" . ($spent + $sal) . "</td>";
 
-            $result = DB::table('t_credit')
-                ->where('year', '=', date("Y", $i))
-                ->where('month', '=', date("m", $i))
-                ->where('day', '=', date("d", $i))
-                ->get(['year', 'month', 'day', 'item', 'price']);
+            $result = $this->getYmdCredit(date("Y", $i), date("m", $i), date("d", $i));
+
             $credit = 0;
             if (isset($result[0])) {
                 $cre = [];
@@ -1442,7 +1528,9 @@ class MoneyController extends Controller
 
         $data = [];
         foreach ($hiduke as $date) {
-            if (!isset($change[$date])) {continue;}
+            if (!isset($change[$date])) {
+                continue;
+            }
 
             for ($i = 0; $i < 30; $i++) {
                 if (isset($_POST['price'][$date . ':' . $i])) {
@@ -1502,14 +1590,22 @@ class MoneyController extends Controller
             $month = sprintf("%02d", $month);
             $day = sprintf("%02d", $day);
 
-            DB::table('t_dailyspend')->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)->delete();
+            DB::table('t_dailyspend')
+                ->where('year', '=', $year)
+                ->where('month', '=', $month)
+                ->where('day', '=', $day)
+                ->delete();
 
             $input = [];
             $i = 0;
 
             foreach ($ex_spenddata as $k => $v) {
-                if ($k == 0) {continue;}
-                if (trim($v) == "") {continue;}
+                if ($k == 0) {
+                    continue;
+                }
+                if (trim($v) == "") {
+                    continue;
+                }
 
                 $input[$i]['year'] = $year;
                 $input[$i]['month'] = $month;
@@ -1530,9 +1626,209 @@ class MoneyController extends Controller
 
     }
 
+    /**
+     * @param $yearmonth
+     */
+    public function itemsummary($yearmonth)
+    {
+        list($year, $month) = explode("-", $yearmonth);
 
+        if ($month == "X") {
+            //年のみ指定
+            $spend = DB::table('t_dailyspend')
+                ->where('year', '=', $year)
+                ->orderBy('id')->get();
 
+            $credit = DB::table('t_credit')
+                ->where('year', '=', $year)
+                ->orderBy('id')->get();
+        } else {
+            //年月指定
+            $spend = DB::table('t_dailyspend')
+                ->where('year', '=', $year)->where('month', '=', $month)
+                ->orderBy('id')->get();
 
+            $credit = DB::table('t_credit')
+                ->where('year', '=', $year)->where('month', '=', $month)
+                ->orderBy('id')->get();
+        }
+
+        $summary = [];
+
+        foreach ($spend as $v) {
+            $summary[$v->koumoku][] = $v->price;
+        }
+
+        foreach ($credit as $v) {
+            $summary[$v->item][] = $v->price;
+        }
+
+        $_allSum = [];
+        foreach ($summary as $item => $v) {
+            $_allSum[] = array_sum($v);
+        }
+        $allSum = array_sum($_allSum);
+
+        $summary2 = [];
+        $total = [];
+        foreach ($summary as $item => $v) {
+            $summary2[$item]['sum'] = array_sum($v);
+            $summary2[$item]['percent'] = floor(array_sum($v) / $allSum * 100);
+
+            $total[] = array_sum($v);
+        }
+
+        $str = "
+食費
+住居費
+水道光熱費
+支払い
+交通費
+交際費
+通信費
+遊興費
+ジム会費
+教育費
+お賽銭
+雑費
+被服費
+医療費
+美容費
+共済代
+保険料
+税金
+年金
+国民年金基金
+国民健康保険
+手数料
+不明
+臨時収入
+利息
+給付金
+プラス
+";
+
+        $item = [];
+        $ex_str = explode("\n", $str);
+        foreach ($ex_str as $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+            $item[] = trim($v);
+        }
+
+        return view('money.itemsummary')
+            ->with('year', $year)
+            ->with('month', $month)
+            ->with('summary', $summary2)
+            ->with('allSum', $allSum)
+            ->with('item', $item)
+            ->with('total', array_sum($total));
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function repairsummary(Request $request)
+    {
+        $inputs = $request->all();
+
+        $spend = DB::table('t_dailyspend')
+            ->where('year', '=', $inputs['year'])
+            ->orderBy('id')->get();
+
+        $credit = DB::table('t_credit')
+            ->where('year', '=', $inputs['year'])
+            ->orderBy('id')->get();
+
+        $_koumoku = [];
+        foreach ($spend as $v) {
+            $_koumoku[$v->koumoku] = "";
+        }
+        foreach ($credit as $v) {
+            $_koumoku[$v->item] = "";
+        }
+        $koumoku = array_keys($_koumoku);
+
+        return view('money.repairsummary')
+            ->with('year', $inputs['year'])
+            ->with('month', $inputs['month'])
+            ->with('item', $inputs['item'])
+            ->with('koumoku', $koumoku);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function repairsummaryinput(Request $request)
+    {
+        $inputs = $request->all();
+
+        if (trim($inputs['koumoku']) != "") {
+
+            //t_dailyspend
+            $update = [];
+            $update['koumoku'] = $inputs['koumoku'];
+            DB::table('t_dailyspend')->where('koumoku', '=', $inputs['item'])->update($update);
+
+            //t_credit
+            $update = [];
+            $update['item'] = $inputs['koumoku'];
+            DB::table('t_credit')->where('item', '=', $inputs['item'])->update($update);
+        }
+
+        return redirect('/money/' . $inputs['year'] . '-' . $inputs['month'] . '/itemsummary');
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLastMoney()
+    {
+        return DB::table('t_money')
+            ->orderBy('year', 'desc')->orderBy('month', 'desc')->orderBy('day', 'desc')
+            ->take(1)->get();
+    }
+
+    /**
+     * @param String $year
+     * @param String $month
+     * @param String $day
+     * @return mixed
+     */
+    public function getYmdMoney(string $year, string $month, string $day)
+    {
+        return DB::table('t_money')
+            ->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)
+            ->get();
+    }
+
+    /**
+     * @param String $year
+     * @param String $month
+     * @param String $day
+     * @return mixed
+     */
+    public function getYmdCredit(string $year, string $month, string $day)
+    {
+        return DB::table('t_credit')
+            ->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)
+            ->orderBy('id')->get();
+    }
+
+    /**
+     * @param String $year
+     * @param String $month
+     * @param String $day
+     * @return mixed
+     */
+    public function getYmdSpend(string $year, string $month, string $day)
+    {
+        return DB::table('t_dailyspend')
+            ->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)
+            ->orderBy('id')->get();
+    }
 
     public function api($ymd)
     {
@@ -1557,7 +1853,9 @@ class MoneyController extends Controller
             $ex_content = explode("\n", $content);
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     list($date, $youbi, $total, $spend) = explode("|", trim($v));
                     if ($ymd == $date) {
                         $moneydata['total'] = $total;
@@ -1569,11 +1867,7 @@ class MoneyController extends Controller
         }
         //--------------//
 
-        $result = DB::table('t_money')
-            ->where('year', '=', $year)
-            ->where('month', '=', $month)
-            ->where('day', '=', $day)
-            ->get();
+        $result = $this->getYmdMoney($year, $month, $day);
 
         $moneydata['data'] = [];
 
@@ -1581,7 +1875,7 @@ class MoneyController extends Controller
             'yen_10000', 'yen_5000', 'yen_2000', 'yen_1000',
             'yen_500', 'yen_100', 'yen_50', 'yen_10', 'yen_5', 'yen_1',
             'bank_a', 'bank_b', 'bank_c', 'bank_d',
-            'pay_a', 'pay_b', 'pay_c'
+            'pay_a', 'pay_b', 'pay_c', 'pay_d'
         ];
 
         $hand = [];
@@ -1601,22 +1895,12 @@ class MoneyController extends Controller
 
         $moneydata['items'] = [];
 
-        $result3 = DB::table('t_dailyspend')
-            ->where('year', '=', $year)
-            ->where('month', '=', $month)
-            ->where('day', '=', $day)
-            ->get();
-
-        $result4 = DB::table('t_credit')
-            ->where('year', '=', $year)
-            ->where('month', '=', $month)
-            ->where('day', '=', $day)
-            ->get();
-
+        $result3 = $this->getYmdSpend($year, $month, $day);
         foreach ($result3 as $v) {
             $moneydata['items'][] = $v->koumoku . "　" . number_format($v->price);
         }
 
+        $result4 = $this->getYmdCredit($year, $month, $day);
         foreach ($result4 as $v) {
             $moneydata['items'][] = $v->item . "　" . number_format($v->price);
         }
@@ -1624,9 +1908,6 @@ class MoneyController extends Controller
         return view('money.api')
             ->with('moneydata', $moneydata);
     }
-
-
-
 
 
     public function samedayapi($ymd)
@@ -1653,11 +1934,15 @@ class MoneyController extends Controller
             $ex_content = explode("\n", $content);
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
                     list($date, $youbi, $total, $spend) = explode("|", trim($v));
                     list($data_year, $data_month, $data_day) = explode("-", $date);
 
-                    if ($data_day > $day) {continue;}
+                    if ($data_day > $day) {
+                        continue;
+                    }
 
                     if (($data_year . "-" . $data_month) != $YM) {
                         $ary = [];
@@ -1682,41 +1967,38 @@ class MoneyController extends Controller
         rsort($keys);
         foreach ($keys as $v) {
 
-$ary = [];
-$ary['date'] = $v;
-$ary['sum'] = $moneydata2['sameday'][$v];
-$ary['bg'] = (strtotime($v) < strtotime("2019-10-01")) ? 0 : 1;
-$moneydata['data'][] = $ary;
+            $ary = [];
+            $ary['date'] = $v;
+            $ary['sum'] = $moneydata2['sameday'][$v];
+            $ary['bg'] = (strtotime($v) < strtotime("2019-10-01")) ? 0 : 1;
+            $moneydata['data'][] = $ary;
 
         }
 
-/*
-print_r($moneydata);
+        /*
+        print_r($moneydata);
 
-Array
-(
-    [data] => Array
+        Array
         (
-            [0] => Array
+            [data] => Array
                 (
-                    [date] => 2020-05
-                    [sum] => 　149,268
-                )
+                    [0] => Array
+                        (
+                            [date] => 2020-05
+                            [sum] => 　149,268
+                        )
 
-            [1] => Array
-                (
-                    [date] => 2020-04
-                    [sum] => 　150,075
-                )
+                    [1] => Array
+                        (
+                            [date] => 2020-04
+                            [sum] => 　150,075
+                        )
 
-*/
+        */
 
         return view('money.api')
             ->with('moneydata', $moneydata);
     }
-
-
-
 
 
     public function spenditemapi($ymd)
@@ -1744,13 +2026,17 @@ Array
         $price = [];
 
         foreach ($result3 as $v) {
-            if ($v->day > $day) {continue;}
+            if ($v->day > $day) {
+                continue;
+            }
             $ary[$v->year . "-" . $v->month . "-" . $v->day][] = $v->koumoku . "|" . $v->price;
             $price[$v->year . "-" . $v->month . "-" . $v->day][] = $v->price;
         }
 
         foreach ($result4 as $v) {
-            if ($v->day > $day) {continue;}
+            if ($v->day > $day) {
+                continue;
+            }
             $ary[$v->year . "-" . $v->month . "-" . $v->day][] = $v->item . "|" . $v->price;
             $price[$v->year . "-" . $v->month . "-" . $v->day][] = $v->price;
         }
@@ -1758,11 +2044,11 @@ Array
         foreach ($ary as $_ymd => $v) {
 //$moneydata['data'][$_ymd] = "　" . number_format(array_sum($price[$_ymd])) . "\n" . implode("\n", $v);
 
-$ary = [];
-$ary['date'] = $_ymd;
-$ary['sum'] = number_format(array_sum($price[$_ymd]));
-$ary['item'] = implode(";", $v);
-$moneydata['data'] = $ary;
+            $ary = [];
+            $ary['date'] = $_ymd;
+            $ary['sum'] = number_format(array_sum($price[$_ymd]));
+            $ary['item'] = implode(";", $v);
+            $moneydata['data'] = $ary;
 
         }
 
@@ -1773,35 +2059,32 @@ $moneydata['data'] = $ary;
 
 //print_r($moneydata);
 
-/*
-Array
-(
-    [data] => Array
+        /*
+        Array
         (
-            [0] => Array
+            [data] => Array
                 (
-                    [date] => 2020-05-01
-                    [sum] => 27,487
-                    [item] => 食費　862
-国民年金基金　26,625
-                )
+                    [0] => Array
+                        (
+                            [date] => 2020-05-01
+                            [sum] => 27,487
+                            [item] => 食費　862
+        国民年金基金　26,625
+                        )
 
-            [1] => Array
-                (
-                    [date] => 2020-05-02
-                    [sum] => 0
-                    [item] => 食費　0
-                )
+                    [1] => Array
+                        (
+                            [date] => 2020-05-02
+                            [sum] => 0
+                            [item] => 食費　0
+                        )
 
-*/
+        */
 
         return view('money.api')
             ->with('moneydata', $moneydata);
 
     }
-
-
-
 
 
     public function monthlistapi($ymd)
@@ -1826,7 +2109,9 @@ Array
             $ex_content = explode("\n", $content);
             if (!empty($ex_content)) {
                 foreach ($ex_content as $v) {
-                    if (trim($v) == "") {continue;}
+                    if (trim($v) == "") {
+                        continue;
+                    }
 
                     list($date, $youbi, $total, $spend) = explode("|", trim($v));
                     list($data_year, $data_month, $data_day) = explode("-", $date);
@@ -1842,40 +2127,37 @@ Array
         foreach ($keys as $v) {
 //$moneydata['data'][$v] = "　" . number_format(array_sum($ary[$v]));
 
-$ary2 = [];
-$ary2['date'] = $v;
-$ary2['sum'] = number_format(array_sum($ary[$v]));
-$ary2['bg'] = (strtotime($v) < strtotime("2019-10-01")) ? 0 : 1;
-$moneydata['data'][] = $ary2;
+            $ary2 = [];
+            $ary2['date'] = $v;
+            $ary2['sum'] = number_format(array_sum($ary[$v]));
+            $ary2['bg'] = (strtotime($v) < strtotime("2019-10-01")) ? 0 : 1;
+            $moneydata['data'][] = $ary2;
 
         }
 
-/*
-print_r($moneydata);
+        /*
+        print_r($moneydata);
 
-Array
-(
-    [data] => Array
+        Array
         (
-            [0] => Array
+            [data] => Array
                 (
-                    [date] => 2020-05
-                    [sum] => 134,055
-                )
+                    [0] => Array
+                        (
+                            [date] => 2020-05
+                            [sum] => 134,055
+                        )
 
-            [1] => Array
-                (
-                    [date] => 2020-04
-                    [sum] => 510,231
-                )
-*/
+                    [1] => Array
+                        (
+                            [date] => 2020-04
+                            [sum] => 510,231
+                        )
+        */
 
         return view('money.api')
             ->with('moneydata', $moneydata);
     }
-
-
-
 
 
     public function monthitemapi($ymd)
@@ -1920,11 +2202,11 @@ Array
         foreach ($ary as $_ymd => $v) {
 //$moneydata['data'][$_ymd] = "　" . number_format(array_sum($price[$_ymd])) . "\n" . implode("\n", $v);
 
-$ary2 = [];
-$ary2['date'] = $_ymd;
-$ary2['sum'] = number_format(array_sum($price[$_ymd]));
-$ary2['item'] = implode("\n", $v);
-$moneydata['data'][] = $ary2;
+            $ary2 = [];
+            $ary2['date'] = $_ymd;
+            $ary2['sum'] = number_format(array_sum($price[$_ymd]));
+            $ary2['item'] = implode("\n", $v);
+            $moneydata['data'][] = $ary2;
 
         }
 
@@ -1932,37 +2214,34 @@ $moneydata['data'][] = $ary2;
             $moneydata['data'] = "nodata";
         }
 
-/*
-print_r($moneydata);
+        /*
+        print_r($moneydata);
 
-Array
-(
-    [total] => 134,055
-    [data] => Array
+        Array
         (
-            [0] => Array
+            [total] => 134,055
+            [data] => Array
                 (
-                    [date] => 2020-05-01
-                    [sum] => 27,487
-                    [item] => 食費　862
-国民年金基金　26,625
-                )
+                    [0] => Array
+                        (
+                            [date] => 2020-05-01
+                            [sum] => 27,487
+                            [item] => 食費　862
+        国民年金基金　26,625
+                        )
 
-            [1] => Array
-                (
-                    [date] => 2020-05-02
-                    [sum] => 0
-                    [item] => 食費　0
-                )
-*/
+                    [1] => Array
+                        (
+                            [date] => 2020-05-02
+                            [sum] => 0
+                            [item] => 食費　0
+                        )
+        */
 
         return view('money.api')
             ->with('moneydata', $moneydata);
 
     }
-
-
-
 
 
     public function monthkoumokuapi($ymd)
@@ -2002,63 +2281,62 @@ Array
 
         $ary = [];
         $existData = false;
-        $j=0;
+        $j = 0;
         foreach ($price as $koumoku => $v) {
             $sum = array_sum($v);
 
-/*
-            $str = "";
-            $str .= $koumoku;
-            $str .= "|";
-            $str .= $sum;
-            $str .= "|";
-            $str .= ($koumoku == "プラス") ? "" : "（" . ceil($sum / $_total * 100) . "%）";
-            $ary[] = $str;
-*/
+            /*
+                        $str = "";
+                        $str .= $koumoku;
+                        $str .= "|";
+                        $str .= $sum;
+                        $str .= "|";
+                        $str .= ($koumoku == "プラス") ? "" : "（" . ceil($sum / $_total * 100) . "%）";
+                        $ary[] = $str;
+            */
 
-$ary[$j]['item'] = $koumoku;
-$ary[$j]['sum'] = $sum;
-$ary[$j]['percentage'] = ($koumoku == "プラス") ? "" : "（" . ceil($sum / $_total * 100) . "%）";
+            $ary[$j]['item'] = $koumoku;
+            $ary[$j]['sum'] = $sum;
+            $ary[$j]['percentage'] = ($koumoku == "プラス") ? "" : "（" . ceil($sum / $_total * 100) . "%）";
 
             $j++;
 
             $existData = true;
         }
 
-        if ($existData){
+        if ($existData) {
             $moneydata['data'] = $ary;
-        }else{
+        } else {
             $moneydata['data'] = "nodata";
         }
 
-/*
-print_r($moneydata);
+        /*
+        print_r($moneydata);
 
-Array
-(
-    [total] => 134,055
-    [data] => Array
+        Array
         (
-            [0] => Array
+            [total] => 134,055
+            [data] => Array
                 (
-                    [item] => 食費
-                    [sum] => 6738
-                    [percentage] => （6%）
-                )
+                    [0] => Array
+                        (
+                            [item] => 食費
+                            [sum] => 6738
+                            [percentage] => （6%）
+                        )
 
-            [1] => Array
-                (
-                    [item] => 交通費
-                    [sum] => 2183
-                    [percentage] => （2%）
-                )
-*/
+                    [1] => Array
+                        (
+                            [item] => 交通費
+                            [sum] => 2183
+                            [percentage] => （2%）
+                        )
+        */
 
         return view('money.api')
             ->with('moneydata', $moneydata);
 
     }
-
 
 
     public function onedayinputapi($data)
@@ -2068,13 +2346,9 @@ Array
         list($year, $month, $day) = explode("-", $date);
         list($yen_10000, $yen_5000, $yen_2000, $yen_1000, $yen_500, $yen_100, $yen_50, $yen_10, $yen_5, $yen_1) = explode("|", $yen);
 
-        $result2 = DB::table('t_money')
-        ->where('year', '=', $year)
-        ->where('month', '=', $month)
-        ->where('day', '=', $day)
-        ->get(['id']);
+        $result2 = $this->getYmdMoney($year, $month, $day);
 
-        if (isset($result2[0])){
+        if (isset($result2[0])) {
             //update
             $update = [];
             $update['yen_10000'] = $yen_10000;
@@ -2088,8 +2362,10 @@ Array
             $update['yen_5'] = $yen_5;
             $update['yen_1'] = $yen_1;
 
-            DB::table('t_money')->where('id', '=', $result2[0]->id)->update($update);
-        }else{
+            DB::table('t_money')
+                ->where('id', '=', $result2[0]->id)
+                ->update($update);
+        } else {
             //insert
             $insert = [];
 
@@ -2110,13 +2386,10 @@ Array
 
             $yesterday = date("Y-m-d", strtotime($date) - 1);
             list($y_year, $y_month, $y_day) = explode("-", $yesterday);
-            $oneBefore = DB::table('t_money')
-                ->where('year', '=', $y_year)
-                ->where('month', '=', $y_month)
-                ->where('day', '=', $y_day)
-                ->get();
 
-            foreach (['bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b', 'pay_c'] as $copy){
+            $oneBefore = $this->getYmdMoney($y_year, $y_month, $y_day);
+
+            foreach (['bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b', 'pay_c', 'pay_d'] as $copy) {
                 $insert[$copy] = $oneBefore[0]->$copy;
             }
 
@@ -2125,10 +2398,9 @@ Array
     }
 
 
-
     public function monthscoreapi()
     {
-        
+
         $data = [];
         $totalAry = [];
         $file = "/var/www/html/BrainLog/public/mySetting/MoneyTotal.data";
@@ -2137,21 +2409,23 @@ Array
             $ex_content = explode("\n", $content);
 
             if (!empty($ex_content)) {
-                foreach ($ex_content as $k=>$v) {
-                    
-                    if (trim($v) == "") {continue;}
-                    
+                foreach ($ex_content as $k => $v) {
+
+                    if (trim($v) == "") {
+                        continue;
+                    }
+
                     list($date, $youbi, $total, $spend) = explode("|", trim($v));
                     list($data_year, $data_month, $data_day) = explode("-", $date);
-                    
+
                     $totalAry[$date] = $total;
 
-                    if ((int)$data_day == 1){
+                    if ((int)$data_day == 1) {
                         $data[$data_year . "-" . $data_month]['startdate'] = date("Y-m-d", strtotime($date) - 86400);
                     }
 
                     $end_day = date("t", strtotime($data_year . "-" . $data_month . "-01"));
-                    if ($data_day == $end_day){
+                    if ($data_day == $end_day) {
                         $data[$data_year . "-" . $data_month]['end'] = $total;
                     }
                 }
@@ -2159,7 +2433,7 @@ Array
         }
 
         $ymAry = [];
-        foreach ($data as $ym=>$value){
+        foreach ($data as $ym => $value) {
             $data[$ym]['start'] = (isset($totalAry[$value['startdate']])) ? $totalAry[$value['startdate']] : 0;
             $ymAry[] = $ym;
         }
@@ -2169,8 +2443,8 @@ Array
 
         rsort($ymAry);
 
-        $i=0;
-        foreach ($ymAry as $ym){
+        $i = 0;
+        foreach ($ymAry as $ym) {
             $data['data'][$i]['ym'] = $ym;
             $data['data'][$i]['start'] = $data2[$ym]['start'];
             $data['data'][$i]['end'] = (isset($data2[$ym]['end'])) ? $data2[$ym]['end'] : "";
@@ -2183,24 +2457,20 @@ Array
     }
 
 
-
     public function bankapi($bank)
     {
         $moneydata = [];
 
-        $result = DB::table('t_money')
-            ->where('year', '=', '2019')
-            ->where('month', '=', '10')
-            ->where('day', '=', '01')
-            ->get(['id']);
+        $result = $this->getYmdMoney('2019', '10', '01');
 
         $result2 = DB::table('t_money')
             ->where('id', '>=', $result[0]->id)
             ->orderBy('id')
-            ->get(['year', 'month', 'day', 'bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b', 'pay_c']);
+            ->get(['year', 'month', 'day', 'bank_a', 'bank_b', 'bank_c', 'bank_d', 'pay_a', 'pay_b', 'pay_c', 'pay_d']);
+
 
         $bkYen = 0;
-        foreach ($result2 as $k=>$v){
+        foreach ($result2 as $k => $v) {
             $moneydata['data'][$k]['date'] = trim($v->year) . "-" . trim($v->month) . "-" . trim($v->day);
             $moneydata['data'][$k]['yen'] = $v->$bank;
             $moneydata['data'][$k]['mark'] = ($v->$bank == $bkYen) ? 0 : 1;
@@ -2209,6 +2479,35 @@ Array
 
         return view('money.api')
             ->with('moneydata', $moneydata);
+    }
+
+
+    public function timeplaceapi($date)
+    {
+
+        $moneydata = [];
+
+        list($year, $month, $day) = explode("-", $date);
+
+        $result = DB::table('t_timeplace')
+            ->where('year', '=', $year)
+            ->where('month', '=', $month)
+            ->where('day', '=', $day)
+            ->orderBy('time')
+            ->get();
+
+        $moneydata['data'] = [];
+        if (isset($result[0])) {
+            foreach ($result as $k => $v) {
+                $moneydata['data'][$k]['time'] = $v->time;
+                $moneydata['data'][$k]['place'] = $v->place;
+                $moneydata['data'][$k]['price'] = number_format($v->price);
+            }
+        }
+
+        return view('money.api')
+            ->with('moneydata', $moneydata);
+
     }
 
 }
