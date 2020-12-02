@@ -96,4 +96,64 @@ class ApiController extends Controller
         return response()->json(['data' => $response]);
     }
 
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function moneyinsert(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            list($year, $month, $day) = explode("-", $request->all()['date']);
+
+            $data = [
+                'yen_10000' => $request->all()['yen_10000'],
+                'yen_5000' => $request->all()['yen_5000'],
+                'yen_2000' => $request->all()['yen_2000'],
+                'yen_1000' => $request->all()['yen_1000'],
+                'yen_500' => $request->all()['yen_500'],
+                'yen_100' => $request->all()['yen_100'],
+                'yen_50' => $request->all()['yen_50'],
+                'yen_10' => $request->all()['yen_10'],
+                'yen_5' => $request->all()['yen_5'],
+                'yen_1' => $request->all()['yen_1'],
+
+                'bank_a' => $request->all()['bank_a'],
+                'bank_b' => $request->all()['bank_b'],
+                'bank_c' => $request->all()['bank_c'],
+                'bank_d' => $request->all()['bank_d'],
+
+                'pay_a' => $request->all()['pay_a'],
+                'pay_b' => $request->all()['pay_b'],
+                'pay_c' => $request->all()['pay_c'],
+                'pay_d' => $request->all()['pay_d']
+            ];
+
+            $result = DB::table('t_money')
+                ->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)
+                ->get(['id']);
+
+            if (isset($result[0])) {
+                //更新
+                DB::table('t_money')->where('id', $result[0]->id)->update($data);
+            } else {
+                //新規作成
+                $data['year'] = $year;
+                $data['month'] = $month;
+                $data['day'] = $day;
+
+                DB::table('t_money')->insert($data);
+            }
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
+    }
+
 }

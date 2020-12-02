@@ -1,10 +1,12 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Spend extends Model
 {
-    //
+
+    protected $table = 't_dailyspend';
+
 }

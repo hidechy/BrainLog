@@ -21,4 +21,5 @@ Route::namespace('Api')->group(function () {
     Route::post('spenditem', 'ApiController@spenditem');
     Route::post('traindata', 'ApiController@traindata');
     Route::post('timeplace', 'ApiController@timeplace');
+    Route::post('moneyinsert', 'ApiController@moneyinsert');
 });
