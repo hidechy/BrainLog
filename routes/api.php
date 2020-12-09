@@ -22,4 +22,7 @@ Route::namespace('Api')->group(function () {
     Route::post('traindata', 'ApiController@traindata');
     Route::post('timeplace', 'ApiController@timeplace');
     Route::post('moneyinsert', 'ApiController@moneyinsert');
+    Route::post('monthsummary', 'ApiController@monthsummary');
+    Route::post('yearsummary', 'ApiController@yearsummary');
+    Route::post('uccardspend', 'ApiController@uccardspend');
 });
