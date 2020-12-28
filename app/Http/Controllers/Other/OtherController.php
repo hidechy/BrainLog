@@ -346,11 +346,7 @@ class OtherController extends Controller
         }
 
         //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        $result = DB::table('t_article' . date("Y"))
-            ->where('year', '=', date("Y"))
-            ->where('month', '=', date("m"))
-            ->where('day', '=', date("d"))
-            ->get(['id']);
+        $result = DB::table('t_article' . date("Y"))->where('year', '=', date("Y"))->where('month', '=', date("m"))->where('day', '=', date("d"))->get(['id']);
 
         $insert = [];
         $insert['year'] = date("Y");
@@ -573,12 +569,7 @@ class OtherController extends Controller
         //------------------//
         $workTime = [];
         $table_exists = [];
-        $result = DB::table('t_worktime')
-            ->where('year', '=', $thisMonthYear)
-            ->where('month', '=', $thisMonthMonth)
-            ->orderBy('day')
-            ->get(['year', 'month', 'day', 'work_start', 'work_end']);
-
+        $result = DB::table('t_worktime')->where('year', '=', $thisMonthYear)->where('month', '=', $thisMonthMonth)->orderBy('day')->get(['year', 'month', 'day', 'work_start', 'work_end']);
         if (!empty($result)) {
             foreach ($result as $v) {
                 $workTime[$v->year . $v->month . $v->day]['work_start'] = date("H:i", strtotime($v->work_start));
@@ -858,12 +849,7 @@ class OtherController extends Controller
             $data['data'][$k]['industry'] = $result2[0]->industry;
             $data['data'][$k]['market'] = $result2[0]->market;
             $data['data'][$k]['torihikichi'] = $result2[0]->torihikichi;
-
-
             $data['data'][$k]['grade'] = $result2[0]->grade;
-
-
-            $data['data'][$k]['tangen'] = $result2[0]->tangen;
             $data['data'][$k]['percentage'] = $result2[0]->percentage;
 
             $data['data'][$k]['goukei'] = $v->goukei;
@@ -874,14 +860,6 @@ class OtherController extends Controller
 
         foreach ($data['data'] as $k => $v) {
             $data['data'][$k]['average'] = (51 - ceil($v['goukei'] / count($create_count)));
-        }
-
-
-        $data2 = $data;
-        $data = [];
-
-        for ($i = 0; $i < 30; $i++) {
-            $data['data'][$i] = $data2['data'][$i];
         }
 
         echo "<pre>";
@@ -963,10 +941,7 @@ class OtherController extends Controller
             switch ($ex_str[0]) {
                 case "C":
                     //コード指定
-                    $result = DB::table('t_stock')
-                        ->where('code', '=', $ex_str[1])
-                        ->orderBy('id')
-                        ->get();
+                    $result = DB::table('t_stock')->where('code', '=', $ex_str[1])->orderBy('id')->get();
                     break;
 
                 case "CD":
@@ -974,9 +949,7 @@ class OtherController extends Controller
                     $ex_str_1 = explode("]", $ex_str[1]);
                     $result = DB::table('t_stock')
                         ->where('code', '=', $ex_str_1[0])
-                        ->where('created_at', 'like', $ex_str_1[1] . '%')
-                        ->orderBy('id')
-                        ->get();
+                        ->where('created_at', 'like', $ex_str_1[1] . '%')->orderBy('id')->get();
                     break;
             }
 
@@ -1033,5 +1006,71 @@ class OtherController extends Controller
         echo "</pre>";
 
     }
+
+
+    public function route()
+    {
+        return view('other.route');
+    }
+
+    public function routemap()
+    {
+        if (trim($_POST['origin']) == "" || trim($_POST['destination']) == "") {
+            return redirect("/other/route");
+        }
+
+        $jitaku = "千葉県船橋市二子町492-25-101";
+        $jikka = "東京都杉並区善福寺4-22-11";
+
+        $origin = "";
+        switch (trim($_POST['origin'])) {
+            case "自宅":
+                $origin = urlencode($jitaku);
+                break;
+            case "実家":
+                $origin = urlencode($jikka);
+                break;
+            default:
+                $origin = urlencode(trim($_POST['origin']));
+                break;
+        }
+
+        $destination = "";
+        switch (trim($_POST['destination'])) {
+            case "自宅":
+                $destination = urlencode($jitaku);
+                break;
+            case "実家":
+                $destination = urlencode($jikka);
+                break;
+            default:
+                $destination = urlencode(trim($_POST['destination']));
+                break;
+        }
+
+        $url = "https://maps.googleapis.com/maps/api/directions/json?origin=" . $origin . "&destination=" . $destination . "&mode=walking&key=AIzaSyD9PkTM1Pur3YzmO-v4VzS0r8ZZ0jRJTIU";
+        $data = json_decode(file_get_contents($url));
+
+        $distance = $data->routes[0]->legs[0]->distance->text;
+        $duration = $data->routes[0]->legs[0]->duration->text;
+        $start_address = $data->routes[0]->legs[0]->start_address;
+        $end_address = $data->routes[0]->legs[0]->end_address;
+
+        $latlng = implode("/", [
+            $data->routes[0]->legs[0]->start_location->lat,
+            $data->routes[0]->legs[0]->start_location->lng,
+            $data->routes[0]->legs[0]->end_location->lat,
+            $data->routes[0]->legs[0]->end_location->lng
+        ]);
+
+        return view('other.routemap', [
+            'distance' => $distance,
+            'duration' => $duration,
+            'start_address' => $start_address,
+            'end_address' => $end_address,
+            'latlng' => $latlng
+        ]);
+    }
+
 
 }

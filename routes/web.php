@@ -61,9 +61,11 @@ Route::post('/money/weeklyinsert', 'Money\MoneyController@weeklyinsert');
 Route::get('/money/{yearmonth}/monthlydisp', 'Money\MoneyController@monthlydisp');
 Route::post('/money/spendinput', 'Money\MoneyController@spendinput');
 
+
+
 Route::get('/money/{yearmonth}/itemsummary', 'Money\MoneyController@itemsummary');
-Route::post('/money/repairsummary', 'Money\MoneyController@repairsummary');
-Route::post('/money/repairsummaryinput', 'Money\MoneyController@repairsummaryinput');
+
+
 
 Route::get('/money/{yearmonth}/api', 'Money\MoneyController@api');
 Route::get('/money/{yearmonth}/samedayapi', 'Money\MoneyController@samedayapi');
@@ -74,7 +76,6 @@ Route::get('/money/{yearmonth}/monthkoumokuapi', 'Money\MoneyController@monthkou
 Route::get('/money/{data}/onedayinputapi', 'Money\MoneyController@onedayinputapi');
 Route::get('/money/monthscoreapi', 'Money\MoneyController@monthscoreapi');
 Route::get('/money/{bank}/bankapi', 'Money\MoneyController@bankapi');
-Route::get('/money/{data}/timeplaceapi', 'Money\MoneyController@timeplaceapi');
 
 
 
@@ -100,6 +101,17 @@ Route::post('/other/kinmuinput', 'Other\OtherController@kinmuinput');
 Route::get('/other/{yearmonth}/weathermonthapi', 'Other\OtherController@weathermonthapi');
 Route::get('/other/kabukaapi', 'Other\OtherController@kabukaapi');
 Route::get('/other/{str}/kabukaselectapi', 'Other\OtherController@kabukaselectapi');
+
+Route::get('/other/route', 'Other\OtherController@route');
+Route::post('/other/routemap', 'Other\OtherController@routemap');
+
+
+
+
+
+
+
+
 
 
 

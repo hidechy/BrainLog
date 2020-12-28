@@ -275,6 +275,7 @@ class ApiController extends Controller
 交際費
 雑費
 教育費
+機材費
 被服費
 医療費
 美容費
@@ -328,6 +329,130 @@ class ApiController extends Controller
                 $date = strtr(trim($ex_val[1]), ['/' => '-']);
                 $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
                 $response[] = ['item' => trim($ex_val[3]), 'price' => $price, 'date' => $date];
+            }
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function stockdataexists(Request $request)
+    {
+        list($date,) = explode(" ", $request->date);
+        $result = DB::table('t_stock')->where('created_at', 'like', $date . '%')->first();
+        return response()->json(['data' => (!empty($result)) ? 1 : 0]);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function stockdatedata(Request $request)
+    {
+        $response = [];
+
+        list($date,) = explode(" ", $request->date);
+        $result = DB::table('t_stock')->where('created_at', 'like', $date . " " . $request->time . '%')->orderBy('id')->get();
+
+        foreach ($result as $v) {
+            $str = $v->rank . "|";
+            $str .= $v->code . "|";
+            $str .= $v->company . "（" . $v->industry . "）|";
+            $str .= $v->grade . "|";
+            $str .= $v->torihikichi . "|";
+            $str .= (trim($v->tangen) == "") ? '-' : $v->tangen;
+            $str .= "|";
+            $str .= $v->market;
+            $str .= "|";
+            $str .= $v->isCountOverTwo;
+            $str .= "|";
+            $str .= $v->isUpper;
+
+            $response[] = $str;
+        }
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function stockgradedata(Request $request)
+    {
+        $response = [];
+        $result = DB::table('t_stock')->where('grade', '=', $request->grade)->orderBy('id', 'desc')->get();
+        $ary = [];
+        foreach ($result as $v) {
+            if (isset($ary[$v->code])) {
+                continue;
+            }
+
+            $ymd = date("Y-m-d", strtotime($v->created_at));
+            $hour = date("H", strtotime($v->created_at));
+
+            $str = $v->code . "|";
+            $str .= $v->company . "|";
+            $str .= $v->industry . "|";
+            $str .= $ymd . " " . $hour . "|";
+            $str .= $v->torihikichi . "|";
+            $str .= (trim($v->tangen) == "") ? '-' : $v->tangen;
+            $str .= "|";
+            $str .= $v->market;
+            $str .= "|";
+            $str .= $v->isCountOverTwo;
+            $str .= "|";
+            $str .= $v->isUpper;
+
+            $response[] = $str;
+
+            $ary[$v->code] = '';
+        }
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function stockcodedata(Request $request)
+    {
+        $response = [];
+
+        $result = DB::table('t_stock')->where('code', '=', $request->code)->orderBy('id')->get();
+
+        if (isset($result[0])) {
+            $response['code'] = $result[0]->code;
+            $response['company'] = $result[0]->company;
+            $response['industry'] = $result[0]->industry;
+            $response['tangen'] = $result[0]->tangen;
+            $response['market'] = $result[0]->market;
+            $response['isCountOverTwo'] = $result[0]->isCountOverTwo;
+            $response['isUpper'] = $result[0]->isUpper;
+            $response['grade'] = $result[0]->grade;
+
+            $tmp = [];
+            foreach ($result as $v) {
+                $ymd = date("Y-m-d", strtotime($v->created_at));
+                $hour = date("H", strtotime($v->created_at));
+                $tmp[$ymd][$hour] = $v->torihikichi;
+            }
+
+            $start = strtotime("2020-09-29");
+            $end = strtotime(date("Y-m-d"));
+
+            for ($i = $start; $i <= $end; $i += 86400) {
+                $date = date("Y-m-d", $i);
+
+                $price = [];
+                for ($j = 9; $j <= 15; $j++) {
+                    $value = (isset($tmp[$date][sprintf("%02d", $j)])) ? $tmp[$date][sprintf("%02d", $j)] : '-';
+                    $price[] = $value;
+                }
+
+                $response['price'][] = $date . "|" . implode("|", $price);
             }
         }
 

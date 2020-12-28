@@ -26,7 +26,7 @@ $public_path = implode("/" , $ex_phpself);
         <img src="{{ $public_path }}/img/souvenir.png" id="btn_other_souvenir">
         <img src="{{ $public_path }}/img/old.png" id="btn_article_old">
 
-
+        <img src="{{ $public_path }}/img/route.png" id="btn_other_route">
 
 <?php
 /*
@@ -54,6 +54,7 @@ $public_path = implode("/" , $ex_phpself);
     #btn_affi_index {cursor : pointer; margin : 2px; }
     #btn_temple_index {cursor : pointer; margin : 2px; }
     #btn_other_taging {cursor : pointer; margin : 2px; }
+    #btn_other_route {cursor : pointer; margin : 2px; }
     -->
     </style>
 
@@ -101,6 +102,10 @@ $public_path = implode("/" , $ex_phpself);
 
     $("#btn_other_taging").width(38);
     $("#btn_other_taging").click(function (){location.href = "{{ url($tagingUrl) }}";});
+
+    $("#btn_other_route").width(38);
+    $("#btn_other_route").click(function (){location.href = "{{ url('/other/route') }}";});
+
     -->
     </script>
 

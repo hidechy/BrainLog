@@ -1932,7 +1932,15 @@ foreach ($ex_str as $v){
 
             $ary = [];
             $ary['date'] = $_ymd;
-            $ary['sum'] = number_format(array_sum($price[$_ymd]));
+//            $ary['sum'] = number_format(array_sum($price[$_ymd]));
+
+$ary['sum'] = array_sum($price[$_ymd]);
+
+
+
+
+
+
             $ary['item'] = implode(";", $v);
             $moneydata['data'] = $ary;
 
