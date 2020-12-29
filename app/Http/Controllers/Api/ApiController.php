@@ -440,7 +440,7 @@ class ApiController extends Controller
                 $tmp[$ymd][$hour] = $v->torihikichi;
             }
 
-            $start = strtotime("2020-09-29");
+            $start = strtotime($request->date . "-01");
             $end = strtotime(date("Y-m-d"));
 
             for ($i = $start; $i <= $end; $i += 86400) {
