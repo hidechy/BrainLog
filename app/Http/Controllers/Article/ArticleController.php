@@ -310,6 +310,42 @@ class ArticleController extends Controller
         }
         //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+        /////--------------------------------/////
+        $fortune_good = [];
+        $fortune_bad = [];
+
+        list($year, ,) = explode("-", $calStartDate);
+
+        $result = DB::table("t_article" . $year)
+            ->where('article', 'like', '%吉日-高島易団%')
+            ->orderBy('id')
+            ->get();
+
+        foreach ($result as $v) {
+            $ex_v = explode("\n", $v->article);
+            $_goodline = 0;
+            $_badline = 0;
+            foreach ($ex_v as $lineno => $linevalue) {
+                if (preg_match("/吉日-高島易団/", trim($linevalue))) {
+                    $_goodline = $lineno;
+                }
+                if (preg_match("/注意日-高島易団/", trim($linevalue))) {
+                    $_badline = $lineno;
+                }
+            }
+
+            $ex_good_value = explode("、", $ex_v[$_goodline + 1]);
+            foreach ($ex_good_value as $day) {
+                $fortune_good[$v->year . "-" . $v->month . "-" . sprintf("%02d", strtr($day, ['日' => '']))] = '';
+            }
+
+            $ex_bad_value = explode("、", $ex_v[$_badline + 1]);
+            foreach ($ex_bad_value as $day) {
+                $fortune_bad[$v->year . "-" . $v->month . "-" . sprintf("%02d", strtr($day, ['日' => '']))] = '';
+            }
+        }
+        /////--------------------------------/////
+
         return view('article.index')
             ->with('ym_flag', $ym_flag)
             ->with('calDate', $calDate)
@@ -322,7 +358,9 @@ class ArticleController extends Controller
             ->with('user', $this->user)
             ->with('article_num', $article_num)
             ->with('useDevice', $useDevice)
-            ->with('WorkTime', $WorkTime);
+            ->with('WorkTime', $WorkTime)
+            ->with('fortune_good', $fortune_good)
+            ->with('fortune_bad', $fortune_bad);
     }
 
     public function display($dispdate = null)
