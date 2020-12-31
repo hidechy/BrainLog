@@ -76,6 +76,7 @@ class TempleGohonzonSeeder extends Seeder
 明治神宮	明治天皇
 靖国神社	護国の英霊
 雷電稲荷神社	受持神
+玉川神社	伊弉諾尊
 ";
 
         $ex_str = explode("\n", $str);
