@@ -354,6 +354,7 @@ class ApiController extends Controller
     {
         $response = [];
 
+        //日次のデータを順位順に取得
         list($date,) = explode(" ", $request->date);
         $result = DB::table('t_stock')->where('created_at', 'like', $date . " " . $request->time . '%')->orderBy('id')->get();
 
@@ -365,10 +366,8 @@ class ApiController extends Controller
             $str .= $v->torihikichi . "|";
             $str .= (trim($v->tangen) == "") ? '-' : $v->tangen;
             $str .= "|";
-            $str .= $v->market;
-            $str .= "|";
-            $str .= $v->isCountOverTwo;
-            $str .= "|";
+            $str .= $v->market . "|";
+            $str .= $v->isCountOverTwo . "|";
             $str .= $v->isUpper;
 
             $response[] = $str;
@@ -383,6 +382,8 @@ class ApiController extends Controller
     public function stockgradedata(Request $request)
     {
         $response = [];
+
+        //gradeのデータを最新日付優先で取得
         $result = DB::table('t_stock')->where('grade', '=', $request->grade)->orderBy('id', 'desc')->get();
         $ary = [];
         foreach ($result as $v) {
@@ -390,20 +391,15 @@ class ApiController extends Controller
                 continue;
             }
 
-            $ymd = date("Y-m-d", strtotime($v->created_at));
-            $hour = date("H", strtotime($v->created_at));
-
             $str = $v->code . "|";
             $str .= $v->company . "|";
             $str .= $v->industry . "|";
-            $str .= $ymd . " " . $hour . "|";
+            $str .= date("Y-m-d H", strtotime($v->created_at)) . "|";
             $str .= $v->torihikichi . "|";
             $str .= (trim($v->tangen) == "") ? '-' : $v->tangen;
             $str .= "|";
-            $str .= $v->market;
-            $str .= "|";
-            $str .= $v->isCountOverTwo;
-            $str .= "|";
+            $str .= $v->market . "|";
+            $str .= $v->isCountOverTwo . "|";
             $str .= $v->isUpper;
 
             $response[] = $str;
@@ -421,6 +417,7 @@ class ApiController extends Controller
     {
         $response = [];
 
+        //codeのデータを日付、時間順に取得
         $result = DB::table('t_stock')->where('code', '=', $request->code)->orderBy('id')->get();
 
         if (isset($result[0])) {
@@ -429,19 +426,29 @@ class ApiController extends Controller
             $response['industry'] = $result[0]->industry;
             $response['tangen'] = $result[0]->tangen;
             $response['market'] = $result[0]->market;
+
+            //全codeデータ、同じ値が入っている
             $response['isCountOverTwo'] = $result[0]->isCountOverTwo;
             $response['isUpper'] = $result[0]->isUpper;
+
+            //登場当初のgrade
             $response['grade'] = $result[0]->grade;
 
+            //--------------------------------------//
+            //日付、時間のprice
             $tmp = [];
             foreach ($result as $v) {
                 $ymd = date("Y-m-d", strtotime($v->created_at));
                 $hour = date("H", strtotime($v->created_at));
                 $tmp[$ymd][$hour] = $v->torihikichi;
+
+                $response['lastPrice'] = $v->torihikichi;
             }
 
             $start = strtotime($request->date . "-01");
-            $end = strtotime(date("Y-m-d"));
+
+            $monthEnd = date("t", strtotime($request->date));
+            $end = strtotime(date($request->date . "-" . $monthEnd));
 
             for ($i = $start; $i <= $end; $i += 86400) {
                 $date = date("Y-m-d", $i);
@@ -454,6 +461,205 @@ class ApiController extends Controller
 
                 $response['price'][] = $date . "|" . implode("|", $price);
             }
+            //--------------------------------------//
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function stockindustrylistdata(Request $request)
+    {
+        $response = [];
+
+        //industryの合計sumの多い順に取得
+        $sql = " select industry,sum(point) sum from t_stock group by industry order by sum desc; ";
+        $result = DB::select($sql);
+
+        $i = 0;
+        foreach ($result as $v) {
+            if (trim($v->industry) == "") {
+                continue;
+            }
+
+            $response[$i]['industry'] = $v->industry;
+            $response[$i]['sum'] = $v->sum;
+            $i++;
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function stockindustrydata(Request $request)
+    {
+        $response = [];
+
+        $sql = " select ";
+        $sql .= " code, company, grade, market, tangen, sum(point) sum ";
+        $sql .= " from ";
+        $sql .= " t_stock ";
+        $sql .= " where ";
+        $sql .= " industry = '" . $request->industry . "' ";
+        $sql .= " group by code, company, grade, market, tangen ";
+        $sql .= " order by sum desc; ";
+
+        $result = DB::select($sql);
+
+        $i = 0;
+        foreach ($result as $v) {
+
+            if ($i > 9) {
+                break;
+            }
+
+            if (isset($request->grade)) {
+                if ($request->grade != $v->grade) {
+                    continue;
+                }
+            }
+
+            $response[$i]['code'] = $v->code;
+            $response[$i]['company'] = $v->company;
+            $response[$i]['market'] = $v->market;
+            $response[$i]['tangen'] = $v->tangen;
+            $response[$i]['sum'] = $v->sum;
+
+            //codeの最新のレコードを取得
+            $result2 = DB::table('t_stock')->where('code', '=', $v->code)->orderBy('id', 'desc')->first();
+            $response[$i]['price'] = $result2->torihikichi;
+            $response[$i]['grade'] = $result2->grade;
+            $response[$i]['date'] = date("Y-m-d H", strtotime($result2->created_at));
+
+            //全レコード同じ値が入っている
+            $response[$i]['isUpper'] = $result2->isUpper;
+
+            $i++;
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function stockpricedata(Request $request)
+    {
+
+        $response = [];
+
+        ////////////////////////////////////////
+        $start = strtotime("2020-09-29");
+        $end = strtotime(date("Y-m-d"));
+
+        $_threedays = [];
+        for ($i = $end; $i >= $start; $i -= 86400) {
+            $date = date("Y-m-d", $i);
+
+            $result = DB::table('t_stock')->where('created_at', 'like', $date . '%')->first();
+            if (!empty($result)) {
+                $_threedays[] = $date;
+            }
+        }
+
+        $threedays = [
+            $_threedays[0],
+            $_threedays[1],
+            $_threedays[2]
+        ];
+
+        sort($threedays);
+        ////////////////////////////////////////
+
+        $start2 = $threedays[0] . " 00:00:00";
+        $end2 = $threedays[count($threedays) - 1] . " 23:59:59";
+
+        $sql = "";
+        $sql .= " select * from t_stock where (created_at >='" . $start2 . "' and created_at < '" . $end2 . "') ";
+        $sql .= " and torihikichi < " . $request->price . " ";
+        $sql .= " and tangen is not null and tangen !='' ";
+        $sql .= " order by torihikichi desc, id desc; ";
+
+        $result = DB::select($sql);
+
+        $_code = [];
+        $_answer = [];
+        $_priceguide = [];
+        foreach ($result as $v) {
+            if (in_array($v->code, $_code)) {
+                continue;
+            }
+
+            $_priceguide[$v->torihikichi] = "";
+
+            $ary = [];
+            $ary[] = $v->code;
+            $ary[] = $v->market;
+            $ary[] = $v->company;
+
+            $ary[] = $v->torihikichi;//最新日時のデータ
+            $ary[] = $v->grade;//最新日時のデータ
+
+            $ary[] = $v->industry;
+            $ary[] = $v->tangen;
+            $ary[] = $v->isCountOverTwo;
+            $ary[] = $v->isUpper;
+
+            $ary[] = date("Y-m-d H", strtotime($v->created_at));
+
+            $_answer[$v->torihikichi][] = implode("|", $ary);
+
+            $_code[] = $v->code;
+        }
+
+        $keys = array_keys($_priceguide);
+        rsort($keys);
+
+        $i = 0;
+        foreach ($keys as $price) {
+            foreach ($_answer[$price] as $v) {
+                $response[$i] = $v;
+                $i++;
+            }
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function stockalldata(Request $request)
+    {
+        $response = [];
+
+        //codeのデータを日時順に取得
+        $result = DB::table('t_stock')->where('code', '=', $request->code)->orderBy('id')->get();
+
+        $_lastPrice = 99999;
+        foreach ($result as $k => $v) {
+
+            //最新レコードの値
+            $response['code'] = $v->code;
+            $response['market'] = $v->market;
+            $response['company'] = $v->company;
+            $response['industry'] = $v->industry;
+            $response['tangen'] = $v->tangen;
+            $response['grade'] = $v->grade;
+
+            //全レコード、各行ずつ
+            $ary = [];
+            $ary[] = date("Y-m-d H", strtotime($v->created_at));
+            $ary[] = $v->torihikichi;
+            $ary[] = ($v->torihikichi > $_lastPrice) ? 1 : 0;
+            $response['price'][$k] = implode("|", $ary);
+
+            $_lastPrice = $v->torihikichi;
         }
 
         return response()->json(['data' => $response]);

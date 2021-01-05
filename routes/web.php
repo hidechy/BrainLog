@@ -139,3 +139,12 @@ Route::post('/other/routemap', 'Other\OtherController@routemap');
 Route::get('/movie/input', 'Movie\MovieController@input');
 Route::post('/movie/datainput', 'Movie\MovieController@datainput');
 Route::get('/movie/api', 'Movie\MovieController@api');
+
+
+
+//[anken]
+Route::get('/anken/index', 'Anken\AnkenController@index');
+Route::get('/anken/create', 'Anken\AnkenController@create');
+Route::post('/anken/store', 'Anken\AnkenController@store');
+Route::get('/anken/edit', 'Anken\AnkenController@edit');
+Route::post('/anken/update', 'Anken\AnkenController@update');

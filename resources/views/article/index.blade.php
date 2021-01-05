@@ -71,8 +71,12 @@ $sevenDaysAgoLink = "/article/index#" . $sevenDaysAgo;
     <table border="0" cellspacing="2" cellpadding="2" id="tbl_article_calender">
         @for ($i=0 ; $i<200 ; $i++)
             <?php
+            $_sanpai_date = "";
+
             if (!empty($calDate[$i])) {
                 $date = $calDate[$i];
+
+                $_sanpai_date = $date;
 
                 $_workTime = (isset($WorkTime[$date])) ? $WorkTime[$date] : "";
             } else {
@@ -178,8 +182,14 @@ $sevenDaysAgoLink = "/article/index#" . $sevenDaysAgo;
                             ?>
 
                             <div>{{ $_articleNum }}</div>
-                        @endif
 
+                            @if(isset($sanpai[$_sanpai_date]))
+                                <div>
+                                    <i class="fab fa-wolf-pack-battalion" style="color:#ff9000;font-size:16px;"></i>
+                                </div>
+                            @endif
+
+                        @endif
                     </td>
 
                     @if ($i%7==6)

@@ -18,6 +18,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::namespace('Api')->group(function () {
+
+    //money
     Route::post('spenditem', 'ApiController@spenditem');
     Route::post('traindata', 'ApiController@traindata');
     Route::post('timeplace', 'ApiController@timeplace');
@@ -25,8 +27,14 @@ Route::namespace('Api')->group(function () {
     Route::post('monthsummary', 'ApiController@monthsummary');
     Route::post('yearsummary', 'ApiController@yearsummary');
     Route::post('uccardspend', 'ApiController@uccardspend');
+
+    //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');
     Route::post('stockdatedata', 'ApiController@stockdatedata');
     Route::post('stockgradedata', 'ApiController@stockgradedata');
     Route::post('stockcodedata', 'ApiController@stockcodedata');
+    Route::post('stockindustrylistdata', 'ApiController@stockindustrylistdata');
+    Route::post('stockindustrydata', 'ApiController@stockindustrydata');
+    Route::post('stockpricedata', 'ApiController@stockpricedata');
+    Route::post('stockalldata', 'ApiController@stockalldata');
 });

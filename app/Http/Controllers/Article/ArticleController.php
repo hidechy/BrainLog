@@ -346,6 +346,14 @@ class ArticleController extends Controller
         }
         /////--------------------------------/////
 
+        //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+        $sanpai = [];//参拝
+        $result = DB::table('t_temple')->get();
+        foreach ($result as $v) {
+            $sanpai[$v->year . "-" . $v->month . "-" . $v->day] = "";
+        }
+        //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+
         return view('article.index')
             ->with('ym_flag', $ym_flag)
             ->with('calDate', $calDate)
@@ -360,7 +368,8 @@ class ArticleController extends Controller
             ->with('useDevice', $useDevice)
             ->with('WorkTime', $WorkTime)
             ->with('fortune_good', $fortune_good)
-            ->with('fortune_bad', $fortune_bad);
+            ->with('fortune_bad', $fortune_bad)
+            ->with('sanpai', $sanpai);
     }
 
     public function display($dispdate = null)
