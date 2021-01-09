@@ -287,6 +287,7 @@ class ApiController extends Controller
 年金
 国民年金基金
 国民健康保険
+アイアールシー
 手数料
 不明
 利息
@@ -317,6 +318,8 @@ class ApiController extends Controller
         list($year, $month, $day) = explode("-", $request->date);
 
         $table = 't_article' . $year;
+
+        //------------------------------------------//
         $result = DB::table($table)
             ->where('year', $year)->where('month', $month)
             ->where('article', 'like', '%ユーシーカード内訳%')->first(['article']);
@@ -328,9 +331,44 @@ class ApiController extends Controller
                 $ex_val = explode("\t", $val);
                 $date = strtr(trim($ex_val[1]), ['/' => '-']);
                 $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
-                $response[] = ['item' => trim($ex_val[3]), 'price' => $price, 'date' => $date];
+                $response[] = ['item' => trim($ex_val[3]), 'price' => $price, 'date' => $date, 'kind' => 'uc'];
             }
         }
+        //------------------------------------------//
+
+        //------------------------------------------//
+        $result = DB::table($table)
+            ->where('year', $year)->where('month', $month)
+            ->where('article', 'like', '%楽天カード内訳%')->first(['article']);
+
+        $ex_result = explode("\n", $result->article);
+        foreach ($ex_result as $v) {
+            $val = trim(strip_tags($v));
+            if (preg_match("/本人/", trim($val))) {
+                $ex_val = explode("\t", $val);
+                $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
+                $response[] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
+            }
+        }
+        //------------------------------------------//
+
+        //------------------------------------------//
+        $result = DB::table($table)
+            ->where('year', $year)->where('month', $month)
+            ->where('article', 'like', '%住友カード内訳%')->first(['article']);
+
+        $ex_result = explode("\n", $result->article);
+        foreach ($ex_result as $v) {
+            $val = trim(strip_tags($v));
+            if (preg_match("/◎/", trim($val))) {
+                $ex_val = explode("\t", $val);
+                $date = strtr("20" . trim($ex_val[0]), ['/' => '-']);
+                $price = strtr(trim($ex_val[2]), [',' => '']);
+                $response[] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
+            }
+        }
+        //------------------------------------------//
 
         return response()->json(['data' => $response]);
     }
