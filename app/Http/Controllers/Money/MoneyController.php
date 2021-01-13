@@ -106,10 +106,10 @@ class MoneyController extends Controller
             $DailySpend .= "<div style='background: #ddffdd;'>" . sprintf("%02d", $i) . "</div>";
 
             if (isset($_mt[$thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)])) {
-                $DailySpend .= "<div>" . $_mt[$thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)] . "</div>";
+                $DailySpend .= "<div>" . number_format($_mt[$thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)]) . "</div>";
 
                 $spent = [];
-                $DailySpend .= "<table border='0' cellspacing='2' cellpadding='2'>";
+                $DailySpend .= "<table border='0' cellspacing='2' cellpadding='2' style='width: 100%;'>";
 
                 //----------------------------------------------------//
                 $result3 = DB::table('t_salary')
@@ -121,7 +121,7 @@ class MoneyController extends Controller
 
                 if (isset($result3)) {
                     foreach ($result3 as $v) {
-                        $DailySpend .= "<tr><td>収入</td><td>" . $v->salary . "<td></tr>";
+                        $DailySpend .= "<tr><td>収入</td><td style='text-align: right;'>" . number_format($v->salary) . "<td></tr>";
                         $spent[] = ($v->salary * -1);
                     }
                 }
@@ -137,7 +137,7 @@ class MoneyController extends Controller
 
                 if (isset($result)) {
                     foreach ($result as $v) {
-                        $DailySpend .= "<tr><td>" . $v->koumoku . "</td><td>" . $v->price . "</td></tr>";
+                        $DailySpend .= "<tr><td>" . $v->koumoku . "</td><td style='text-align: right;'>" . number_format($v->price) . "</td></tr>";
                         $spent[] = $v->price;
                         $DisplayKoumoku[$v->koumoku][] = $v->price;
                     }
@@ -154,7 +154,7 @@ class MoneyController extends Controller
 
                 if (isset($result2)) {
                     foreach ($result2 as $v) {
-                        $DailySpend .= "<tr><td>" . $v->item . "</td><td>" . $v->price . "<td></tr>";
+                        $DailySpend .= "<tr><td>" . $v->item . "</td><td style='text-align: right;'>" . number_format($v->price) . "<td></tr>";
                         $spent[] = $v->price;
                         $DisplayKoumoku[$v->item][] = $v->price;
                     }
@@ -1653,6 +1653,7 @@ $str = "
 年金
 国民年金基金
 国民健康保険
+アイアールシー
 手数料
 不明
 利息
