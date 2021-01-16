@@ -27,6 +27,8 @@ Route::namespace('Api')->group(function () {
     Route::post('monthsummary', 'ApiController@monthsummary');
     Route::post('yearsummary', 'ApiController@yearsummary');
     Route::post('uccardspend', 'ApiController@uccardspend');
+    Route::post('allcardspend', 'ApiController@allcardspend');
+    Route::post('carditemlist', 'ApiController@carditemlist');
 
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');

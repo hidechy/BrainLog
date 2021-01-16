@@ -269,6 +269,7 @@ class ApiController extends Controller
 住居費
 交通費
 支払い
+credit
 遊興費
 ジム会費
 お賽銭
@@ -316,22 +317,25 @@ class ApiController extends Controller
         $response = [];
 
         list($year, $month, $day) = explode("-", $request->date);
-
         $table = 't_article' . $year;
+
+        $ary = [];
 
         //------------------------------------------//
         $result = DB::table($table)
             ->where('year', $year)->where('month', $month)
             ->where('article', 'like', '%ユーシーカード内訳%')->first(['article']);
 
-        $ex_result = explode("\n", $result->article);
-        foreach ($ex_result as $v) {
-            $val = trim(strip_tags($v));
-            if (preg_match("/円.+円/", trim($val))) {
-                $ex_val = explode("\t", $val);
-                $date = strtr(trim($ex_val[1]), ['/' => '-']);
-                $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
-                $response[] = ['item' => trim($ex_val[3]), 'price' => $price, 'date' => $date, 'kind' => 'uc'];
+        if (isset($result->article)) {
+            $ex_result = explode("\n", $result->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/円.+円/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr(trim($ex_val[1]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
+                    $ary[$date][] = ['item' => trim($ex_val[3]), 'price' => $price, 'date' => $date, 'kind' => 'uc'];
+                }
             }
         }
         //------------------------------------------//
@@ -341,14 +345,16 @@ class ApiController extends Controller
             ->where('year', $year)->where('month', $month)
             ->where('article', 'like', '%楽天カード内訳%')->first(['article']);
 
-        $ex_result = explode("\n", $result->article);
-        foreach ($ex_result as $v) {
-            $val = trim(strip_tags($v));
-            if (preg_match("/本人/", trim($val))) {
-                $ex_val = explode("\t", $val);
-                $date = strtr(trim($ex_val[0]), ['/' => '-']);
-                $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
-                $response[] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
+        if (isset($result->article)) {
+            $ex_result = explode("\n", $result->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/本人/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
+                    $ary[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
+                }
             }
         }
         //------------------------------------------//
@@ -358,20 +364,232 @@ class ApiController extends Controller
             ->where('year', $year)->where('month', $month)
             ->where('article', 'like', '%住友カード内訳%')->first(['article']);
 
-        $ex_result = explode("\n", $result->article);
-        foreach ($ex_result as $v) {
-            $val = trim(strip_tags($v));
-            if (preg_match("/◎/", trim($val))) {
-                $ex_val = explode("\t", $val);
-                $date = strtr("20" . trim($ex_val[0]), ['/' => '-']);
-                $price = strtr(trim($ex_val[2]), [',' => '']);
-                $response[] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
+        if (isset($result->article)) {
+            $ex_result = explode("\n", $result->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/◎/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr("20" . trim($ex_val[0]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[2]), [',' => '']);
+                    $ary[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
+                }
             }
         }
         //------------------------------------------//
 
+        $keys = array_keys($ary);
+        sort($keys);
+
+        foreach ($keys as $key) {
+            foreach ($ary[$key] as $v) {
+                $response[] = $v;
+            }
+        }
+
         return response()->json(['data' => $response]);
     }
+
+    /**
+     * @param Request $request
+     */
+    public function allcardspend()
+    {
+        $response = [];
+
+        ///////////////////////////////////////////////
+        $_tables = [];
+
+        $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = database();";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            if (preg_match("/t_article/", $v->table_name)) {
+                $_tables[] = $v->table_name;
+            }
+        }
+        ///////////////////////////////////////////////
+
+        $ary = [];
+
+        //------------------------------------------//
+        $_sql = [];
+        foreach ($_tables as $table) {
+            $_sql[] = " select article from " . $table . " where article like '%ユーシーカード内訳%' ";
+        }
+        $sql = implode(" union all ", $_sql);
+        $result = DB::select($sql);
+
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/円.+円/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr(trim($ex_val[1]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
+                    $ary[$date][] = ['item' => trim($ex_val[3]), 'price' => $price, 'date' => $date, 'kind' => 'uc'];
+                }
+            }
+        }
+        //------------------------------------------//
+
+        //------------------------------------------//
+        $_sql = [];
+        foreach ($_tables as $table) {
+            $_sql[] = " select article from " . $table . " where article like '%楽天カード内訳%' ";
+        }
+        $sql = implode(" union all ", $_sql);
+        $result = DB::select($sql);
+
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/本人/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
+                    $ary[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
+                }
+            }
+        }
+        //------------------------------------------//
+
+        //------------------------------------------//
+        $_sql = [];
+        foreach ($_tables as $table) {
+            $_sql[] = " select article from " . $table . " where article like '%住友カード内訳%' ";
+        }
+        $sql = implode(" union all ", $_sql);
+        $result = DB::select($sql);
+
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/◎/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr("20" . trim($ex_val[0]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[2]), [',' => '']);
+                    $ary[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
+                }
+            }
+        }
+        //------------------------------------------//
+
+        $keys = array_keys($ary);
+        sort($keys);
+
+        foreach ($keys as $key) {
+            foreach ($ary[$key] as $v) {
+                $response[] = $v;
+            }
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function carditemlist()
+    {
+        $response = [];
+
+        ///////////////////////////////////////////////
+        $_tables = [];
+
+        $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = database();";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            if (preg_match("/t_article/", $v->table_name)) {
+                $_tables[] = $v->table_name;
+            }
+        }
+        ///////////////////////////////////////////////
+
+        $ary = [];
+
+        //------------------------------------------//
+        $_sql = [];
+        foreach ($_tables as $table) {
+            $_sql[] = " select * from " . $table . " where article like '%ユーシーカード内訳%' ";
+        }
+        $sql = implode(" union all ", $_sql) . " order by year, month, day; ";
+        $result = DB::select($sql);
+
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/円.+円/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr(trim($ex_val[1]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
+                    $ary[trim($ex_val[3]) . "|" . $date][] = ['item' => trim($ex_val[3]), 'price' => $price, 'date' => $date, 'kind' => 'uc'];
+                }
+            }
+        }
+        //------------------------------------------//
+
+        //------------------------------------------//
+        $_sql = [];
+        foreach ($_tables as $table) {
+            $_sql[] = " select * from " . $table . " where article like '%楽天カード内訳%' ";
+        }
+        $sql = implode(" union all ", $_sql) . " order by year, month, day; ";
+        $result = DB::select($sql);
+
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/本人/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
+                    $ary[trim($ex_val[1]) . "|" . $date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
+                }
+            }
+        }
+        //------------------------------------------//
+
+        //------------------------------------------//
+        $_sql = [];
+        foreach ($_tables as $table) {
+            $_sql[] = " select * from " . $table . " where article like '%住友カード内訳%' ";
+        }
+        $sql = implode(" union all ", $_sql) . " order by year, month, day; ";
+        $result = DB::select($sql);
+
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/◎/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr("20" . trim($ex_val[0]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[2]), [',' => '']);
+                    $ary[trim($ex_val[1]) . "|" . $date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
+                }
+            }
+        }
+        //------------------------------------------//
+
+        $keys = array_keys($ary);
+        sort($keys);
+
+        foreach ($keys as $key) {
+            foreach ($ary[$key] as $v) {
+                $response[] = $v;
+            }
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
 
     /**
      * @param Request $request
