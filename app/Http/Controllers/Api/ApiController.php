@@ -49,6 +49,50 @@ class ApiController extends Controller
      * @param Request $request
      * @return mixed
      */
+    public function spenditemweekly(Request $request)
+    {
+
+        $response = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $end_date = date("Y-m-d", strtotime($request->date) + (86400 * 7));
+
+        for ($i = strtotime($request->date); $i < strtotime($end_date); $i += 86400) {
+
+            $date = date("Y-m-d", $i);
+            list($year, $month, $day) = explode("-", $date);
+
+            //日々の消費額
+            $dailySpend = DB::table('t_dailyspend')
+                ->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)
+                ->orderBy('id')->get();
+
+            //クレジットでの消費額
+            $credit = DB::table('t_credit')
+                ->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)
+                ->orderBy('id')->get();
+
+            foreach ($dailySpend as $v) {
+                $cnt = (isset($response[$date])) ? count($response[$date]) : 0;
+                $response[$date][$cnt]['koumoku'] = $v->koumoku;
+                $response[$date][$cnt]['price'] = $v->price;
+            }
+
+            foreach ($credit as $v) {
+                $cnt = (isset($response[$date])) ? count($response[$date]) : 0;
+                $response[$date][$cnt]['koumoku'] = $v->item;
+                $response[$date][$cnt]['price'] = $v->price;
+            }
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
     public function traindata(Request $request)
     {
 
@@ -90,6 +134,39 @@ class ApiController extends Controller
             $response[$cnt]['time'] = $v->time;
             $response[$cnt]['place'] = $v->place;
             $response[$cnt]['price'] = $v->price;
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function timeplaceweekly(Request $request)
+    {
+
+        $response = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $end_date = date("Y-m-d", strtotime($request->date) + (86400 * 7));
+
+        for ($i = strtotime($request->date); $i < strtotime($end_date); $i += 86400) {
+
+            $date = date("Y-m-d", $i);
+            list($year, $month, $day) = explode("-", $date);
+
+            $result = DB::table('t_timeplace')
+                ->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)
+                ->orderBy('time')->get();
+
+            foreach ($result as $v) {
+                $cnt = (isset($response[$date])) ? count($response[$date]) : 0;
+                $response[$date][$cnt]['time'] = $v->time;
+                $response[$date][$cnt]['place'] = $v->place;
+                $response[$date][$cnt]['price'] = $v->price;
+            }
         }
 
         return response()->json(['data' => $response]);
@@ -415,7 +492,7 @@ credit
         //------------------------------------------//
         $_sql = [];
         foreach ($_tables as $table) {
-            $_sql[] = " select article from " . $table . " where article like '%ユーシーカード内訳%' ";
+            $_sql[] = " select * from " . $table . " where article like '%ユーシーカード内訳%' ";
         }
         $sql = implode(" union all ", $_sql);
         $result = DB::select($sql);
@@ -428,7 +505,17 @@ credit
                     $ex_val = explode("\t", $val);
                     $date = strtr(trim($ex_val[1]), ['/' => '-']);
                     $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
-                    $ary[$date][] = ['item' => trim($ex_val[3]), 'price' => $price, 'date' => $date, 'kind' => 'uc'];
+
+                    $monthDiff = $this->getMonthDiff($date, $v2->year . '-' . $v2->month);
+
+                    $ary[$date][] = [
+                        'pay_month' => $v2->year . '-' . $v2->month,
+                        'item' => trim($ex_val[3]),
+                        'price' => $price,
+                        'date' => $date,
+                        'kind' => 'uc',
+                        'month_diff' => $monthDiff
+                    ];
                 }
             }
         }
@@ -437,7 +524,7 @@ credit
         //------------------------------------------//
         $_sql = [];
         foreach ($_tables as $table) {
-            $_sql[] = " select article from " . $table . " where article like '%楽天カード内訳%' ";
+            $_sql[] = " select * from " . $table . " where article like '%楽天カード内訳%' ";
         }
         $sql = implode(" union all ", $_sql);
         $result = DB::select($sql);
@@ -450,7 +537,17 @@ credit
                     $ex_val = explode("\t", $val);
                     $date = strtr(trim($ex_val[0]), ['/' => '-']);
                     $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
-                    $ary[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
+
+                    $monthDiff = $this->getMonthDiff($date, $v2->year . '-' . $v2->month);
+
+                    $ary[$date][] = [
+                        'pay_month' => $v2->year . '-' . $v2->month,
+                        'item' => trim($ex_val[1]),
+                        'price' => $price,
+                        'date' => $date,
+                        'kind' => 'rakuten',
+                        'month_diff' => $monthDiff
+                    ];
                 }
             }
         }
@@ -459,7 +556,7 @@ credit
         //------------------------------------------//
         $_sql = [];
         foreach ($_tables as $table) {
-            $_sql[] = " select article from " . $table . " where article like '%住友カード内訳%' ";
+            $_sql[] = " select * from " . $table . " where article like '%住友カード内訳%' ";
         }
         $sql = implode(" union all ", $_sql);
         $result = DB::select($sql);
@@ -472,7 +569,17 @@ credit
                     $ex_val = explode("\t", $val);
                     $date = strtr("20" . trim($ex_val[0]), ['/' => '-']);
                     $price = strtr(trim($ex_val[2]), [',' => '']);
-                    $ary[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
+
+                    $monthDiff = $this->getMonthDiff($date, $v2->year . '-' . $v2->month);
+
+                    $ary[$date][] = [
+                        'pay_month' => $v2->year . '-' . $v2->month,
+                        'item' => trim($ex_val[1]),
+                        'price' => $price,
+                        'date' => $date,
+                        'kind' => 'sumitomo',
+                        'month_diff' => $monthDiff
+                    ];
                 }
             }
         }
@@ -528,7 +635,17 @@ credit
                     $ex_val = explode("\t", $val);
                     $date = strtr(trim($ex_val[1]), ['/' => '-']);
                     $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
-                    $ary[trim($ex_val[3]) . "|" . $date][] = ['item' => trim($ex_val[3]), 'price' => $price, 'date' => $date, 'kind' => 'uc'];
+
+                    $monthDiff = $this->getMonthDiff($date, $v2->year . '-' . $v2->month);
+
+                    $ary[trim($ex_val[3]) . "|" . $date][] = [
+                        'pay_month' => $v2->year . '-' . $v2->month,
+                        'item' => trim($ex_val[3]),
+                        'price' => $price,
+                        'date' => $date,
+                        'kind' => 'uc',
+                        'month_diff' => $monthDiff
+                    ];
                 }
             }
         }
@@ -550,7 +667,17 @@ credit
                     $ex_val = explode("\t", $val);
                     $date = strtr(trim($ex_val[0]), ['/' => '-']);
                     $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
-                    $ary[trim($ex_val[1]) . "|" . $date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
+
+                    $monthDiff = $this->getMonthDiff($date, $v2->year . '-' . $v2->month);
+
+                    $ary[trim($ex_val[1]) . "|" . $date][] = [
+                        'pay_month' => $v2->year . '-' . $v2->month,
+                        'item' => trim($ex_val[1]),
+                        'price' => $price,
+                        'date' => $date,
+                        'kind' => 'rakuten',
+                        'month_diff' => $monthDiff
+                    ];
                 }
             }
         }
@@ -572,7 +699,17 @@ credit
                     $ex_val = explode("\t", $val);
                     $date = strtr("20" . trim($ex_val[0]), ['/' => '-']);
                     $price = strtr(trim($ex_val[2]), [',' => '']);
-                    $ary[trim($ex_val[1]) . "|" . $date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
+
+                    $monthDiff = $this->getMonthDiff($date, $v2->year . '-' . $v2->month);
+
+                    $ary[trim($ex_val[1]) . "|" . $date][] = [
+                        'pay_month' => $v2->year . '-' . $v2->month,
+                        'item' => trim($ex_val[1]),
+                        'price' => $price,
+                        'date' => $date,
+                        'kind' => 'sumitomo',
+                        'month_diff' => $monthDiff
+                    ];
                 }
             }
         }
@@ -590,6 +727,341 @@ credit
         return response()->json(['data' => $response]);
     }
 
+    /**
+     *
+     */
+    private function getMonthDiff($date, $pay_month)
+    {
+        $unix_paymonth = strtotime($pay_month . "-01");
+
+        list($year, $month, $day) = explode("-", $date);
+        $unix_date = strtotime($year . "-" . $month . "-01");
+
+        $ym = [];
+        for ($i = $unix_paymonth; $i > $unix_date; $i -= 86400) {
+            $ym[date("Y-m", $i)] = '';
+        }
+
+        $diff = count($ym) - 2;
+        if ($diff < 0) {
+            $diff = 0;
+        }
+
+        return $diff;
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function amazonPurchaseList(Request $request)
+    {
+        $response = [];
+
+        $ary3 = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+        $table = 't_article' . $year;
+
+        $result = DB::table($table)->where('article', 'like', '%** Amazon **%')->first();
+
+        if ($result->article) {
+
+            $jogai_order = [
+//                'D01-1902624-6860240',
+//                '250-7118603-8285416',
+//                '250-2037234-8323806'
+            ];
+
+            $replace = [];
+            $replace['配送状況を確認'] = '';
+            $replace['商品の返品'] = '';
+            $replace['ギフトレシートを共有する'] = '';
+            $replace['注文を非表示にする'] = '';
+            $replace['商品レビューを書く'] = '';
+            $replace['購買登録を管理'] = '';
+            $replace['出品者を評価'] = '';
+            $replace['注文の詳細'] = '';
+            $replace['領収書等'] = '';
+            $replace['再度購入'] = '';
+            $replace['お届け先'] = '';
+            $replace['豊田英之'] = '';
+            $replace['コンテンツと端末の管理'] = '';
+            $replace['ご注文商品を玄関にお届けしました。'] = '';
+            $replace['ご注文商品の配達が完了しました。'] = '';
+            $replace['注文に関する問題'] = '';
+            $replace['キャンセルリクエスト'] = '';
+            $replace['置き配指定'] = '';
+
+            $article = strtr($result->article, $replace);
+            $ex_article = explode("注文日", $article);
+
+            $ary = [];
+            $_keys = [];
+            foreach ($ex_article as $k => $v) {
+                if ($k == 0) {
+                    continue;
+                }
+
+                $ex_v = explode("\n", $v);
+                $ary2 = [];
+                foreach ($ex_v as $v2) {
+                    if (trim($v2) == "") {
+                        continue;
+                    }
+
+                    if (preg_match("/配達しました/", trim($v2))) {
+                        continue;
+                    }
+
+                    if (preg_match("/返品期間/", trim($v2))) {
+                        continue;
+                    }
+
+                    if (in_array(trim($v2), $ary2)) {
+                        continue;
+                    }
+
+                    $ary2[] = trim($v2);
+                }
+
+                ///////////////////////////////////
+                $goukei_line_no = "";
+                $purchase_line = "";
+                $order_line = "";
+                foreach ($ary2 as $k2 => $v2) {
+                    if (trim($v2) == "合計") {
+                        $goukei_line_no = $k2;
+                    }
+
+                    if (preg_match("/(.+)年(.+)月(.+)日/", trim($v2))) {
+                        $purchase_line = trim($v2);
+                    }
+
+                    if (preg_match("/注文番号(.+)/", trim($v2), $m)) {
+                        $order_line = trim($v2);
+                    }
+                }
+
+                $price = trim(strtr($ary2[$goukei_line_no + 1], ['￥' => '', ',' => '']));
+
+                preg_match("/(.+)年(.+)月(.+)日/", $purchase_line, $m);
+                $purchase_date = sprintf("%04d", $m[1]) . "-" . sprintf("%02d", $m[2]) . "-" . sprintf("%02d", $m[3]);
+
+                preg_match("/注文番号(.+)/", $order_line, $m);
+                $order_number = trim($m[1]);
+
+                if (in_array($order_number, $jogai_order)) {
+                    continue;
+                }
+
+                $other = [];
+                foreach ($ary2 as $k2 => $v2) {
+                    if (trim($v2) == $ary2[$goukei_line_no + 1]) {
+                        continue;
+                    }
+
+                    if (trim($v2) == $purchase_line) {
+                        continue;
+                    }
+
+                    if (trim($v2) == $order_line) {
+                        continue;
+                    }
+
+                    if (trim($v2) == "合計") {
+                        continue;
+                    }
+
+                    $other[] = trim($v2);
+                }
+                ///////////////////////////////////
+
+                $ary[$purchase_date][] = ['date' => $purchase_date, 'price' => $price, 'order_number' => $order_number, 'item' => implode("\n", $other)];
+                $_keys[$purchase_date] = '';
+            }
+
+            $keys = array_keys($_keys);
+            sort($keys);
+
+            foreach ($keys as $key) {
+                foreach ($ary[$key] as $v) {
+                    $ary3[] = $v;
+                }
+            }
+        }
+
+        $response = $ary3;
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function seiyuuPurchaseList(Request $request)
+    {
+        $response = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+        $table = 't_article' . $year;
+
+        ///////////////////////////////////////////////
+        $result = DB::table($table)->where('article', 'like', '%西友ネットスーパー内訳%')
+            ->orderBy('year')->orderBy('month')->orderBy('day')
+            ->get();
+        foreach ($result as $k => $v) {
+            $_tmp_date[$v->year . "-" . $v->month . "-" . $v->day] = "";
+        }
+        $_key_date = array_keys($_tmp_date);
+        sort($_key_date);
+        ///////////////////////////////////////////////
+
+        $ary = [];
+        $result = DB::table($table)->where('article', 'like', '%西友ネットスーパー内訳%')
+            ->orderBy('year')->orderBy('month')->orderBy('day')
+            ->get();
+        foreach ($result as $k => $v) {
+            $date = $v->year . "-" . $v->month . "-" . $v->day;
+            $ex_article = explode(">", $v->article);
+            for ($i = 1; $i < count($ex_article); $i++) {
+                $ex_ex_article = explode("\n", $ex_article[$i]);
+                $item = trim($ex_ex_article[1]);
+                $tanka = trim(strtr($ex_ex_article[7], ['円' => '', ',' => '']));
+                $kosuu = trim($ex_ex_article[8]);
+                $price = trim(strtr($ex_ex_article[9], ['円' => '', ',' => '']));
+
+                $pos = array_search($date, $_key_date);
+
+                $ary[] = [
+                    'date' => $date,
+                    'pos' => $pos,
+                    'item' => $item,
+                    'tanka' => $tanka,
+                    'kosuu' => $kosuu,
+                    'price' => $price
+                ];
+            }
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function dutyData(Request $request)
+    {
+        $response = [];
+
+        $dutyItems = ['税金', '年金', '国民年金基金', '国民健康保険'];
+
+        $ary = [];
+        foreach ($dutyItems as $duty) {
+            $spend = DB::table('t_dailyspend')->where('koumoku', '=', $duty)
+                ->where('year', '>=', '2020')
+                ->orderBy('year')->orderBy('month')->orderBy('day')
+                ->get();
+            $credit = DB::table('t_credit')->where('item', '=', $duty)
+                ->where('year', '>=', '2020')
+                ->orderBy('year')->orderBy('month')->orderBy('day')
+                ->get();
+
+            foreach ($spend as $v) {
+                $ary[$duty][] = $v->year . '-' . $v->month . '-' . $v->day . '|' . $v->price;
+            }
+
+            foreach ($credit as $v) {
+                $ary[$duty][] = $v->year . '-' . $v->month . '-' . $v->day . '|' . $v->price;
+            }
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function yachinData(Request $request)
+    {
+        $response = [];
+
+        ///////////////////////////////////////////////
+        $_tables = [];
+
+        $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = database();";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            if (preg_match("/t_article/", $v->table_name)) {
+                $_tables[] = $v->table_name;
+            }
+        }
+        ///////////////////////////////////////////////
+
+        $ary = [];
+        foreach ($_tables as $table) {
+            $result = DB::table($table)->where('article', 'like', '%水道光熱費内訳%')
+                ->orderBy('year')->orderBy('month')->orderBy('day')
+                ->get();
+            foreach ($result as $v) {
+                if ($v->year >= 2020) {
+                    $ex_article = explode("\n", $v->article);
+
+                    $ary2 = [
+                        'date' => $v->year . '-' . $v->month,
+
+                        'yachin' => 0,
+                        'yachin_date' => '-',
+
+                        'electric' => 0,
+                        'electric_date' => '-',
+
+                        'gas' => 0,
+                        'gas_date' => '-',
+
+                        'water' => 0,
+                        'water_date' => '-',
+                    ];
+
+                    foreach ($ex_article as $v2) {
+                        if (preg_match("/\((.+)\) 水道光熱費 (.+)円\/\/電気代/", trim($v2), $m)) {
+                            $ary2['electric_date'] = $m[1];
+                            $ary2['electric'] = strtr(trim($m[2]), [',' => '']);
+                        }
+
+                        if (preg_match("/\((.+)\) 水道光熱費 (.+)円\/\/ガス代/", trim($v2), $m)) {
+                            $ary2['gas_date'] = $m[1];
+                            $ary2['gas'] = strtr(trim($m[2]), [',' => '']);
+                        }
+
+                        if (preg_match("/\((.+)\) 水道光熱費 (.+)円\/\/水道代/", trim($v2), $m)) {
+                            $ary2['water_date'] = $m[1];
+                            $ary2['water'] = strtr(trim($m[2]), [',' => '']);
+                        }
+                    }
+
+                    //----------------------------//
+                    $result2 = DB::table('t_credit')
+                        ->where('item', '=', '住居費')
+                        ->where('year', '=', $v->year)->where('month', '=', $v->month)
+                        ->first();
+                    $ary2['yachin_date'] = $result2->day;
+                    $ary2['yachin'] = $result2->price;
+                    //----------------------------//
+
+                    $ary[] = $ary2;
+                }
+            }
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
 
     /**
      * @param Request $request
@@ -919,6 +1391,75 @@ credit
         }
 
         return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function worktimemonthdata(Request $request)
+    {
+        $response = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $result = DB::table('t_worktime')
+            ->where('year', '=', $year)->where('month', '=', $month)
+            ->orderBy('day')->get();
+
+        foreach ($result as $v) {
+            $date = $v->year . '-' . $v->month . '-' . $v->day;
+            $response[$date]['work_start'] = date("H:i", strtotime($v->work_start));
+            $response[$date]['work_end'] = date("H:i", strtotime($v->work_end));
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function worktimeinsert(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            list($year, $month, $day) = explode("-", $request->date);
+
+            $data = [
+                'work_start' => $request->work_start,
+                'work_end' => $request->work_end
+            ];
+
+            $result = DB::table('t_worktime')
+                ->where('year', '=', $year)->where('month', '=', $month)->where('day', '=', $day)
+                ->get(['id']);
+
+            if (isset($result[0])) {
+                if ($data['work_start'] == '00:00' && $data['work_end'] == '00:00') {
+                    //削除
+                    DB::table('t_worktime')->where('id', $result[0]->id)->delete();
+                } else {
+                    //更新
+                    DB::table('t_worktime')->where('id', $result[0]->id)->update($data);
+                }
+            } else {
+                //新規作成
+                $data['year'] = $year;
+                $data['month'] = $month;
+                $data['day'] = $day;
+
+                DB::table('t_worktime')->insert($data);
+            }
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
     }
 
 }

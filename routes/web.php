@@ -148,3 +148,8 @@ Route::get('/anken/create', 'Anken\AnkenController@create');
 Route::post('/anken/store', 'Anken\AnkenController@store');
 Route::get('/anken/edit', 'Anken\AnkenController@edit');
 Route::post('/anken/update', 'Anken\AnkenController@update');
+
+
+
+//[url]
+Route::get('/url/index', 'Url\UrlController@index');

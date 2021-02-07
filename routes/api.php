@@ -29,6 +29,12 @@ Route::namespace('Api')->group(function () {
     Route::post('uccardspend', 'ApiController@uccardspend');
     Route::post('allcardspend', 'ApiController@allcardspend');
     Route::post('carditemlist', 'ApiController@carditemlist');
+    Route::post('amazonPurchaseList', 'ApiController@amazonPurchaseList');
+    Route::post('spenditemweekly', 'ApiController@spenditemweekly');
+    Route::post('timeplaceweekly', 'ApiController@timeplaceweekly');
+    Route::post('seiyuuPurchaseList', 'ApiController@seiyuuPurchaseList');
+    Route::post('dutyData', 'ApiController@dutyData');
+    Route::post('yachinData', 'ApiController@yachinData');
 
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');
@@ -39,4 +45,9 @@ Route::namespace('Api')->group(function () {
     Route::post('stockindustrydata', 'ApiController@stockindustrydata');
     Route::post('stockpricedata', 'ApiController@stockpricedata');
     Route::post('stockalldata', 'ApiController@stockalldata');
+
+    //worktime
+    Route::post('worktimemonthdata', 'ApiController@worktimemonthdata');
+    Route::post('worktimeinsert', 'ApiController@worktimeinsert');
+
 });
