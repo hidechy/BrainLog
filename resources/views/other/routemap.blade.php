@@ -58,24 +58,54 @@
 
 <div id="gmap"></div>
 
-<table class="table table-bordered" id="distance_table">
-    <tr>
-        <td nowrap>出発地</td>
-        <td>{{ $start_address }}</td>
-    </tr>
-    <tr>
-        <td nowrap>目的地</td>
-        <td>{{ $end_address }}</td>
-    </tr>
-    <tr>
-        <td nowrap>距離</td>
-        <td>{{ $distance }}</td>
-    </tr>
-    <tr>
-        <td nowrap>時間</td>
-        <td>{{ $duration }}</td>
-    </tr>
+
+
+
+
+
+
+
+
+
+<div>【出発地】</div>
+<div>{{ $start_address }}</div>
+<table class="tbl_station">
+    <?php
+    foreach ($station_start as $v) {
+        echo "<tr>";
+        echo "<td>" . $v['name'] . "</td>";
+        echo "<td>" . $v['line'] . "</td>";
+        echo "<td style='text-align: right;'>" . number_format($v['distance']) . " m</td>";
+        echo "<td>" . $v['traveltime'] . "</td>";
+        echo "</tr>";
+    }
+    ?>
 </table>
+<hr>
+
+<div>【目的地】</div>
+<div>{{ $end_address }}</div>
+<table class="tbl_station">
+    <?php
+    foreach ($station_end as $v) {
+        echo "<tr>";
+        echo "<td>" . $v['name'] . "</td>";
+        echo "<td>" . $v['line'] . "</td>";
+        echo "<td style='text-align: right;'>" . number_format($v['distance']) . " m</td>";
+        echo "<td>" . $v['traveltime'] . "</td>";
+        echo "</tr>";
+    }
+    ?>
+</table>
+<hr>
+
+<div>【距離】</div>
+<div>{{ $distance }}</div>
+<hr>
+
+<div>【時間】</div>
+<div>{{ $duration }}</div>
+<hr>
 
 <div class="text-center mt-3">
     <a href="{{ url('/other/route') }}" class="btn btn-success">戻る</a>
@@ -89,6 +119,12 @@
 
     #distance_table td {
         padding: 2px;
+    }
+
+    .tbl_station td {
+        border: 1px solid #cccccc;
+        padding: 2px;
+        font-size: 10px;
     }
 </style>
 
