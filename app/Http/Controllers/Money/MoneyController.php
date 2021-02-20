@@ -1583,6 +1583,41 @@ class MoneyController extends Controller
 
     }
 
+    public function timeplaceinput()
+    {
+        $ex_data = explode("\n", $_POST['timeplacedata']);
+        foreach ($ex_data as $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+
+            $ex_v = explode("\t", trim($v));
+            $date = trim($ex_v[0]);
+            $time = sprintf("%04d", trim($ex_v[2]));
+            $place = trim($ex_v[3]);
+            $price = trim($ex_v[4]);
+
+            $insert = [];
+
+            preg_match("/(.+)月(.+)日/", trim($date), $m);
+            $insert['year'] = date("Y");
+            $insert['month'] = sprintf("%02d", trim($m[1]));
+            $insert['day'] = sprintf("%02d", trim($m[2]));
+
+            $substr_H = substr(trim($time), 0, 2);
+            $substr_M = substr(trim($time), 2);
+            $insert['time'] = $substr_H . ":" . $substr_M;
+
+            $insert['place'] = trim($place);
+            $insert['price'] = trim($price);
+
+            $insert['created_at'] = date("Y-m-d H:i:s");
+
+            DB::table('t_timeplace')->insert($insert);
+        }
+
+        return redirect('/money/' . $_POST['thisMonth'] . '/index');
+    }
 
     public function itemsummary($yearmonth)
     {
@@ -1631,7 +1666,7 @@ class MoneyController extends Controller
 
 //        $item = array_keys($summary3);
 
-$str = "
+        $str = "
 食費
 住居費
 交通費
@@ -1662,12 +1697,14 @@ $str = "
 プラス
 ";
 
-$item = [];
-$ex_str = explode("\n", $str);
-foreach ($ex_str as $v){
-    if (trim($v) == ""){continue;}
-    $item[] = trim($v);
-}
+        $item = [];
+        $ex_str = explode("\n", $str);
+        foreach ($ex_str as $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+            $item[] = trim($v);
+        }
 
         return view('money.itemsummary')
             ->with('year', $year)
@@ -1935,11 +1972,7 @@ foreach ($ex_str as $v){
             $ary['date'] = $_ymd;
 //            $ary['sum'] = number_format(array_sum($price[$_ymd]));
 
-$ary['sum'] = array_sum($price[$_ymd]);
-
-
-
-
+            $ary['sum'] = array_sum($price[$_ymd]);
 
 
             $ary['item'] = implode(";", $v);
