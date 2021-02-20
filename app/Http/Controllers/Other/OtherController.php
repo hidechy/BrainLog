@@ -77,91 +77,89 @@ class OtherController extends Controller
 
     public function weather()
     {
-        $open_url = "http://www.jma.go.jp/jp/week/319.html";
+        $open_url = "https://tenki.jp/week/3/15/";
         $content = file_get_contents($open_url);
         $ex_content = explode("\n", $content);
 
-        $a = 0;
-        $b = 0;
+        $a = [];
         foreach ($ex_content as $k => $v) {
-            if (preg_match("/日付/", trim($v))) {
-                $a = $k;
-            }
-
-            if (preg_match("/降水確率/", trim($v))) {
-                $b = $k;
-                break;
+            if (preg_match("/week-index-table/", trim($v))) {
+                $a[] = $k;
             }
         }
 
         $AAA = "";
-        for ($i = $a; $i < $b; $i++) {
+        for ($i = $a[0]; $i < $a[1]; $i++) {
             $AAA .= trim($ex_content[$i]);
         }
 
-        $ex_AAA = explode("tr", $AAA);
+        $ex_AAA = explode("|", strtr($AAA, ['<tr' => '|<tr']));
 
-        $date = array();
-        $ex_AAA0 = explode("|", strtr($ex_AAA[0], array(
-            "><" => ">|<",
-            "> <" => ">|<",
-        )));
-
-        for ($i = 1; $i <= 7; $i++) {
-            $date[$i - 1] = trim(strip_tags($ex_AAA0[$i]));
-        }
-
-        $weather = array();
-        $ex_AAA2 = explode("|", strtr($ex_AAA[2], array(
-            "><" => ">|<",
-            "> <" => ">|<",
-        )));
-
-        foreach ($ex_AAA2 as $v) {
-            if (preg_match("/<td/", trim($v))) {
-                $weather[] = trim(strip_tags($v));
+        /////////////////////
+        $date = [];
+        $ex_AAA1 = explode("|", strtr($ex_AAA[1], ['><' => '>|<']));
+        foreach ($ex_AAA1 as $value) {
+            if (preg_match("/<th(.+)th>/", trim($value), $m)) {
+                $stTag = trim(strip_tags("<th" . $m[1] . "th>", "<br>"));
+                $date[] = $stTag;
             }
         }
 
-        if (count($date) == count($weather)) {
-            $DDD = array();
+        preg_match("/(.+)日/", trim($date[1]), $m);
+        $startDate = date("Y-m-") . $m[1];
 
-            $open_url = public_path() . "/mySetting/weather.data";
+        $date[1] = $startDate;
+        for ($i = 2; $i < count($date); $i++) {
+            $date[$i] = date("Y-m-d", strtotime($startDate) + (86400 * ($i - 1)));
+        }
+        /////////////////////
 
-            if (file_exists($open_url)) {
-                $content = file_get_contents($open_url);
-                $ex_content = explode("\n", $content);
-
-                foreach ($ex_content as $v) {
-                    if (trim($v) == "") {
-                        continue;
-                    }
-                    $ex_v = explode("|", trim($v));
-                    $DDD[trim($ex_v[0])] = trim($ex_v[1]);
-                }
+        /////////////////////
+        $weather = [];
+        $ex_AAA2 = explode("|", strtr($ex_AAA[2], ['><' => '>|<']));
+        $i = 1;
+        foreach ($ex_AAA2 as $value) {
+            if (preg_match("/<span class=\"forecast-telop\">(.+)<\/span>/", trim($value), $m)) {
+                $weather[$i] = trim($m[1]);
+                $i++;
             }
+        }
+        /////////////////////
 
-            foreach ($weather as $k => $v) {
+        $DDD = [];
+        $open_url = public_path() . "/mySetting/weather.data";
+        if (file_exists($open_url)) {
+            $content = file_get_contents($open_url);
+            $ex_content = explode("\n", $content);
+
+            foreach ($ex_content as $v) {
                 if (trim($v) == "") {
                     continue;
                 }
-                $DDD[date("Y-m-d", strtotime(date("Y-m-d")) + (86400 * $k))] = $v;
+
+                $ex_v = explode("|", trim($v));
+
+                $DDD[trim($ex_v[0])] = trim($ex_v[1]);
             }
-
-            ksort($DDD);
-
-            $EEE = array();
-            foreach ($DDD as $k => $v) {
-                if (trim($v) == "") {
-                    continue;
-                }
-                $EEE[] = $k . "|" . $v;
-            }
-
-            file_put_contents($open_url, implode("\n", $EEE));
-
-            @chmod($open_url, 0777);
         }
+
+        for ($i = 1; $i < count($date); $i++) {
+            $DDD[$date[$i]] = $weather[$i];
+        }
+
+        ksort($DDD);
+
+        $EEE = array();
+        foreach ($DDD as $k => $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+            $EEE[] = $k . "|" . $v;
+        }
+
+        file_put_contents($open_url, implode("\n", $EEE));
+
+        @chmod($open_url, 0777);
 
         return redirect('/article/index');
     }
@@ -1063,13 +1061,44 @@ class OtherController extends Controller
             $data->routes[0]->legs[0]->end_location->lng
         ]);
 
+
+        //station//start
+        $station_start = [];
+        $xml_url = "http://map.simpleapi.net/stationapi?x=" . $data->routes[0]->legs[0]->start_location->lng . "&y=" . $data->routes[0]->legs[0]->start_location->lat;
+        $xml = file_get_contents($xml_url);
+        $xmlObject = simplexml_load_string($xml);
+        $xmlArray = json_decode(json_encode($xmlObject), TRUE);
+        foreach ($xmlArray['station'] as $k => $v) {
+            $station_start[$k]['name'] = $v['name'];
+            $station_start[$k]['line'] = $v['line'];
+            $station_start[$k]['distance'] = $v['distance'];
+            $station_start[$k]['traveltime'] = $v['traveltime'];
+        }
+
+        //station//end
+        $station_end = [];
+        $xml_url = "http://map.simpleapi.net/stationapi?x=" . $data->routes[0]->legs[0]->end_location->lng . "&y=" . $data->routes[0]->legs[0]->end_location->lat;
+        $xml = file_get_contents($xml_url);
+        $xmlObject = simplexml_load_string($xml);
+        $xmlArray = json_decode(json_encode($xmlObject), TRUE);
+        foreach ($xmlArray['station'] as $k => $v) {
+            $station_end[$k]['name'] = $v['name'];
+            $station_end[$k]['line'] = $v['line'];
+            $station_end[$k]['distance'] = $v['distance'];
+            $station_end[$k]['traveltime'] = $v['traveltime'];
+        }
+
         return view('other.routemap', [
             'distance' => $distance,
             'duration' => $duration,
             'start_address' => $start_address,
             'end_address' => $end_address,
-            'latlng' => $latlng
+            'latlng' => $latlng,
+            'station_start' => $station_start,
+            'station_end' => $station_end
         ]);
+
+
     }
 
 
