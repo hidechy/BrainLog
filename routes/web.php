@@ -60,6 +60,7 @@ Route::get('/money/{ymd}/weeklyinput', 'Money\MoneyController@weeklyinput');
 Route::post('/money/weeklyinsert', 'Money\MoneyController@weeklyinsert');
 Route::get('/money/{yearmonth}/monthlydisp', 'Money\MoneyController@monthlydisp');
 Route::post('/money/spendinput', 'Money\MoneyController@spendinput');
+Route::post('/money/timeplaceinput', 'Money\MoneyController@timeplaceinput');
 
 
 

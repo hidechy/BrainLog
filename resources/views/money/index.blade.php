@@ -169,6 +169,22 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
 
     <div><br><br></div>
 
+    <table style="width: 400px;">
+        <tr>
+            <td style="vertical-align: top;">
+                <div style="height: 400px; overflow: auto;">
+                    <?php
+                    if (trim($DailySpend) != "") {
+                        echo $DailySpend;
+                    }
+                    ?>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div><br><br></div>
+
     <table>
         <tr>
             <td style="vertical-align: top;">
@@ -208,16 +224,6 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
                 <button id="btn_summary_open">summary</button>
 
             </td>
-
-            <td style="vertical-align: top;">
-                <div style="height: 400px; overflow: auto;">
-                    <?php
-                    if (trim($DailySpend) != "") {
-                        echo $DailySpend;
-                    }
-                    ?>
-                </div>
-            </td>
         </tr>
     </table>
 
@@ -229,9 +235,18 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
             <input type="hidden" name="thisMonth" id="thisMonth" value="<?=$thisMonth?>">
             <textarea name="spenddata" id="spenddata"></textarea>
         </form>
-
         <button id="btn_spend_input">input</button>
+    </div>
 
+    <div><br><br></div>
+
+    <div style="background: #ccffcc;">
+        <form method="POST" action="{{ url('/money/timeplaceinput') }}" id="form_timeplace_input">
+            {{ csrf_field() }}
+            <input type="hidden" name="thisMonth" id="thisMonth" value="<?=$thisMonth?>">
+            <textarea name="timeplacedata" id="timeplacedata"></textarea>
+        </form>
+        <button id="btn_timeplace_input">input</button>
     </div>
 
     <style type="text/css">
@@ -312,6 +327,12 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
             border: 1px solid #cccccc;
         }
 
+        #timeplacedata {
+            width: 600px;
+            height: 200px;
+            font-size: 12px;
+        }
+
         -->
     </style>
 
@@ -368,6 +389,15 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
                 return false;
             }
             $("#form_spend_input").submit();
+        });
+
+        $("#btn_timeplace_input").click(function () {
+            let timeplacedata = $("#timeplacedata").val();
+            if (timeplacedata == "") {
+                window.alert("no data");
+                return false;
+            }
+            $("#form_timeplace_input").submit();
         });
         -->
     </script>
