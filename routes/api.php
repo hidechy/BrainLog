@@ -19,6 +19,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::namespace('Api')->group(function () {
 
+    Route::post('getholiday', 'ApiController@getholiday');
+
     //money
     Route::post('spenditem', 'ApiController@spenditem');
     Route::post('traindata', 'ApiController@traindata');
@@ -35,6 +37,7 @@ Route::namespace('Api')->group(function () {
     Route::post('seiyuuPurchaseList', 'ApiController@seiyuuPurchaseList');
     Route::post('dutyData', 'ApiController@dutyData');
     Route::post('yachinData', 'ApiController@yachinData');
+    Route::post('timeplacezerousedate', 'ApiController@timeplacezerousedate');
 
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');
@@ -49,5 +52,5 @@ Route::namespace('Api')->group(function () {
     //worktime
     Route::post('worktimemonthdata', 'ApiController@worktimemonthdata');
     Route::post('worktimeinsert', 'ApiController@worktimeinsert');
-
+    Route::post('workinggenbaname', 'ApiController@workinggenbaname');
 });

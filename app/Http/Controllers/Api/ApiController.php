@@ -173,6 +173,26 @@ class ApiController extends Controller
     }
 
     /**
+     *
+     */
+    public function timeplacezerousedate()
+    {
+
+        $response = [];
+
+        $result = DB::table('t_timeplace')
+            ->where('price', '=', 0)
+            ->orderBy('year')->orderBy('month')->orderBy('day')
+            ->get();
+
+        foreach ($result as $v) {
+            $response[] = $v->year . "-" . $v->month . "-" . $v->day;
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
      * @param Request $request
      * @return mixed
      */
@@ -199,6 +219,7 @@ class ApiController extends Controller
                 'bank_b' => $request->bank_b,
                 'bank_c' => $request->bank_c,
                 'bank_d' => $request->bank_d,
+                'bank_e' => $request->bank_e,
 
                 'pay_a' => $request->pay_a,
                 'pay_b' => $request->pay_b,
@@ -1461,5 +1482,81 @@ credit
             abort(500, $e->getMessage());
         }
     }
+
+
+    /**
+     * @param Request $request
+     */
+    public function workinggenbaname()
+    {
+        $response = [];
+
+        ///////////////////////////////////////////////
+        $_tables = [];
+
+        $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = database();";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            if (preg_match("/t_article/", $v->table_name)) {
+                $_tables[] = $v->table_name;
+            }
+        }
+        ///////////////////////////////////////////////
+
+        $cnt = 0;
+        foreach ($_tables as $table) {
+            $result = DB::table($table)->where('article', 'like', '%★職歴まとめ%')->get();
+
+            if (!empty($result[0])) {
+                $ex_article = explode("\n", $result[0]->article);
+                foreach ($ex_article as $art) {
+                    if (trim($art) == "") {
+                        continue;
+                    }
+
+                    $ex_art = explode("\t", trim($art));
+                    if (count($ex_art) > 1) {
+                        list($year, $month, $day, $juukyo, $single, $company, $genba, $kyogi) = explode("\t", trim($art));
+                        if (is_numeric($year)) {
+                            $response[$cnt]['yearmonth'] = $year . "-" . sprintf("%02d", $month);
+                            $response[$cnt]['company'] = $company;
+                            $response[$cnt]['genba'] = $genba;
+                            $cnt++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getholiday()
+    {
+        $response = [];
+
+        //------------------//
+        $holiday = [];
+        $file = public_path() . "/mySetting/holiday.data";
+        $content = file_get_contents($file);
+        $ex_content = explode("\n", mb_convert_encoding($content, "utf8", "sjis-win"));
+        foreach ($ex_content as $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+            $holiday[] = trim($v);
+        }
+        sort($holiday);
+        //------------------//
+
+        $response = $holiday;
+
+        return response()->json(['data' => $response]);
+    }
+
 
 }

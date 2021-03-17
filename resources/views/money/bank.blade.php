@@ -6,7 +6,7 @@ array_pop($ex_phpself);
 $public_path = implode("/" , $ex_phpself);
 //---------//
 
-$bankAry = ['bank_a' , 'bank_b' , 'bank_c' , 'bank_d' , 'pay_a' , 'pay_b', 'pay_c', 'pay_d'];
+$bankAry = ['bank_a' , 'bank_b' , 'bank_c' , 'bank_d' , 'bank_e', 'pay_a' , 'pay_b', 'pay_c', 'pay_d'];
 ?>
 
 @extends('layouts.brain')
@@ -34,13 +34,13 @@ $bankAry = ['bank_a' , 'bank_b' , 'bank_c' , 'bank_d' , 'pay_a' , 'pay_b', 'pay_
                     <table border="0" cellpadding="2" cellspacing="2" id="tbl_bank_input">
                         @for($i=0 ; $i<15 ; $i++)
                             <tr>
-                                <td style="width : 300px;">
+                                <td style="width : 400px;">
                                     @foreach($bankAry as $v)
                                         <label for="{{ $v }}_{{ $i }}">
                                         <input type="radio" id="{{ $v }}_{{ $i }}" name="bankradio[{{ $i }}]" value="{{ $v }}">{{ $v }}
                                         </label>
 
-                                        @if ($v == "bank_d")
+                                        @if ($v == "bank_e")
                                             <br>
                                         @endif
                                     @endforeach

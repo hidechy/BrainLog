@@ -74,12 +74,12 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
                                 echo "<td class='midashiTd' style='text-align : center;'>average</td>";
 
 
-                                $spentBG = (strtotime($year . "-" . $month . "-" . $line['day']) >= strtotime("2018-08-19")) ? "#daa520" : "#339933";
-                                echo "<td class='midashiTd' style='text-align : center;background : " . $spentBG . ";'>";
-                                echo "<a href='/BrainLog/public/money/" . $year . "-" . $month . "-" . $line['day'] . "/weeklydisp'>";
-                                echo $year . "-" . $month . "-" . $line['day'];
-                                echo "</a>";
-                                echo "</td>";
+//                                $spentBG = (strtotime($year . "-" . $month . "-" . $line['day']) >= strtotime("2018-08-19")) ? "#daa520" : "#339933";
+//                                echo "<td class='midashiTd' style='text-align : center;background : " . $spentBG . ";'>";
+//                                echo "<a href='/BrainLog/public/money/" . $year . "-" . $month . "-" . $line['day'] . "/weeklydisp'>";
+//                                echo $year . "-" . $month . "-" . $line['day'];
+//                                echo "</a>";
+//                                echo "</td>";
 
 
                                 break;
@@ -195,7 +195,10 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
                     echo "<table border='0' cellspacing='2' cellpadding='2' id='KoumokuTable'>";
                     foreach ($DisplayKoumoku as $koumoku => $price) {
 
-                        $percent = ($koumoku == "プラス") ? '-' : ceil($price / $thisMonthSpendTotal * 100) . "%";
+                        $percent = "0%";
+                        if ($thisMonthSpendTotal > 0){
+                            $percent = ($koumoku == "プラス") ? '-' : ceil($price / $thisMonthSpendTotal * 100) . "%";
+                        }
 
                         $average = '-';
                         if ($koumoku == "食費") {
