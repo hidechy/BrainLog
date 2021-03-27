@@ -53,4 +53,15 @@ Route::namespace('Api')->group(function () {
     Route::post('worktimemonthdata', 'ApiController@worktimemonthdata');
     Route::post('worktimeinsert', 'ApiController@worktimeinsert');
     Route::post('workinggenbaname', 'ApiController@workinggenbaname');
+
+    //uranai
+    Route::post('dailyuranai', 'ApiController@dailyuranai');
+    Route::post('monthlyuranai', 'ApiController@monthlyuranai');
+
+    //kotowaza
+    Route::post('getkotowazacount', 'ApiController@getkotowazacount');
+    Route::post('getkotowaza', 'ApiController@getkotowaza');
+    Route::post('changekotowazaflag', 'ApiController@changekotowazaflag');
+    Route::post('getkotowazachecktest', 'ApiController@getkotowazachecktest');
+
 });

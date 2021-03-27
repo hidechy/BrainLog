@@ -1558,5 +1558,226 @@ credit
         return response()->json(['data' => $response]);
     }
 
+    /**
+     * @return mixed
+     */
+    public function dailyuranai(Request $request)
+    {
+
+        try {
+
+            $response = [];
+
+            //-----------------------------------------//
+            $file = public_path() . "/mySetting/uranai.data";
+            $content = file_get_contents($file);
+
+            if (!empty($content)) {
+                $ex_content = explode("\n", $content);
+                if (!empty($ex_content)) {
+                    foreach ($ex_content as $v) {
+                        if (trim($v) == "") {
+                            continue;
+                        }
+                        $ex_v = explode("|", trim($v));
+
+                        if ($request->date == $ex_v[0]) {
+
+                            $ex_v1 = explode(";", trim($ex_v[1]));
+                            $ex_v2 = explode(";", trim($ex_v[2]));
+                            $ex_v3 = explode(";", trim($ex_v[3]));
+                            $ex_v4 = explode(";", trim($ex_v[4]));
+
+                            $ex_v1_0 = explode("<br>", trim($ex_v1[0]));
+
+                            $response['total'] = [
+                                'title' => trim($ex_v1_0[0]),
+                                'description' => trim($ex_v1_0[1]),
+                                'point' => trim($ex_v1[1]),
+                            ];
+
+                            $response['love'] = [
+                                'description' => trim($ex_v2[0]),
+                                'point' => trim($ex_v2[1]),
+                            ];
+
+                            $response['money'] = [
+                                'description' => trim($ex_v3[0]),
+                                'point' => trim($ex_v3[1]),
+                            ];
+
+                            $response['work'] = [
+                                'description' => trim($ex_v4[0]),
+                                'point' => trim($ex_v4[1]),
+                            ];
+
+                            break;
+                        }
+
+                    }
+                }
+            }
+            //-----------------------------------------//
+
+            return response()->json(['data' => $response]);
+        } catch (\Exception $e) {
+            return 0;
+        }
+
+    }
+
+    /**
+     * @return mixed
+     */
+    public function monthlyuranai(Request $request)
+    {
+        try {
+
+            $response = [];
+
+            list($year, $month, $day) = explode("-", $request->date);
+
+            //-----------------------------------------//
+            $uranai = "";
+
+            $file = public_path() . "/mySetting/uranai.data";
+            $content = file_get_contents($file);
+
+            if (!empty($content)) {
+                $ex_content = explode("\n", $content);
+                if (!empty($ex_content)) {
+                    foreach ($ex_content as $v) {
+                        if (trim($v) == "") {
+                            continue;
+                        }
+                        $ex_v = explode("|", trim($v));
+
+                        if (preg_match("/^" . $year . "-" . $month . "/", trim($ex_v[0]))) {
+
+                            $ex_v1 = explode(";", trim($ex_v[1]));
+                            $ex_v2 = explode(";", trim($ex_v[2]));
+                            $ex_v3 = explode(";", trim($ex_v[3]));
+                            $ex_v4 = explode(";", trim($ex_v[4]));
+
+                            $response[] = [
+                                'date' => trim($ex_v[0]),
+                                'point_total' => trim($ex_v1[1]),
+                                'point_love' => trim($ex_v2[1]),
+                                'point_money' => trim($ex_v3[1]),
+                                'point_work' => trim($ex_v4[1]),
+                            ];
+                        }
+                    }
+                }
+            }
+            //-----------------------------------------//
+
+            return response()->json(['data' => $response]);
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function getkotowazacount()
+    {
+        $response = [];
+
+        $sql = " select head, count(head) cnt from t_kotowaza group by head; ";
+        $result = DB::select($sql);
+
+        foreach ($result as $k => $v) {
+            $result2 = DB::table('t_kotowaza')
+                ->where('head', '=', $v->head)
+                ->where('flag', '=', 1)
+                ->get();
+
+            $response[$k]['head'] = $v->head;
+            $response[$k]['count'] = $v->cnt;
+
+            $response[$k]['flaged'] = count($result2);
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function getkotowaza(Request $request)
+    {
+        $response = [];
+
+        $result = DB::table('t_kotowaza')->where('head', '=', $request->head)->orderBy('yomi')->get();
+        foreach ($result as $k => $v) {
+            $response[$k]['id'] = $v->id;
+            $response[$k]['word'] = $v->word;
+            $response[$k]['yomi'] = $v->yomi;
+            $response[$k]['explanation'] = $v->explanation;
+            $response[$k]['flag'] = $v->flag;
+            $response[$k]['head'] = $v->head;
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function changekotowazaflag(Request $request)
+    {
+        $result = DB::table('t_kotowaza')->where('id', '=', $request->id)->first();
+
+        $update = [];
+        switch ($result->flag) {
+            case 0:
+                $update['flag'] = 1;
+                break;
+            case 1:
+                $update['flag'] = 0;
+                break;
+        }
+
+        DB::table('t_kotowaza')->where('id', '=', $request->id)->update($update);
+
+        //
+        $response = [];
+        $result2 = DB::table('t_kotowaza')->where('head', '=', $result->head)->orderBy('yomi')->get();
+        foreach ($result2 as $k => $v) {
+            $response[$k]['id'] = $v->id;
+            $response[$k]['word'] = $v->word;
+            $response[$k]['yomi'] = $v->yomi;
+            $response[$k]['explanation'] = $v->explanation;
+            $response[$k]['flag'] = $v->flag;
+            $response[$k]['head'] = $v->head;
+        }
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function getkotowazachecktest()
+    {
+
+        $response = [];
+
+        $sql = " select * from t_kotowaza where flag = 1 order by rand(); ";
+        $result = DB::select($sql);
+
+        foreach ($result as $k => $v) {
+            $response[$k]['id'] = $v->id;
+            $response[$k]['word'] = $v->word;
+            $response[$k]['yomi'] = $v->yomi;
+            $response[$k]['explanation'] = $v->explanation;
+            $response[$k]['flag'] = $v->flag;
+            $response[$k]['head'] = $v->head;
+        }
+
+        return response()->json(['data' => $response]);
+
+    }
 
 }
