@@ -1680,6 +1680,81 @@ credit
 
     /**
      * @param Request $request
+     * @return int
+     */
+    public function monthlyuranaidetail(Request $request)
+    {
+
+        try {
+
+            $response = [];
+
+            //-----------------------------------------//
+            $file = public_path() . "/mySetting/uranai.data";
+            $content = file_get_contents($file);
+
+            if (!empty($content)) {
+                $ex_content = explode("\n", $content);
+                if (!empty($ex_content)) {
+
+                    list($year, $month, $day) = explode("-", $request->date);
+
+                    $i = 0;
+                    foreach ($ex_content as $v) {
+                        if (trim($v) == "") {
+                            continue;
+                        }
+                        $ex_v = explode("|", trim($v));
+
+                        if (preg_match("/" . $year . "-" . $month . "/", trim($ex_v[0]))) {
+
+                            $ex_v1 = explode(";", trim($ex_v[1]));
+                            $ex_v2 = explode(";", trim($ex_v[2]));
+                            $ex_v3 = explode(";", trim($ex_v[3]));
+                            $ex_v4 = explode(";", trim($ex_v[4]));
+
+                            $ex_v1_0 = explode("<br>", trim($ex_v1[0]));
+
+                            $response[$i]['date'] = trim($ex_v[0]);
+
+                            $response[$i]['total'] = [
+                                'title' => trim($ex_v1_0[0]),
+                                'description' => trim($ex_v1_0[1]),
+                                'point' => trim($ex_v1[1]),
+                            ];
+
+                            $response[$i]['love'] = [
+                                'description' => trim($ex_v2[0]),
+                                'point' => trim($ex_v2[1]),
+                            ];
+
+                            $response[$i]['money'] = [
+                                'description' => trim($ex_v3[0]),
+                                'point' => trim($ex_v3[1]),
+                            ];
+
+                            $response[$i]['work'] = [
+                                'description' => trim($ex_v4[0]),
+                                'point' => trim($ex_v4[1]),
+                            ];
+
+                            $i++;
+                        }
+
+                    }
+                }
+            }
+            //-----------------------------------------//
+
+            return response()->json(['data' => $response]);
+        } catch (\Exception $e) {
+            return 0;
+        }
+
+    }
+
+    /**
+     * @param Request $request
      */
     public function getkotowazacount()
     {

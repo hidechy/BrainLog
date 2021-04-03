@@ -57,6 +57,7 @@ Route::namespace('Api')->group(function () {
     //uranai
     Route::post('dailyuranai', 'ApiController@dailyuranai');
     Route::post('monthlyuranai', 'ApiController@monthlyuranai');
+    Route::post('monthlyuranaidetail', 'ApiController@monthlyuranaidetail');
 
     //kotowaza
     Route::post('getkotowazacount', 'ApiController@getkotowazacount');
