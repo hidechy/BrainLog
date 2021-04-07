@@ -141,6 +141,110 @@ class ApiController extends Controller
 
     /**
      * @param Request $request
+     */
+    public function monthlyspenditem(Request $request)
+    {
+
+        $response = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        //日々の消費額
+        $dailySpend = DB::table('t_dailyspend')
+            ->where('year', '=', $year)
+            ->where('month', '=', $month)
+            ->orderBy('day')
+            ->orderBy('id')
+            ->get();
+
+        foreach ($dailySpend as $v) {
+            $ymd = $v->year . "-" . $v->month . "-" . $v->day;
+            $cnt = count($response[$ymd]);
+            $response[$ymd][$cnt]['date'] = $ymd;
+            $response[$ymd][$cnt]['koumoku'] = $v->koumoku;
+            $response[$ymd][$cnt]['price'] = $v->price;
+        }
+
+        //クレジットでの消費額
+        $credit = DB::table('t_credit')
+            ->where('year', '=', $year)
+            ->where('month', '=', $month)
+            ->orderBy('day')
+            ->orderBy('id')
+            ->get();
+
+        foreach ($credit as $v) {
+            $ymd = $v->year . "-" . $v->month . "-" . $v->day;
+            $cnt = count($response[$ymd]);
+            $response[$ymd][$cnt]['date'] = $ymd;
+            $response[$ymd][$cnt]['koumoku'] = $v->item;
+            $response[$ymd][$cnt]['price'] = $v->price;
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function monthlytraindata(Request $request)
+    {
+
+        $response = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $table = "t_article" . $year;
+
+        $traindata = DB::table($table)
+            ->where('year', '=', $year)
+            ->where('month', '=', $month)
+            ->where('tag', '=', '電車乗車')
+            ->orderBy('day')
+            ->orderBy('id')
+            ->get();
+
+        foreach ($traindata as $v) {
+            $ymd = $v->year . "-" . $v->month . "-" . $v->day;
+            $cnt = count($response[$ymd]);
+            $response[$ymd][$cnt] = $v->article;
+        }
+
+        return response()->json(['data' => $response]);
+
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function monthlytimeplace(Request $request)
+    {
+
+        $response = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $result = DB::table('t_timeplace')
+            ->where('year', '=', $year)
+            ->where('month', '=', $month)
+            ->orderBy('day')
+            ->orderBy('time')
+            ->get();
+
+        foreach ($result as $v) {
+            $ymd = $v->year . "-" . $v->month . "-" . $v->day;
+            $cnt = count($response[$ymd]);
+            $response[$ymd][$cnt]['date'] = $ymd;
+            $response[$ymd][$cnt]['time'] = $v->time;
+            $response[$ymd][$cnt]['place'] = $v->place;
+            $response[$ymd][$cnt]['price'] = $v->price;
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @param Request $request
      * @return mixed
      */
     public function timeplaceweekly(Request $request)
@@ -422,10 +526,10 @@ credit
         //------------------------------------------//
         $result = DB::table($table)
             ->where('year', $year)->where('month', $month)
-            ->where('article', 'like', '%ユーシーカード内訳%')->first(['article']);
+            ->where('article', 'like', '%ユーシーカード内訳%')->get();
 
-        if (isset($result->article)) {
-            $ex_result = explode("\n", $result->article);
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
             foreach ($ex_result as $v) {
                 $val = trim(strip_tags($v));
                 if (preg_match("/円.+円/", trim($val))) {
@@ -441,10 +545,10 @@ credit
         //------------------------------------------//
         $result = DB::table($table)
             ->where('year', $year)->where('month', $month)
-            ->where('article', 'like', '%楽天カード内訳%')->first(['article']);
+            ->where('article', 'like', '%楽天カード内訳%')->get();
 
-        if (isset($result->article)) {
-            $ex_result = explode("\n", $result->article);
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
             foreach ($ex_result as $v) {
                 $val = trim(strip_tags($v));
                 if (preg_match("/本人/", trim($val))) {
@@ -460,10 +564,10 @@ credit
         //------------------------------------------//
         $result = DB::table($table)
             ->where('year', $year)->where('month', $month)
-            ->where('article', 'like', '%住友カード内訳%')->first(['article']);
+            ->where('article', 'like', '%住友カード内訳%')->get();
 
-        if (isset($result->article)) {
-            $ex_result = explode("\n", $result->article);
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
             foreach ($ex_result as $v) {
                 $val = trim(strip_tags($v));
                 if (preg_match("/◎/", trim($val))) {

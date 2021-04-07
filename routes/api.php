@@ -38,6 +38,9 @@ Route::namespace('Api')->group(function () {
     Route::post('dutyData', 'ApiController@dutyData');
     Route::post('yachinData', 'ApiController@yachinData');
     Route::post('timeplacezerousedate', 'ApiController@timeplacezerousedate');
+    Route::post('monthspenditem', 'ApiController@monthspenditem');
+    Route::post('monthtraindata', 'ApiController@monthtraindata');
+    Route::post('monthtimeplace', 'ApiController@monthtimeplace');
 
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');
