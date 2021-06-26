@@ -100,6 +100,9 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
                                 echo "<td class='midashiTd' style='text-align : center;'>Suica2</td>";
                                 break;
 
+                            case "pay_e":
+                                echo "<td class='midashiTd' style='text-align : center;'>メルカリ</td>";
+                                break;
 
                             default:
                                 echo "<td class='midashiTd' style='text-align : center;'>" . $col . "</td>";
@@ -251,6 +254,13 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
         </form>
         <button id="btn_timeplace_input">input</button>
     </div>
+
+    <a href="{{ url('/money/golddatalist') }}" target="_blank">GOLD</a>
+    <br>
+    <a href="{{ url('/money/mercaridatalist') }}" target="_blank">MERCARI</a>
+    <br>
+    <a href="{{ url('/money/funddatalist') }}" target="_blank">FUND</a>
+    <div><br><br></div>
 
     <style type="text/css">
         <!--

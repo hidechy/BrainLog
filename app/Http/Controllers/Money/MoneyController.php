@@ -433,7 +433,7 @@ class MoneyController extends Controller
             ->get([
                 'year', 'month', 'day',
                 'bank_a', 'bank_b', 'bank_c', 'bank_d', 'bank_e',
-                'pay_a', 'pay_b', 'pay_c', 'pay_d'
+                'pay_a', 'pay_b', 'pay_c', 'pay_d', 'pay_e'
             ]);
 
         $data = [];
@@ -445,6 +445,8 @@ class MoneyController extends Controller
             $payA = [];
             $payB = [];
             $payC = [];
+            $payD = [];
+            $payE = [];
 
             foreach ($result as $v) {
                 $bankA[$v->bank_a][] = $v->year . "-" . $v->month . "-" . $v->day;
@@ -457,9 +459,10 @@ class MoneyController extends Controller
                 $payB[$v->pay_b][] = $v->year . "-" . $v->month . "-" . $v->day;
                 $payC[$v->pay_c][] = $v->year . "-" . $v->month . "-" . $v->day;
                 $payD[$v->pay_d][] = $v->year . "-" . $v->month . "-" . $v->day;
+                $payE[$v->pay_e][] = $v->year . "-" . $v->month . "-" . $v->day;
             }
 
-            $bankAry = ['bankA', 'bankB', 'bankC', 'bankD', 'bankE', 'payA', 'payB', 'payC', 'payD'];
+            $bankAry = ['bankA', 'bankB', 'bankC', 'bankD', 'bankE', 'payA', 'payB', 'payC', 'payD', 'payE'];
 
             foreach ($bankAry as $v) {
                 $i = 0;
@@ -591,6 +594,9 @@ class MoneyController extends Controller
     {
         $data = [];
         list($data['year'], $data['month'], $data['day']) = explode("-", $_POST['salary_date']);
+
+        $data['ymd'] = strtr(trim($_POST['salary_date']), ['-' => '']);
+
         $data['company'] = $_POST['salary_company'];
         $data['salary'] = $_POST['salary_money'];
         $data['created_at'] = date("Y-m-d H:i:s");
@@ -601,7 +607,12 @@ class MoneyController extends Controller
 
     public function credit()
     {
-        $result = DB::table('t_credit')->orderBy('year')->orderBy('month')->orderBy('day')->orderBy('item')->get();
+        $result = DB::table('t_credit')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->orderBy('id')
+            ->get();
 
         $_itemAry = [];
 
@@ -1031,7 +1042,11 @@ class MoneyController extends Controller
             $bank = $lineSum[1];
             $pay = $lineSum[2];
         }
-        $bm_all = array_sum($sum) + array_sum($bank) + array_sum($pay);
+        if (isset($pay)) {
+            $bm_all = array_sum($sum) + array_sum($bank) + array_sum($pay);
+        } else {
+            $bm_all = array_sum($sum) + array_sum($bank);
+        }
         //-----------------------------------//（前月末の合計金額）
 
         $column = [];
@@ -1575,11 +1590,17 @@ class MoneyController extends Controller
                 $input[$i]['month'] = $month;
                 $input[$i]['day'] = $day;
 
+                $input[$i]['ymd'] = $year . $month . $day;
+
                 $ex_v = explode("\t", trim($v));
 
                 $input[$i]['koumoku'] = trim($ex_v[0]);
                 $input[$i]['price'] = trim($ex_v[1]);
                 $input[$i]['flag'] = "";
+
+                $input[$i]['created_at'] = date("Y-m-d H:i:s");
+                $input[$i]['updated_at'] = date("Y-m-d H:i:s");
+
                 $i++;
             }
 
@@ -1607,9 +1628,16 @@ class MoneyController extends Controller
             $insert = [];
 
             preg_match("/(.+)月(.+)日/", trim($date), $m);
-            $insert['year'] = date("Y");
-            $insert['month'] = sprintf("%02d", trim($m[1]));
-            $insert['day'] = sprintf("%02d", trim($m[2]));
+
+            $year = date("Y");
+            $month = sprintf("%02d", trim($m[1]));
+            $day = sprintf("%02d", trim($m[2]));
+
+            $insert['year'] = $year;
+            $insert['month'] = $month;
+            $insert['day'] = $day;
+
+            $insert['ymd'] = $year . $month . $day;
 
             $substr_H = substr(trim($time), 0, 2);
             $substr_M = substr(trim($time), 2);
@@ -1702,6 +1730,8 @@ class MoneyController extends Controller
 臨時収入
 給付金
 プラス
+メルカリ
+投資信託
 ";
 
         $item = [];
@@ -1796,7 +1826,7 @@ class MoneyController extends Controller
             'yen_10000', 'yen_5000', 'yen_2000', 'yen_1000',
             'yen_500', 'yen_100', 'yen_50', 'yen_10', 'yen_5', 'yen_1',
             'bank_a', 'bank_b', 'bank_c', 'bank_d', 'bank_e',
-            'pay_a', 'pay_b', 'pay_c'
+            'pay_a', 'pay_b', 'pay_c', 'pay_d', 'pay_e'
         ];
 
         $hand = [];
@@ -2329,7 +2359,7 @@ class MoneyController extends Controller
                 ->where('day', '=', $y_day)
                 ->get();
 
-            foreach (['bank_a', 'bank_b', 'bank_c', 'bank_d', 'bank_e', 'pay_a', 'pay_b', 'pay_c'] as $copy) {
+            foreach (['bank_a', 'bank_b', 'bank_c', 'bank_d', 'bank_e', 'pay_a', 'pay_b', 'pay_c', 'pay_d', 'pay_e'] as $copy) {
                 $insert[$copy] = $oneBefore[0]->$copy;
             }
 
@@ -2410,7 +2440,9 @@ class MoneyController extends Controller
         $result2 = DB::table('t_money')
             ->where('id', '>=', $result[0]->id)
             ->orderBy('id')
-            ->get(['year', 'month', 'day', 'bank_a', 'bank_b', 'bank_c', 'bank_d', 'bank_e', 'pay_a', 'pay_b', 'pay_c']);
+            ->get(['year', 'month', 'day',
+                'bank_a', 'bank_b', 'bank_c', 'bank_d', 'bank_e',
+                'pay_a', 'pay_b', 'pay_c', 'pay_d', 'pay_e']);
 
         $bkYen = 0;
         foreach ($result2 as $k => $v) {
@@ -2423,5 +2455,632 @@ class MoneyController extends Controller
         return view('money.api')
             ->with('moneydata', $moneydata);
     }
+
+    /**
+     * @return mixed
+     */
+    public function creditdatainput()
+    {
+        $bankData = [];
+        $lastData = [];
+
+        $result = DB::table('t_money')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
+
+
+        foreach ($result as $v) {
+            $bankData['bank_a'] = [
+                'price' => trim($v->bank_a)
+            ];
+
+            $bankData['bank_b'] = [
+                'price' => trim($v->bank_b)
+            ];
+
+            $bankData['bank_c'] = [
+                'price' => trim($v->bank_c)
+            ];
+
+            $bankData['bank_d'] = [
+                'price' => trim($v->bank_d)
+            ];
+
+            $bankData['bank_e'] = [
+                'price' => trim($v->bank_e)
+            ];
+        }
+
+        //-----------------------------------//
+        $result = DB::table('t_credit')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
+
+        $lastData['A'] = [];
+        $lastData['B'] = [];
+        $lastData['C'] = [];
+        $lastData['D'] = [];
+        $lastData['E'] = [];
+
+        foreach ($result as $v) {
+            $lastData[trim($v->bank)] = [
+                'year' => trim($v->year),
+                'month' => trim($v->month),
+                'day' => trim($v->day),
+
+                'item' => trim($v->item),
+                'price' => trim($v->price)
+            ];
+        }
+        //-----------------------------------//
+
+        return view('money.datainput')
+            ->with('bankData', $bankData)
+            ->with('lastData', $lastData);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function creditdatamodify()
+    {
+
+        $data = [];
+        switch ($_POST['bank']) {
+
+            case "A":
+                $data = $this->_makeInputCreditData($_POST['bank'], "mizuho", $_POST);
+                break;
+
+            case "B":
+            case "C":
+                $data = $this->_makeInputCreditData($_POST['bank'], "sumitomo", $_POST);
+                break;
+
+            case "D":
+                $data = $this->_makeInputCreditData($_POST['bank'], "ufj", $_POST);
+                break;
+
+            case "E":
+                $data = $this->_makeInputCreditData($_POST['bank'], "rakuten", $_POST);
+                break;
+
+        }
+
+        return view('money.datamodify')
+            ->with('data', $data);
+    }
+
+    /**
+     * @param $bank
+     * @param $data
+     * @return array
+     */
+    private function _makeInputCreditData($databank, $bank, $data)
+    {
+        $credit = [];
+        $ex_credit = explode("\n", trim($data['credit']));
+
+        switch ($bank) {
+
+            case "mizuho":
+                foreach ($ex_credit as $k => $v) {
+                    if (trim($v) == "") {
+                        continue;
+                    }
+
+                    $ex_v = explode("\t", trim($v));
+
+                    //date
+                    list($year, $month, $day) = explode("-", trim($ex_v[0]));
+
+                    //price
+                    $price = trim($ex_v[1]);
+
+                    //item
+                    $item = trim($ex_v[3]);
+
+                    $credit[$k] = [
+                        'bank' => $databank,
+                        'year' => $year,
+                        'month' => $month,
+                        'day' => $day,
+                        'price' => $price,
+                        'item' => $item,
+                        'bank_price' => 0
+                    ];
+                }
+                break;
+
+            case "sumitomo":
+                foreach ($ex_credit as $k => $v) {
+                    if (trim($v) == "") {
+                        continue;
+                    }
+
+                    $ex_v = explode("\t", trim($v));
+
+                    //date
+                    $ex_v0 = explode(".", trim($ex_v[0]));
+                    $_ye = trim(strtr($ex_v0[0], ['R' => '']));
+                    $plus_year = 2018;
+                    $year = ($_ye + $plus_year);
+                    $month = sprintf("%02d", trim($ex_v0[1]));
+                    $day = sprintf("%02d", trim($ex_v0[2]));
+
+                    //price
+                    $price = trim(strtr($ex_v[1], [',' => '', '円' => '']));
+
+                    //item
+                    $item = $this->_getItemWord(trim($ex_v[3]));
+
+                    //bank_price
+                    $bank_price = trim(strtr($ex_v[4], [',' => '', '円' => '']));
+
+                    $credit[$k] = [
+                        'bank' => $databank,
+                        'year' => $year,
+                        'month' => $month,
+                        'day' => $day,
+                        'price' => $price,
+                        'item' => $item,
+                        'bank_price' => $bank_price
+                    ];
+                }
+                break;
+
+            case "ufj":
+                $j = 0;
+                for ($i = 0; $i < count($ex_credit); $i += 2) {
+                    if (trim($ex_credit[$i]) == "") {
+                        continue;
+                    }
+
+                    if (trim($ex_credit[$i + 1]) == "") {
+                        continue;
+                    }
+
+                    $year = trim(strtr($ex_credit[$i], ['年' => '']));
+
+                    $line = trim($ex_credit[$i + 1]);
+                    $ex_line = explode("\t", $line);
+
+                    //date
+                    preg_match("/(.+)月(.+)日/", trim($ex_line[0]), $m);
+                    $month = sprintf("%02d", $m[1]);
+                    $day = sprintf("%02d", $m[2]);
+
+                    //price
+                    $price = "";
+                    if (trim($ex_line[1]) != "") {
+                        $price = trim(strtr($ex_line[1], [',' => '', '円' => '']));
+                    }
+
+                    if (trim($price) == "") {
+                        continue;
+                    }
+
+                    if (trim($price) == "　") {
+                        continue;
+                    }
+
+                    //item
+                    $item = $this->_getItemWord(trim($ex_line[3]));
+
+                    //bank_price
+                    $bank_price = trim(strtr($ex_line[4], [',' => '', '円' => '']));
+
+                    $credit[$j] = [
+                        'bank' => $databank,
+                        'year' => $year,
+                        'month' => $month,
+                        'day' => $day,
+                        'price' => $price,
+                        'item' => $item,
+                        'bank_price' => $bank_price
+                    ];
+
+                    $j++;
+                }
+                break;
+
+            case "rakuten":
+                foreach ($ex_credit as $k => $v) {
+                    if (trim($v) == "") {
+                        continue;
+                    }
+
+                    $ex_v = explode("\t", trim($v));
+
+                    $year = sprintf("%02d", trim($ex_v[0]));
+                    $month = sprintf("%02d", trim($ex_v[1]));
+                    $day = sprintf("%02d", trim($ex_v[2]));
+
+                    $item = trim($ex_v[3]);
+                    $price = trim($ex_v[4]);
+                    $bank_price = trim($ex_v[5]);
+
+                    $credit[$k] = [
+                        'bank' => $databank,
+                        'year' => $year,
+                        'month' => $month,
+                        'day' => $day,
+                        'price' => $price,
+                        'item' => $item,
+                        'bank_price' => $bank_price
+                    ];
+                }
+
+                break;
+        }
+
+        return $credit;
+    }
+
+    /**
+     * @param $word
+     * @return string
+     */
+    private function _getItemWord($word)
+    {
+        $ary = [
+            "ﾃﾞﾝｷﾘﾖｳｷﾝﾄｳ" => "水道光熱費",
+            "ｶ)ｻｲｻﾝ ﾌﾘｶｴ" => "水道光熱費",
+            "ｶﾅｶﾞﾜｹﾝﾐﾝｷﾖｳｻｲ" => "共済代",
+            "国年基金" => "国民年金基金",
+            "為替手数料　フリコミ　テスウリヨウ" => "手数料"
+        ];
+
+        return (isset($ary[$word])) ? $ary[$word] : $word;
+    }
+
+
+    /**
+     *
+     */
+    public function creditdatainputexecute()
+    {
+        $num = count($_POST['bank']);
+        for ($i = 0; $i < $num; $i++) {
+
+            $year = trim($_POST['year'][$i]);
+            $month = trim($_POST['month'][$i]);
+            $day = trim($_POST['day'][$i]);
+
+            $item = trim($_POST['item'][$i]);
+            $price = trim($_POST['price'][$i]);
+
+            $bank = trim($_POST['bank'][$i]);
+            $bank_price = trim($_POST['bank_price'][$i]);
+
+            //---------------------------------------//credit
+            if (trim($_POST['item'][$i]) != "") {
+                $sql = " select * from t_credit where year = '" . $year . "' and month = '" . $month . "' and day = '" . $day . "' and concat(item, price) = '" . $item . $price . "'; ";
+                $result = DB::select($sql);
+
+                if (isset($result[0])) {
+                } else {
+                    $insert = [];
+                    $insert['year'] = $year;
+                    $insert['month'] = $month;
+                    $insert['day'] = $day;
+
+                    $insert['ymd'] = $year . $month . $day;
+
+                    $insert['item'] = $item;
+                    $insert['price'] = $price;
+                    $insert['bank'] = $bank;
+
+                    $insert['created_at'] = date("Y-m-d H:i:s");
+                    $insert['updated_at'] = date("Y-m-d H:i:s");
+
+                    DB::table('t_credit')->insert($insert);
+                }
+            }
+            //---------------------------------------//credit
+
+            //---------------------------------------//bank
+            $result = DB::table('t_money')
+                ->where('year', '=', $year)
+                ->where('month', '=', $month)
+                ->where('day', '=', $day)
+                ->get(['id']);
+
+            if (isset($result[0])) {
+                $update = [];
+                switch ($bank) {
+                    case "A":
+                        $update['bank_a'] = $bank_price;
+                        break;
+                    case "B":
+                        $update['bank_b'] = $bank_price;
+                        break;
+                    case "C":
+                        $update['bank_c'] = $bank_price;
+                        break;
+                    case "D":
+                        $update['bank_d'] = $bank_price;
+                        break;
+                    case "E":
+                        $update['bank_e'] = $bank_price;
+                        break;
+                }
+
+                DB::table('t_money')->where('id', '>=', $result[0]->id)->update($update);
+            }
+            //---------------------------------------//bank
+
+        }
+
+        return redirect('/money/credit');
+    }
+
+    /**
+     *
+     */
+    public function golddatalist()
+    {
+        $result = DB::table('t_gold')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
+
+        return view('money.golddatalist')
+            ->with('result', $result);
+    }
+
+    /**
+     *
+     */
+    public function golddatainput()
+    {
+        return view('money.golddatainput');
+    }
+
+    /**
+     *
+     */
+    public function golddatainputexecute()
+    {
+        if (trim($_POST['golddata']) != "") {
+            $ex_postdata = explode("\n", $_POST['golddata']);
+
+            $lineno = 0;
+            foreach ($ex_postdata as $k => $v) {
+                if (preg_match("/^" . date("Y") . "/", trim($v))) {
+                    $lineno = $k;
+                    break;
+                }
+            }
+
+            $data = [];
+            for ($i = $lineno; $i < count($ex_postdata); $i += 3) {
+                if (($lineno + $i) > count($ex_postdata)) {
+                    break;
+                }
+
+                if (isset($ex_postdata[$i]) and isset($ex_postdata[$i + 1]) and isset($ex_postdata[$i + 2])) {
+                    $data[] = $ex_postdata[$i] . "\t" . $ex_postdata[$i + 1] . "\t" . $ex_postdata[$i + 2];
+                }
+            }
+
+            foreach ($data as $v) {
+                $ex_v = explode("\t", trim($v));
+
+                list($year, $month, $day) = explode("/", trim($ex_v[0]));
+
+                $result = DB::table('t_gold')
+                    ->where('year', '=', $year)
+                    ->where('month', '=', $month)
+                    ->where('day', '=', $day)
+                    ->get();
+
+                if (!empty($result[0])) {
+                    continue;
+                }
+
+                $insert = [];
+                $insert['year'] = $year;
+                $insert['month'] = $month;
+                $insert['day'] = $day;
+
+                $insert['yakujou_date'] = trim($ex_v[3]);
+                $insert['gold_tanka'] = trim(strtr($ex_v[12], [',' => '', '円' => '']));
+                $insert['gram_num'] = trim(strtr($ex_v[11], ['g' => '']));
+                $insert['gold_price'] = trim(strtr($ex_v[10], [',' => '', '円' => '']));
+                $insert['tesuuryou'] = trim(strtr($ex_v[13], [',' => '', '円' => '']));
+                $insert['ukewatashi_date'] = trim($ex_v[6]);
+                $insert['ukewatashi_price'] = trim(strtr($ex_v[14], [',' => '', '円' => '']));
+
+                DB::table('t_gold')->insert($insert);
+            }
+        }
+
+        return redirect('/money/golddatalist');
+    }
+
+    /**
+     *
+     */
+    public function mercaridatalist()
+    {
+
+        $result = DB::table('t_mercari')
+            ->orderBy('settlement_at')
+            ->get();
+
+        return view('money.mercaridatalist')
+            ->with('result', $result);
+    }
+
+    /**
+     *
+     */
+    public function mercaridatainput()
+    {
+        return view('money.mercaridatainput');
+    }
+
+    /**
+     *
+     */
+    public function mercaridatainputexecute()
+    {
+        if (trim($_POST['mercaridata']) != "") {
+            $ex_postdata = explode("\n", $_POST['mercaridata']);
+
+            $insert = [];
+            $i = 0;
+            foreach ($ex_postdata as $v) {
+                if (trim($v) == "") {
+                    continue;
+                }
+
+                $ex_v = explode("\t", trim($v));
+
+                $insert[$i]['buy_sell'] = trim($ex_v[0]);
+                $insert[$i]['title'] = trim($ex_v[1]);
+
+                if (trim($ex_v[0]) == "sell") {
+                    $insert[$i]['sell_price'] = trim($ex_v[2]);
+                    $insert[$i]['tesuuryou'] = trim($ex_v[3]);
+                    $insert[$i]['shipping_fee'] = trim($ex_v[5]);
+                    $insert[$i]['price'] = trim($ex_v[18]);
+
+                    $insert[$i]['receive_at'] = "";
+
+                    //----------------//
+                    $_de = explode("|", strtr(trim($ex_v[9]), ['月' => '|', '日' => '']));
+                    $year = date("Y");
+                    $month = sprintf("%02d", $_de[0]);
+                    $day = sprintf("%02d", $_de[1]);
+                    $__de = sprintf("%04d", trim($ex_v[10]));
+                    $hour = substr($__de, 0, 2);
+                    $minute = substr($__de, 2);
+                    $dept = strtotime("$year-$month-$day $hour:$minute");
+                    $insert[$i]['departured_at'] = date("Y-m-d H", $dept) . ":00:00";
+                    //----------------//
+                }
+
+                if (trim($ex_v[0]) == "buy") {
+                    $insert[$i]['sell_price'] = 0;
+                    $insert[$i]['tesuuryou'] = 0;
+                    $insert[$i]['shipping_fee'] = 0;
+                    $insert[$i]['price'] = trim($ex_v[18]) * -1;
+
+                    $insert[$i]['departured_at'] = "";
+
+                    //----------------//
+                    $_re = explode("|", strtr(trim($ex_v[15]), ['月' => '|', '日' => '']));
+                    $year = date("Y");
+                    $month = sprintf("%02d", $_re[0]);
+                    $day = sprintf("%02d", $_re[1]);
+                    $__re = sprintf("%04d", trim($ex_v[16]));
+                    $hour = substr($__re, 0, 2);
+                    $minute = substr($__re, 2);
+                    $rec = strtotime("$year-$month-$day $hour:$minute");
+                    $insert[$i]['receive_at'] = date("Y-m-d H", $rec) . ":00:00";
+                    //----------------//
+                }
+
+                //----------------//
+                $_se = explode("|", strtr(trim($ex_v[12]), ['月' => '|', '日' => '']));
+                $year = date("Y");
+                $month = sprintf("%02d", $_se[0]);
+                $day = sprintf("%02d", $_se[1]);
+                $__se = sprintf("%04d", trim($ex_v[13]));
+                $hour = substr($__se, 0, 2);
+                $minute = substr($__se, 2);
+                $sett = strtotime("$year-$month-$day $hour:$minute");
+                $insert[$i]['settlement_at'] = date("Y-m-d H", $sett) . ":00:00";
+                //----------------//
+
+                $i++;
+            }
+
+            DB::table('t_mercari')->insert($insert);
+        }
+
+        return redirect('/money/mercaridatalist');
+    }
+
+    /**
+     *
+     */
+    public function funddatalist()
+    {
+        $result = DB::table('t_fund')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
+
+        return view('money.funddatalist')
+            ->with('result', $result);
+    }
+
+    /**
+     *
+     */
+    public function funddatainput()
+    {
+        return view('money.funddatainput');
+    }
+
+    /**
+     *
+     */
+    public function funddatainputexecute()
+    {
+        if (trim($_POST['funddata']) != "") {
+            $ex_postdata = explode("\n", $_POST['funddata']);
+
+            $a = 0;
+            $b = 0;
+            foreach ($ex_postdata as $k => $v) {
+                if (preg_match("/^金額/", trim($v))) {
+                    $a = $k;
+                }
+                if (preg_match("/^・本メールは/", trim($v))) {
+                    $b = $k;
+                }
+            }
+
+            $ary = [];
+            for ($i = ($a + 1); $i < $b; $i += 3) {
+                $ary[] = $ex_postdata[$i] . $ex_postdata[$i + 1] . $ex_postdata[$i + 2];
+            }
+
+            $insert = [];
+            foreach ($ary as $k=>$v) {
+                $ex_v = explode("\t", trim($v));
+
+                $insert[$k]['fundname'] = trim($ex_v[0]);
+                $insert[$k]['base_price'] = strtr(trim($ex_v[1]), [',' => '', '円' => '']);
+                $insert[$k]['compare_front'] = trim($ex_v[2]);
+
+                $ex_v_3 = explode("|", trim($ex_v[3]));
+                $insert[$k]['yearly_return'] = trim($ex_v_3[0]);
+
+                $year = date("Y");
+                $month = substr(trim($ex_v_3[1]), 0, 2);
+                $day = substr(trim($ex_v_3[1]), 2);
+
+                $insert[$k]['year'] = $year;
+                $insert[$k]['month'] = $month;
+                $insert[$k]['day'] = $day;
+            }
+
+            DB::table('t_fund')->insert($insert);
+        }
+
+        return redirect('/money/funddatalist');
+    }
+
 
 }

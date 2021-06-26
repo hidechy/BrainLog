@@ -22,10 +22,13 @@ Route::namespace('Api')->group(function () {
     Route::post('getholiday', 'ApiController@getholiday');
 
     //money
+    Route::post('getmonthstartmoney', 'ApiController@getmonthstartmoney');
+    Route::post('getsalary', 'ApiController@getsalary');
     Route::post('spenditem', 'ApiController@spenditem');
     Route::post('traindata', 'ApiController@traindata');
     Route::post('timeplace', 'ApiController@timeplace');
     Route::post('moneyinsert', 'ApiController@moneyinsert');
+    Route::post('moneydownload', 'ApiController@moneydownload');
     Route::post('monthsummary', 'ApiController@monthsummary');
     Route::post('yearsummary', 'ApiController@yearsummary');
     Route::post('uccardspend', 'ApiController@uccardspend');
@@ -38,9 +41,15 @@ Route::namespace('Api')->group(function () {
     Route::post('dutyData', 'ApiController@dutyData');
     Route::post('yachinData', 'ApiController@yachinData');
     Route::post('timeplacezerousedate', 'ApiController@timeplacezerousedate');
-    Route::post('monthspenditem', 'ApiController@monthspenditem');
-    Route::post('monthtraindata', 'ApiController@monthtraindata');
-    Route::post('monthtimeplace', 'ApiController@monthtimeplace');
+    Route::post('monthlyspenditem', 'ApiController@monthlyspenditem');
+    Route::post('monthlytraindata', 'ApiController@monthlytraindata');
+    Route::post('monthlytimeplace', 'ApiController@monthlytimeplace');
+    Route::post('monthlyweeknum', 'ApiController@monthlyweeknum');
+    Route::post('getMonthlyBankRecord', 'ApiController@getMonthlyBankRecord');
+    Route::post('getgolddata', 'ApiController@getgolddata');
+    Route::post('gettraindata', 'ApiController@gettraindata');
+    Route::post('mercaridata', 'ApiController@mercaridata');
+    Route::post('getITFRecord', 'ApiController@getITFRecord');
 
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');

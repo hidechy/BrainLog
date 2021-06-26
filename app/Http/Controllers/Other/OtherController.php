@@ -99,15 +99,13 @@ class OtherController extends Controller
         $date = [];
         $ex_AAA1 = explode("|", strtr($ex_AAA[1], ['><' => '>|<']));
         foreach ($ex_AAA1 as $value) {
-            if (preg_match("/<th(.+)th>/", trim($value), $m)) {
-                $stTag = trim(strip_tags("<th" . $m[1] . "th>", "<br>"));
-                $date[] = $stTag;
+            if (preg_match("/<th.+class=\"date\">(.+)<\/th>/",trim($value),$m)){
+                $ex_m1 = explode("日",trim($m[1]));
+                $date[] = trim($ex_m1[0]);
             }
         }
 
-        preg_match("/(.+)日/", trim($date[1]), $m);
-        $startDate = date("Y-m-") . $m[1];
-
+        $startDate = date("Y-m-").$date[0];
         $date[1] = $startDate;
         for ($i = 2; $i < count($date); $i++) {
             $date[$i] = date("Y-m-d", strtotime($startDate) + (86400 * ($i - 1)));

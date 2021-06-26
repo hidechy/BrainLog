@@ -6,7 +6,7 @@ array_pop($ex_phpself);
 $public_path = implode("/" , $ex_phpself);
 //---------//
 
-$bankAry = ['bank_a' , 'bank_b' , 'bank_c' , 'bank_d' , 'bank_e', 'pay_a' , 'pay_b', 'pay_c', 'pay_d'];
+$bankAry = ['bank_a' , 'bank_b' , 'bank_c' , 'bank_d' , 'bank_e', 'pay_a' , 'pay_b', 'pay_c', 'pay_d', 'pay_e'];
 ?>
 
 @extends('layouts.brain')

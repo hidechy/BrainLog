@@ -61,13 +61,7 @@ Route::post('/money/weeklyinsert', 'Money\MoneyController@weeklyinsert');
 Route::get('/money/{yearmonth}/monthlydisp', 'Money\MoneyController@monthlydisp');
 Route::post('/money/spendinput', 'Money\MoneyController@spendinput');
 Route::post('/money/timeplaceinput', 'Money\MoneyController@timeplaceinput');
-
-
-
 Route::get('/money/{yearmonth}/itemsummary', 'Money\MoneyController@itemsummary');
-
-
-
 Route::get('/money/{yearmonth}/api', 'Money\MoneyController@api');
 Route::get('/money/{yearmonth}/samedayapi', 'Money\MoneyController@samedayapi');
 Route::get('/money/{yearmonth}/spenditemapi', 'Money\MoneyController@spenditemapi');
@@ -77,8 +71,21 @@ Route::get('/money/{yearmonth}/monthkoumokuapi', 'Money\MoneyController@monthkou
 Route::get('/money/{data}/onedayinputapi', 'Money\MoneyController@onedayinputapi');
 Route::get('/money/monthscoreapi', 'Money\MoneyController@monthscoreapi');
 Route::get('/money/{bank}/bankapi', 'Money\MoneyController@bankapi');
+Route::get('/money/creditdatainput', 'Money\MoneyController@creditdatainput');
+Route::post('/money/creditdatamodify', 'Money\MoneyController@creditdatamodify');
+Route::post('/money/creditdatainputexecute', 'Money\MoneyController@creditdatainputexecute');
 
+Route::get('/money/golddatalist', 'Money\MoneyController@golddatalist');
+Route::get('/money/golddatainput', 'Money\MoneyController@golddatainput');
+Route::post('/money/golddatainputexecute', 'Money\MoneyController@golddatainputexecute');
 
+Route::get('/money/mercaridatalist', 'Money\MoneyController@mercaridatalist');
+Route::get('/money/mercaridatainput', 'Money\MoneyController@mercaridatainput');
+Route::post('/money/mercaridatainputexecute', 'Money\MoneyController@mercaridatainputexecute');
+
+Route::get('/money/funddatalist', 'Money\MoneyController@funddatalist');
+Route::get('/money/funddatainput', 'Money\MoneyController@funddatainput');
+Route::post('/money/funddatainputexecute', 'Money\MoneyController@funddatainputexecute');
 
 //[other]
 Route::get('/other/tuning', 'Other\OtherController@tuning');
