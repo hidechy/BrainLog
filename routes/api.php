@@ -50,6 +50,7 @@ Route::namespace('Api')->group(function () {
     Route::post('gettraindata', 'ApiController@gettraindata');
     Route::post('mercaridata', 'ApiController@mercaridata');
     Route::post('getITFRecord', 'ApiController@getITFRecord');
+    Route::post('getFundRecord', 'ApiController@getFundRecord');
 
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');
@@ -70,6 +71,7 @@ Route::namespace('Api')->group(function () {
     Route::post('dailyuranai', 'ApiController@dailyuranai');
     Route::post('monthlyuranai', 'ApiController@monthlyuranai');
     Route::post('monthlyuranaidetail', 'ApiController@monthlyuranaidetail');
+    Route::post('leofortune', 'ApiController@leofortune');
 
     //kotowaza
     Route::post('getkotowazacount', 'ApiController@getkotowazacount');

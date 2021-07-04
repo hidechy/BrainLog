@@ -521,6 +521,30 @@ class ApiController extends Controller
                 $str = implode("\n", $response[date("Y-m-d", $i)]);
                 $str .= "|";
                 $str .= (isset($koutsuuhi[date("Y-m-d", $i)])) ? $koutsuuhi[date("Y-m-d", $i)] : "";
+
+                //----------------------//
+                $ary3 = [];
+                foreach ($response[date("Y-m-d", $i)] as $v3) {
+                    $ex_v3 = explode("\n", trim($v3));
+                    foreach ($ex_v3 as $vv3) {
+                        $ex_vv3 = explode("-", trim($vv3));
+                        foreach ($ex_vv3 as $vvv3) {
+                            $ary3[$vvv3][] = "";
+                        }
+                    }
+                }
+
+                $oufuku = 1;
+                foreach ($ary3 as $vvvv3) {
+                    if (count($vvvv3) == 1) {
+                        $oufuku = 0;
+                    }
+                }
+
+                $str .= "|" . $oufuku;
+                //----------------------//
+
+
                 $response2[date("Y-m-d", $i)] = $str;
             } else {
                 $response2[date("Y-m-d", $i)] = "";
@@ -683,6 +707,7 @@ class ApiController extends Controller
         $ary['pay_b'] = $result[0]->pay_b;
         $ary['pay_c'] = $result[0]->pay_c;
         $ary['pay_d'] = $result[0]->pay_d;
+        $ary['pay_e'] = $result[0]->pay_e;
 
         $response = implode("|", $ary);
 
@@ -722,7 +747,7 @@ class ApiController extends Controller
         $summary4 = [];
         foreach ($summary3 as $koumoku => $v) {
             $summary4[$koumoku]['sum'] = $v['sum'];
-            $summary4[$koumoku]['percent'] = floor($v['sum'] / $total * 100);
+            $summary4[$koumoku]['percent'] = ($v['sum'] > 0) ? floor($v['sum'] / $total * 100) : 0;
         }
 
         $item = $this->getItemMidashi();
@@ -1846,6 +1871,38 @@ GOLD
         return response()->json(['data' => $response]);
     }
 
+    /**
+     * @param Request $request
+     */
+    public function getFundRecord(Request $request)
+    {
+        $response = [];
+
+        $sql = " select fundname from t_fund group by fundname; ";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            $result2 = DB::table('t_fund')
+                ->where('fundname', '=', $v->fundname)
+                ->orderBy('year')
+                ->orderBy('month')
+                ->orderBy('day')
+                ->get();
+
+            foreach ($result2 as $v2) {
+                $response[$v->fundname][] = [
+                    'year' => $v2->year,
+                    'month' => $v2->month,
+                    'day' => $v2->day,
+                    'base_price' => $v2->base_price,
+                    'compare_front' => $v2->compare_front,
+                    'yearly_return' => $v2->yearly_return
+                ];
+            }
+        }
+
+        return response()->json(['data' => $response]);
+    }
 
     /**
      * @param Request $request
@@ -2619,6 +2676,35 @@ GOLD
 
         return response()->json(['data' => $response]);
 
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function leofortune(Request $request)
+    {
+
+        $response = 0;
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $file = public_path() . "/mySetting/leofortune.data";
+        $content = file_get_contents($file);
+        $ex_content = explode("\n", $content);
+        foreach ($ex_content as $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+
+            list($lf_year, $lf_month, $lf_day, ) = explode("|", trim($v));
+
+            if ("$year-$month-$day" == "$lf_year-$lf_month-$lf_day") {
+                $response = explode("|", trim($v));
+                break;
+            }
+        }
+
+        return response()->json(['data' => $response]);
     }
 
 }

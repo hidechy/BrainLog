@@ -15,7 +15,7 @@ class CreditRepairSeeder extends Seeder
         try {
             DB::beginTransaction();
 
-            $sql = " update t_credit set item = 'アイアールシー' where id in (1285); ";
+            $sql = " update t_credit set item = '保険料' where id in (1334, 1335); ";
             DB::update($sql);
 
             DB::commit();

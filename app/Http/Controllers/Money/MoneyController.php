@@ -3053,16 +3053,16 @@ class MoneyController extends Controller
 
             $ary = [];
             for ($i = ($a + 1); $i < $b; $i += 3) {
-                $ary[] = $ex_postdata[$i] . $ex_postdata[$i + 1] . $ex_postdata[$i + 2];
+                $ary[] = trim($ex_postdata[$i]) . trim($ex_postdata[$i + 1]) . trim($ex_postdata[$i + 2]);
             }
 
             $insert = [];
             foreach ($ary as $k=>$v) {
                 $ex_v = explode("\t", trim($v));
 
-                $insert[$k]['fundname'] = trim($ex_v[0]);
+                $insert[$k]['fundname'] = strtr(trim($ex_v[0]), ['\r' => '', '\n' => '']);
                 $insert[$k]['base_price'] = strtr(trim($ex_v[1]), [',' => '', '円' => '']);
-                $insert[$k]['compare_front'] = trim($ex_v[2]);
+                $insert[$k]['compare_front'] = strtr(trim($ex_v[2]), ['\r' => '', '\n' => '']);
 
                 $ex_v_3 = explode("|", trim($ex_v[3]));
                 $insert[$k]['yearly_return'] = trim($ex_v_3[0]);
