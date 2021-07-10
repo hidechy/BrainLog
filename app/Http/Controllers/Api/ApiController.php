@@ -2699,7 +2699,9 @@ GOLD
             list($lf_year, $lf_month, $lf_day, ) = explode("|", trim($v));
 
             if ("$year-$month-$day" == "$lf_year-$lf_month-$lf_day") {
-                $response = explode("|", trim($v));
+                $str = trim($v);
+                $str = strtr($str, ['明日' => '今日']);
+                $response = explode("|", $str);
                 break;
             }
         }
