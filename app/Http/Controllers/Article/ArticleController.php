@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\MyClass\Utility;
 use DB;
 use Input;
+use Carbon\Carbon;
 
 class ArticleController extends Controller
 {
@@ -1732,6 +1733,130 @@ class ArticleController extends Controller
         //-----------------------------------------//
 
         echo json_encode($kotowaza);
+    }
+
+    public function YahooUranaiGet()
+    {
+
+        $url = "https://fortune.yahoo.co.jp/12astro/leo";
+        $content = file_get_contents($url);
+        $ex_content = explode("\n" , mb_convert_encoding($content , "utf8" , "euc-jp"));
+
+        $str = "";
+        foreach ($ex_content as $v){
+            $str .= trim($v);
+        }
+
+        $uranai = [];
+        $uranai['date'] = date("Y-m-d");
+
+        $ex_str = explode("<!-- yftn12a-bg01/ -->" , $str);
+
+        $ary = [];
+        $a = explode("dl" , $ex_str[1]);
+        $b = strip_tags("<div" . $a[1] . "div>" , "<dt>");
+        $c = strtr($b , ['</dt>' => '<br>']);
+        $d = strip_tags($c , "<br>");
+        $ary[0] = trim($d);
+        $c = explode("点中" , $a[0]);
+        $d = explode("点" , $c[1]);
+        $ary[1] = trim($d[0]);
+        $uranai['total'] = implode(";" , $ary);
+
+        $ary = [];
+        $a = explode("<p>" , $ex_str[2]);
+        $b = explode("</p>" , $a[1]);
+        $ary[0] = trim($b[0]);
+        $c = explode("点中" , $a[0]);
+        $d = explode("点" , $c[1]);
+        $ary[1] = trim($d[0]);
+        $uranai['love'] = implode(";" , $ary);
+
+        $ary = [];
+        $a = explode("<p>" , $ex_str[3]);
+        $b = explode("</p>" , $a[1]);
+        $ary[0] = trim($b[0]);
+        $c = explode("点中" , $a[0]);
+        $d = explode("点" , $c[1]);
+        $ary[1] = trim($d[0]);
+        $uranai['money'] = implode(";" , $ary);
+
+        $ary = [];
+        $a = explode("<p>" , $ex_str[4]);
+        $b = explode("</p>" , $a[1]);
+        $ary[0] = trim($b[0]);
+        $c = explode("点中" , $a[0]);
+        $d = explode("点" , $c[1]);
+        $ary[1] = trim($d[0]);
+        $uranai['work'] = implode(";" , $ary);
+
+//print_r($uranai);
+
+        $data = [];
+
+        $file = "/var/www/html/BrainLog/public/mySetting/uranai.data";
+        $aaa = file_get_contents($file);
+        $ex_aaa = explode("\n" , $aaa);
+        foreach ($ex_aaa as $v){
+            if (trim($v) == ""){continue;}
+            $ex_v = explode("|" , trim($v));
+            $data[trim($ex_v[0])] = trim($v);
+        }
+
+        $data[date("Y-m-d")] = implode("|" , $uranai);
+        ksort($data);
+
+        file_put_contents($file , implode("\n" , $data));
+        chmod($file , 0777);
+
+        return redirect("/article/index");
+
+    }
+
+
+
+    public function LeoFortuneGet()
+    {
+
+        $url = "https://www.goodfortune.jp/fortune/tomorrow/leo";
+        $crawler = \Goutte::request('GET', $url);
+
+        $dr = $crawler->filter('.fortune_daily_rank')->text();
+        $daily_ranking = strtr($dr, ['位' => '']);
+
+        $re = $crawler->filter('.article_body.article_body_renaiun .mainNewsRight.mainNewsRight-detail .article_text')->text();
+        $renaiun = substr($re, strpos($re, "。") + 3);
+
+        $ki = $crawler->filter('.article_body.article_body_kinun .mainNewsRight.mainNewsRight-detail .article_text')->text();
+        $kinun = substr($ki, strpos($ki, "。") + 3);
+
+        $sh = $crawler->filter('.article_body.article_body_shigotoun .mainNewsRight.mainNewsRight-detail .article_text')->text();
+        $shigotoun = substr($sh, strpos($sh, "。") + 3);
+
+        $ta = $crawler->filter('.article_body.article_body_taijinun .mainNewsRight.mainNewsRight-detail .article_text')->text();
+        $taijinun = substr($ta, strpos($ta, "。") + 3);
+
+        $da = $crawler->filter('.contents_title.contents_title_type2.contents_title_center > h3')->text();
+        preg_match("/獅子座（しし座）(.+)月(.+)日の運勢/", trim($da), $m);
+
+        $insert = [
+            'year' => date("Y"),
+            'month' => sprintf("%02d", $m[1]),
+            'day' => sprintf("%02d", $m[2]),
+            'rank' => $daily_ranking,
+            'love' => trim($renaiun),
+            'money' => trim($kinun),
+            'work' => trim($shigotoun),
+            'man' => trim($taijinun)
+        ];
+
+        $file = "/var/www/html/BrainLog/public/mySetting/leofortune.data";
+        $fp = fopen($file, "a+");
+        fwrite($fp, mb_convert_encoding(implode("|", $insert), "utf-8")."\n");
+        fclose($fp);
+
+        return redirect("/article/index");
+
     }
 
 }

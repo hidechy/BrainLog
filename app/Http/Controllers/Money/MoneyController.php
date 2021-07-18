@@ -194,6 +194,52 @@ class MoneyController extends Controller
         }
 
         $thisMonth = $thisMonthYear . "-" . $thisMonthMonth;
+        /*
+                return view('money.index')
+                    ->with('year', $thisMonthYear)
+                    ->with('month', $thisMonthMonth)
+                    ->with('column', $column)
+                    ->with('data', $data)
+                    ->with('bm_all', $bm_all)
+                    ->with('yAry', $yAry)
+                    ->with('yNum', $yNum)
+                    ->with('prevMonth', $prevMonth)
+                    ->with('nextMonth', $nextMonth)
+                    ->with('holiday', $holiday)
+                    ->with('DailySpend', $DailySpend)
+                    ->with('thisMonth', $thisMonth)
+                    ->with('DisplayKoumoku', $_DisplayKoumoku)
+                    ->with('lastDay', $lastDay)
+                    ->with('thisMonthSpendTotal', $thisMonthSpendTotal);
+        */
+
+        ////////////////////////////// 暫定　20210718
+        $uranaiDate = "";
+        $file = "/var/www/html/BrainLog/public/mySetting/uranai.data";
+        $aaa = file_get_contents($file);
+        $ex_aaa = explode("\n", $aaa);
+        foreach ($ex_aaa as $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+            $ex_v = explode("|", trim($v));
+
+            if (preg_match("/^20/", trim($ex_v[0]))){
+                $uranaiDate = trim($ex_v[0]);
+            }
+        }
+
+        $leoFortuneDate = "";
+        $file = "/var/www/html/BrainLog/public/mySetting/leofortune.data";
+        $aaa = file_get_contents($file);
+        $ex_aaa = explode("\n", $aaa);
+        foreach ($ex_aaa as $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+            $ex_v = explode("|", trim($v));
+            $leoFortuneDate = trim($ex_v[0]) . "-" . trim($ex_v[1]) . "-" . trim($ex_v[2]);
+        }
 
         return view('money.index')
             ->with('year', $thisMonthYear)
@@ -210,7 +256,11 @@ class MoneyController extends Controller
             ->with('thisMonth', $thisMonth)
             ->with('DisplayKoumoku', $_DisplayKoumoku)
             ->with('lastDay', $lastDay)
-            ->with('thisMonthSpendTotal', $thisMonthSpendTotal);
+            ->with('thisMonthSpendTotal', $thisMonthSpendTotal)
+            ->with('uranaiDate', $uranaiDate)
+            ->with('leoFortuneDate', $leoFortuneDate);
+        ////////////////////////////// 暫定　20210718
+
     }
 
     public function input()
@@ -3057,7 +3107,7 @@ class MoneyController extends Controller
             }
 
             $insert = [];
-            foreach ($ary as $k=>$v) {
+            foreach ($ary as $k => $v) {
                 $ex_v = explode("\t", trim($v));
 
                 $insert[$k]['fundname'] = strtr(trim($ex_v[0]), ['\r' => '', '\n' => '']);
@@ -3080,6 +3130,173 @@ class MoneyController extends Controller
         }
 
         return redirect('/money/funddatalist');
+    }
+
+
+    /**
+     *
+     */
+    public function balancesheetlist()
+    {
+        $result = DB::table('t_balancesheet')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
+
+        return view('money.balancesheetlist')
+            ->with('result', $result);
+    }
+
+    /**
+     *
+     */
+    public function balancesheetinput()
+    {
+        return view('money.balancesheetinput');
+    }
+
+    /**
+     *
+     */
+    public function balancesheetinputexecute()
+    {
+        if (trim($_POST['balancesheet']) != "") {
+            $ex_balancesheet = explode("\n", $_POST['balancesheet']);
+
+            $insert = [];
+
+            $ex_balancesheet_0 = explode("/", trim($ex_balancesheet[0]));
+            $insert["year"] = sprintf("%04d", trim($ex_balancesheet_0[0]));
+            $insert["month"] = sprintf("%02d", trim($ex_balancesheet_0[1]));
+            $insert["day"] = "25";
+
+            foreach ($ex_balancesheet as $v) {
+                if (trim($v) == "") {
+                    continue;
+                }
+
+                $ex_v = explode("\t", trim($v));
+
+                switch ($ex_v[0]) {
+                    case "assets_total_deposit":
+                        $insert["assets_total_deposit_start"] = trim($ex_v[1]);
+                        $insert["assets_total_deposit_debit"] = trim($ex_v[2]);
+                        $insert["assets_total_deposit_credit"] = trim($ex_v[3]);
+                        $insert["assets_total_deposit_end"] = (trim($ex_v[1]) + trim($ex_v[2]) - trim($ex_v[3]));
+                        break;
+
+                    case "assets_total_receivable":
+                        $insert["assets_total_receivable_start"] = trim($ex_v[1]);
+                        $insert["assets_total_receivable_debit"] = trim($ex_v[2]);
+                        $insert["assets_total_receivable_credit"] = trim($ex_v[3]);
+                        $insert["assets_total_receivable_end"] = (trim($ex_v[1]) + trim($ex_v[2]) - trim($ex_v[3]));
+                        break;
+
+                    case "assets_total_fixed":
+                        $insert["assets_total_fixed_start"] = trim($ex_v[1]);
+                        $insert["assets_total_fixed_debit"] = trim($ex_v[2]);
+                        $insert["assets_total_fixed_credit"] = trim($ex_v[3]);
+                        $insert["assets_total_fixed_end"] = (trim($ex_v[1]) + trim($ex_v[2]) - trim($ex_v[3]));
+                        break;
+
+                    case "assets_total_lending":
+                        $insert["assets_total_lending_start"] = trim($ex_v[1]);
+                        $insert["assets_total_lending_debit"] = trim($ex_v[2]);
+                        $insert["assets_total_lending_credit"] = trim($ex_v[3]);
+                        $insert["assets_total_lending_end"] = (trim($ex_v[1]) + trim($ex_v[2]) - trim($ex_v[3]));
+                        break;
+
+                    case "capital_total_liabilities":
+                        $insert["capital_total_liabilities_start"] = trim($ex_v[1]);
+                        $insert["capital_total_liabilities_debit"] = trim($ex_v[2]);
+                        $insert["capital_total_liabilities_credit"] = trim($ex_v[3]);
+                        $insert["capital_total_liabilities_end"] = (trim($ex_v[1]) - trim($ex_v[2]) + trim($ex_v[3]));
+                        break;
+
+                    case "capital_total_borrow":
+                        $insert["capital_total_borrow_start"] = trim($ex_v[1]);
+                        $insert["capital_total_borrow_debit"] = trim($ex_v[2]);
+                        $insert["capital_total_borrow_credit"] = trim($ex_v[3]);
+                        $insert["capital_total_borrow_end"] = (trim($ex_v[1]) - trim($ex_v[2]) + trim($ex_v[3]));
+                        break;
+
+                    case "capital_total_principal":
+                        $insert["capital_total_principal_start"] = trim($ex_v[1]);
+                        $insert["capital_total_principal_debit"] = trim($ex_v[2]);
+                        $insert["capital_total_principal_credit"] = trim($ex_v[3]);
+                        $insert["capital_total_principal_end"] = (trim($ex_v[1]) - trim($ex_v[2]) + trim($ex_v[3]));
+                        break;
+
+                    case "capital_total_income":
+                        $insert["capital_total_income_start"] = trim($ex_v[1]);
+                        $insert["capital_total_income_debit"] = trim($ex_v[2]);
+                        $insert["capital_total_income_credit"] = trim($ex_v[3]);
+                        $insert["capital_total_income_end"] = (trim($ex_v[1]) - trim($ex_v[2]) + trim($ex_v[3]));
+                        break;
+                }
+            }
+
+            DB::table('t_balancesheet')->insert($insert);
+        }
+
+        return redirect('/money/balancesheetlist');
+    }
+
+
+    /**
+     *
+     */
+    public function makeMoneyTotalList()
+    {
+        $result = DB::table('t_money')->orderBy('year')->orderBy('month')->orderBy('day')->get();
+
+        if (isset($result[0])) {
+            $param = [];
+            foreach ($result as $v) {
+                $lineSum = $this->Utility->makeLineSum($v);
+                $sum = $lineSum[0];
+                $bank = $lineSum[1];
+                $pay = $lineSum[2];
+                $total = array_sum($sum) + array_sum($bank) + array_sum($pay);
+                $param[] = $v->year . "-" . $v->month . "-" . $v->day . "|" . $total;
+            }
+
+            if (!empty($param)) {
+                $param2 = [];
+                for ($i = 0; $i <= 99999; $i++) {
+                    if (isset($param[$i])) {
+                        $sagaku = 0;
+                        $date = "2014-06-01";
+                        $total = "1370938";
+                        if ($i > 0) {
+                            $data_yesterday = $param[$i - 1];
+                            $data_today = $param[$i];
+
+                            list(, $total_yesterday) = explode("|", $data_yesterday);
+                            list($date, $total) = explode("|", $data_today);
+
+                            $sagaku = ($i > 1) ? ($total_yesterday - $total) : (1370938 - $total);
+                        }
+
+                        $youbi = date("w", strtotime($date));
+                        $param2[] = $date . "|" . $youbi . "|" . $total . "|" . $sagaku;
+                    }
+                }
+
+                if (!empty($param2)) {
+                    $file = "/var/www/html/BrainLog/public/mySetting/MoneyTotal.data";
+                    if (file_exists($file)) {
+                        unlink($file);
+                    }
+
+                    file_put_contents($file, implode("\n", $param2));
+                    chmod($file, 0777);
+                }
+            }
+        }
+
+        return redirect('/money/index');
     }
 
 

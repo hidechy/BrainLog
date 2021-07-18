@@ -260,6 +260,36 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
     <a href="{{ url('/money/mercaridatalist') }}" target="_blank">MERCARI</a>
     <br>
     <a href="{{ url('/money/funddatalist') }}" target="_blank">FUND</a>
+    <br>
+    <a href="{{ url('/money/balancesheetlist') }}" target="_blank">BalanceSheet</a>
+    <br>
+
+    <form method="POST" action="{{ url('/money/makeMoneyTotalList') }}" id="form_makeMoneyTotalList_input">
+        {{ csrf_field() }}
+        <button class="btn bg-success text-white">makeMoneyTotalList</button>
+    </form>
+
+
+
+
+    <br>
+    <div>{{ $uranaiDate }}</div>
+    <a href="{{ url('/article/YahooUranaiGet') }}" target="_blank">YahooUranaiGet</a>
+    <br>
+    <div>{{ $leoFortuneDate }}</div>
+    <a href="{{ url('/article/LeoFortuneGet') }}" target="_blank">LeoFortuneGet</a>
+
+
+
+
+
+
+
+
+
+
+
+
     <div><br><br></div>
 
     <style type="text/css">

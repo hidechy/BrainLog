@@ -38,6 +38,7 @@ Route::namespace('Api')->group(function () {
     Route::post('spenditemweekly', 'ApiController@spenditemweekly');
     Route::post('timeplaceweekly', 'ApiController@timeplaceweekly');
     Route::post('seiyuuPurchaseList', 'ApiController@seiyuuPurchaseList');
+    Route::post('seiyuuPurchaseItemList', 'ApiController@seiyuuPurchaseItemList');
     Route::post('dutyData', 'ApiController@dutyData');
     Route::post('yachinData', 'ApiController@yachinData');
     Route::post('timeplacezerousedate', 'ApiController@timeplacezerousedate');
@@ -51,6 +52,8 @@ Route::namespace('Api')->group(function () {
     Route::post('mercaridata', 'ApiController@mercaridata');
     Route::post('getITFRecord', 'ApiController@getITFRecord');
     Route::post('getFundRecord', 'ApiController@getFundRecord');
+    Route::post('getWellsRecord', 'ApiController@getWellsRecord');
+    Route::post('getBalanceSheetRecord', 'ApiController@getBalanceSheetRecord');
 
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');

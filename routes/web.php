@@ -32,6 +32,8 @@ Route::get('/article/{yearmonth}/trainmonthdataapi', 'Article\ArticleController@
 Route::get('/article/{ymd}/traindataapi', 'Article\ArticleController@traindataapi');
 Route::get('/article/kotowazaapi', 'Article\ArticleController@kotowazaapi');
 
+Route::get('/article/YahooUranaiGet', 'Article\ArticleController@YahooUranaiGet');
+Route::get('/article/LeoFortuneGet', 'Article\ArticleController@LeoFortuneGet');
 
 
 //[money]
@@ -86,6 +88,12 @@ Route::post('/money/mercaridatainputexecute', 'Money\MoneyController@mercaridata
 Route::get('/money/funddatalist', 'Money\MoneyController@funddatalist');
 Route::get('/money/funddatainput', 'Money\MoneyController@funddatainput');
 Route::post('/money/funddatainputexecute', 'Money\MoneyController@funddatainputexecute');
+
+Route::get('/money/balancesheetlist', 'Money\MoneyController@balancesheetlist');
+Route::get('/money/balancesheetinput', 'Money\MoneyController@balancesheetinput');
+Route::post('/money/balancesheetinputexecute', 'Money\MoneyController@balancesheetinputexecute');
+
+Route::post('/money/makeMoneyTotalList', 'Money\MoneyController@makeMoneyTotalList');
 
 //[other]
 Route::get('/other/tuning', 'Other\OtherController@tuning');

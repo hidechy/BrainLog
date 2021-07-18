@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use DB;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class ApiController extends Controller
 {
@@ -1499,8 +1500,136 @@ GOLD
     public function seiyuuPurchaseList(Request $request)
     {
         $response = [];
+//
+//        list($year, $month, $day) = explode("-", $request->date);
+//        $table = 't_article' . $year;
+//
+//        ///////////////////////////////////////////////
+//        $result = DB::table($table)->where('article', 'like', '%西友ネットスーパー内訳%')
+//            ->orderBy('year')->orderBy('month')->orderBy('day')
+//            ->get();
+//        foreach ($result as $k => $v) {
+//            $_tmp_date[$v->year . "-" . $v->month . "-" . $v->day] = "";
+//        }
+//        $_key_date = array_keys($_tmp_date);
+//        sort($_key_date);
+//        ///////////////////////////////////////////////
+//
+//        $ary = [];
+//        $result = DB::table($table)->where('article', 'like', '%西友ネットスーパー内訳%')
+//            ->orderBy('year')->orderBy('month')->orderBy('day')
+//            ->get();
+//        foreach ($result as $k => $v) {
+//            $date = $v->year . "-" . $v->month . "-" . $v->day;
+//            $ex_article = explode(">", $v->article);
+//            for ($i = 1; $i < count($ex_article); $i++) {
+//                $ex_ex_article = explode("\n", $ex_article[$i]);
+//
+//                $item = trim($ex_ex_article[1]);
+//
+//                if (preg_match("/^【店内】/", $item)) {
+//
+//                    $tanka = trim(strtr($ex_ex_article[6], ['円' => '', ',' => '']));
+//                    $kosuu = trim($ex_ex_article[7]);
+//                    $price = trim(strtr($ex_ex_article[8], ['円' => '', ',' => '']));
+//                } else {
+//                    $tanka = trim(strtr($ex_ex_article[7], ['円' => '', ',' => '']));
+//                    $kosuu = trim($ex_ex_article[8]);
+//                    $price = trim(strtr($ex_ex_article[9], ['円' => '', ',' => '']));
+//                }
+//
+//                $pos = array_search($date, $_key_date);
+//
+//                $ary[] = [
+//                    'date' => $date,
+//                    'pos' => $pos,
+//                    'item' => $item,
+//                    'tanka' => $tanka,
+//                    'kosuu' => $kosuu,
+//                    'price' => $price
+//                ];
+//            }
+//        }
+
+        $ary = $this->getSeiyuuData($request->date);
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @param Request $request
+     */
+    public function seiyuuPurchaseItemList(Request $request)
+    {
+        $response = [];
+        $response2 = [];
+
+        $ary = $this->getSeiyuuData($request->date);
 
         list($year, $month, $day) = explode("-", $request->date);
+
+        $tma = Carbon::now()->subMonth(2)->format('Y-m-d');
+        //$twoMonthAgo = new Carbon($tma);
+        $ex_tma = explode("-", $tma);
+        $twoMonthAgo = strtotime(date("$ex_tma[0]-$ex_tma[1]-01"));
+
+        $ary2 = [];
+        $ary3 = [];
+        foreach ($ary as $v) {
+            if ($v["item"] == "送料") {
+                continue;
+            }
+
+            $ary2[$v["item"]][] = $v["date"] . "|" . $v["tanka"] . "|" . $v["kosuu"] . "|" . $v["price"];
+
+//            $hikaku = new Carbon($v["date"]);
+            $hikaku = strtotime($v["date"]);
+
+            if ($hikaku > $twoMonthAgo) {
+                $ary3[] = $v["item"];
+            }
+        }
+
+        $ary4 = [];
+        $ary5 = [];
+        foreach ($ary2 as $item => $v) {
+            if (in_array($item, $ary3)) {
+                $ary4[$item] = $v;
+            } else {
+                $ary5[$item] = $v;
+            }
+        }
+
+        $ary6 = [];
+        foreach ($ary4 as $item => $v) {
+            $str = implode("/", $v);
+            $ary6[] = $item . ":" . $str;
+        }
+
+        $ary7 = [];
+        foreach ($ary5 as $item => $v) {
+            $str = implode("/", $v);
+            $ary7[] = $item . ":" . $str;
+        }
+
+
+        $response = $ary6;
+        $response2 = $ary7;
+
+
+        return response()->json(['data' => $response, 'data2' => $response2]);
+    }
+
+
+    /**
+     *
+     */
+    private function getSeiyuuData($date)
+    {
+
+        list($year, $month, $day) = explode("-", $date);
         $table = 't_article' . $year;
 
         ///////////////////////////////////////////////
@@ -1550,10 +1679,9 @@ GOLD
             }
         }
 
-        $response = $ary;
-
-        return response()->json(['data' => $response]);
+        return $ary;
     }
+
 
     /**
      * @param Request $request
@@ -2696,7 +2824,7 @@ GOLD
                 continue;
             }
 
-            list($lf_year, $lf_month, $lf_day, ) = explode("|", trim($v));
+            list($lf_year, $lf_month, $lf_day,) = explode("|", trim($v));
 
             if ("$year-$month-$day" == "$lf_year-$lf_month-$lf_day") {
                 $str = trim($v);
@@ -2708,5 +2836,146 @@ GOLD
 
         return response()->json(['data' => $response]);
     }
+
+
+    /**
+     * @return mixed
+     */
+    public function getWellsRecord()
+    {
+
+        $response = [];
+
+        $result = DB::table('t_credit')
+            ->where('price', '=', 55880)
+            ->orderBy('ymd')
+            ->get();
+
+        $ary = [];
+        $lastPrice = 0;
+        foreach ($result as $k => $v) {
+            $sumPrice = ($lastPrice + $v->price);
+            $ary[$v->year][] = sprintf("%03d", ($k + 1)) . "|$v->month-$v->day|$v->price|$sumPrice";
+            $lastPrice = $sumPrice;
+        }
+
+        $ary2 = [];
+        foreach ($ary as $year => $v) {
+            $ary3 = [];
+            for ($i = 0; $i < 12; $i++) {
+                $ary3[$i] = "|||";
+            }
+
+            $j = (12 - count($v));
+            if ($year == date("Y")) {
+                $j = 0;
+            }
+
+            foreach ($v as $v2) {
+                $ary3[$j] = $v2;
+                $j++;
+            }
+
+            $ary2[$year] = $ary3;
+        }
+
+        $ary4 = [];
+        foreach ($ary2 as $year => $v) {
+            $ary4[] = "$year:" . implode("/", $v);
+        }
+
+        $response = $ary4;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getBalanceSheetRecord()
+    {
+
+        $response = [];
+
+        $result = DB::table('t_balancesheet')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        $midashi = [
+            'assets_total_deposit_start',
+            'assets_total_deposit_debit',
+            'assets_total_deposit_credit',
+            'assets_total_deposit_end',
+            'assets_total_receivable_start',
+            'assets_total_receivable_debit',
+            'assets_total_receivable_credit',
+            'assets_total_receivable_end',
+            'assets_total_fixed_start',
+            'assets_total_fixed_debit',
+            'assets_total_fixed_credit',
+            'assets_total_fixed_end',
+            'assets_total_lending_start',
+            'assets_total_lending_debit',
+            'assets_total_lending_credit',
+            'assets_total_lending_end',
+            'capital_total_liabilities_start',
+            'capital_total_liabilities_debit',
+            'capital_total_liabilities_credit',
+            'capital_total_liabilities_end',
+            'capital_total_borrow_start',
+            'capital_total_borrow_debit',
+            'capital_total_borrow_credit',
+            'capital_total_borrow_end',
+            'capital_total_principal_start',
+            'capital_total_principal_debit',
+            'capital_total_principal_credit',
+            'capital_total_principal_end',
+            'capital_total_income_start',
+            'capital_total_income_debit',
+            'capital_total_income_credit',
+            'capital_total_income_end'
+        ];
+
+        $ary3 = [];
+        foreach ($result as $v) {
+
+            $ary = [];
+            $ary2 = [];
+
+            $assets_total = 0;
+            $capital_total = 0;
+
+            foreach ($midashi as $v2) {
+                if (preg_match("/^assets_total_/", $v2)) {
+                    $ary[] = $v2 . ":" . $v->$v2;
+                    if (preg_match("/_end$/", $v2)) {
+                        $assets_total += $v->$v2;
+                    }
+                }
+
+                if (preg_match("/^capital_total_/", $v2)) {
+                    $ary2[] = $v2 . ":" . $v->$v2;
+                    if (preg_match("/_end$/", $v2)) {
+                        $capital_total += $v->$v2;
+                    }
+                }
+            }
+
+            $ar = [];
+            $ar[] = "ym:$v->year-$v->month";
+            $ar[] = "assets_total:$assets_total";
+            $ar[] = "capital_total:$capital_total";
+            $ar[] = implode("|", $ary);
+            $ar[] = implode("|", $ary2);
+            $ary3[] = implode("|", $ar);
+        }
+
+        $response = $ary3;
+
+        return response()->json(['data' => $response]);
+    }
+
 
 }
