@@ -858,6 +858,7 @@ GOLD
 プラス
 メルカリ
 投資信託
+株式買付
 ";
 
         $ex_str = explode("\n", $str);
@@ -1983,9 +1984,23 @@ GOLD
 
         list($year, $month, $day) = explode("-", $request->date);
 
-        $result = DB::table('t_dailyspend')
-            ->where('koumoku', '=', '投資信託')
-            ->get();
+        $sql = "
+select
+year,month,day,koumoku item,price
+from
+t_dailyspend
+where
+koumoku = '投資信託'
+union all
+select
+year,month,day,item,price
+from
+t_credit
+where
+item = '投資信託'
+";
+
+        $result = DB::select($sql);
 
         foreach ($result as $k => $v) {
             if (strtotime(trim($v->year) . "-" . trim($v->month) . "-" . trim($v->day)) > strtotime($request->date)) {
@@ -1999,6 +2014,46 @@ GOLD
         return response()->json(['data' => $response]);
     }
 
+
+    /**
+     * @param Request $request
+     */
+    public function getITFPrice(Request $request)
+    {
+
+        ///////////////////////////////////////////////
+        $_tables = [];
+
+        $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = database();";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            if (preg_match("/t_article/", $v->table_name)) {
+                $_tables[] = $v->table_name;
+            }
+        }
+        ///////////////////////////////////////////////
+
+        $answer = "";
+        foreach ($_tables as $table) {
+            $sql = " select * from $table where article like 'ITF金額%'; ";
+            $result = DB::select($sql);
+            foreach ($result as $v) {
+                $ex_article = explode("\n", $v->article);
+
+                $ary = [];
+                $ary[] = trim($ex_article[1]);
+                $ary[] = $v->year . "-" . $v->month . "-" . $v->day;
+                $ary[] = trim(strtr($ex_article[2], ['[' => '', ']' => '']));
+                $answer = implode("|", $ary);
+            }
+        }
+
+        $response = $answer;
+        return response()->json(['data' => $response]);
+    }
+
+
     /**
      * @param Request $request
      */
@@ -2009,6 +2064,8 @@ GOLD
         $sql = " select fundname from t_fund group by fundname; ";
         $result = DB::select($sql);
 
+        $youbi = ['日', '月', '火', '水', '木', '金', '土'];
+
         foreach ($result as $v) {
             $result2 = DB::table('t_fund')
                 ->where('fundname', '=', $v->fundname)
@@ -2018,10 +2075,14 @@ GOLD
                 ->get();
 
             foreach ($result2 as $v2) {
+
+                $date = "$v2->year-$v2->month-$v2->day";
+                $_youbi = $youbi[date("w", strtotime($date))];
+
                 $response[$v->fundname][] = [
                     'year' => $v2->year,
                     'month' => $v2->month,
-                    'day' => $v2->day,
+                    'day' => $v2->day . "(" . $_youbi . ")",
                     'base_price' => $v2->base_price,
                     'compare_front' => $v2->compare_front,
                     'yearly_return' => $v2->yearly_return
@@ -2384,6 +2445,177 @@ GOLD
         return response()->json(['data' => $response]);
     }
 
+
+    /**
+     *
+     */
+    private function makeGenbaNameAry($gAry)
+    {
+        $ret = [];
+        foreach ($gAry as $v) {
+            $ret[$v['yearmonth']]['company'] = $v['company'];
+            $ret[$v['yearmonth']]['genba'] = $v['genba'];
+        }
+
+        return $ret;
+    }
+
+
+    /**
+     * @return array
+     */
+    private function getWorktimeSalary()
+    {
+        $ret = [];
+
+        $paymentTerm = [
+            'SBC' => 1,
+            'ギークス' => 1,
+            'レバテック' => 1,
+            'アンコンサルティング' => 2,
+            'ジェニュイン' => 2];
+
+        $result = DB::table('t_salary')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
+
+        $ret2 = [];
+        foreach ($result as $v) {
+            $date = $v->year . "-" . $v->month . "-" . $v->day;
+            $first = date("Y-m-01", strtotime($date));
+            $dt = new Carbon($first);
+
+            if (!isset($paymentTerm[$v->company])) {
+                continue;
+            }
+
+            $sub = $dt->subMonth($paymentTerm[$v->company]);
+            $ret2[$sub->format("Y-m")][] = $v->salary;
+        }
+
+        foreach ($ret2 as $ym => $v) {
+            $ret[$ym] = array_sum($v);
+        }
+
+        return $ret;
+    }
+
+
+    /**
+     *
+     */
+    public function worktimesummary()
+    {
+
+        //------------------------------//
+        $genbaName = $this->makeGenbaNameAry($this->getGenbaName());
+        //------------------------------//
+        $worktimeSalary = $this->getWorktimeSalary();
+        //------------------------------//
+
+        $result = DB::table('t_worktime')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
+
+        $ary = [];
+        $ary2 = [];
+        $ary3 = [];
+
+        $hit_start = "2021-02-01";
+        $hit_end = date("Y-m-d");
+
+        foreach ($result as $v) {
+            ///////////////////////////
+            $date = $v->year . "-" . $v->month . "-" . $v->day;
+
+            $rest = 60;
+            if ((strtotime($date) >= strtotime($hit_start)) && (strtotime($date) <= strtotime($hit_end))) {
+                //hit
+                $rest = (strtotime($v->work_end) > strtotime("17:30:00")) ? 90 : 60;
+            }
+
+            $seconds = strtotime($v->work_end) - strtotime($v->work_start);
+            $worktime = round(($seconds - ($rest * 60)) / 3600, 2);
+
+            if (count(explode(".", $worktime)) == 1) {
+                $worktime .= ".0";
+            }
+
+
+            $ary7 = [];
+            $ary7[] = date("H:i", strtotime($v->work_start));
+            $ary7[] = date("H:i", strtotime($v->work_end));
+            $ary7[] = $worktime;
+            $ary7[] = $rest;
+            $ary7[] = date("w", strtotime($date));
+
+            $ary[$date] = implode("|", $ary7);
+            ///////////////////////////
+
+            $ym = $v->year . "-" . $v->month;
+            $ary2[$ym] = "";
+
+            $ary3[$ym][] = ($seconds - ($rest * 60));
+        }
+
+        $ary3["2019-11"][0] = "";
+
+        $ary4 = [];
+        foreach ($ary3 as $ym => $v) {
+            $ary4[$ym] = round(array_sum($v) / 3600, 2);
+        }
+
+        ksort($ary4);
+
+        $youbi = ["日", "月", "火", "水", "木", "金", "土"];
+
+        $ary5 = [];
+        foreach ($ary4 as $ym => $v) {
+            $monthEnd = date("t", strtotime($ym));
+
+            for ($i = 1; $i <= $monthEnd; $i++) {
+                $date = $ym . "-" . sprintf("%02d", $i);
+                $w = date("w", strtotime($date));
+                $ary5[$ym][sprintf("%02d", $i)] = (isset($ary[$date])) ?
+                    sprintf("%02d", $i) . "($youbi[$w])|" . $ary[$ym . "-" . sprintf("%02d", $i)] :
+                    sprintf("%02d", $i) . "($youbi[$w])|||||$w";
+            }
+        }
+
+        $ary6 = [];
+        foreach ($ary5 as $ym => $v) {
+            $str = implode("/", $v);
+            $summary = $ary4[$ym];
+            if (count(explode(".", $summary)) == 1) {
+                $summary .= ".0";
+            }
+
+            $company = "";
+            $genba = "";
+            if (isset($genbaName[$ym])) {
+                $company = $genbaName[$ym]['company'];
+                $genba = $genbaName[$ym]['genba'];
+            }
+
+            $salary = "";
+            $hour = "";
+            if (isset($worktimeSalary[$ym])) {
+                $salary = $worktimeSalary[$ym];
+                $hour = floor($salary / $summary);
+            }
+
+            $ary6[] = $ym . ";" . $summary . ";$company;$genba;$salary;$hour;" . $str;
+        }
+
+        $response = $ary6;
+        return response()->json(['data' => $response]);
+    }
+
+
     /**
      * @param Request $request
      * @return mixed
@@ -2439,6 +2671,19 @@ GOLD
     {
         $response = [];
 
+        $response = $this->getGenbaName();
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     *
+     */
+    private function getGenbaName()
+    {
+        $response = [];
+
         ///////////////////////////////////////////////
         $_tables = [];
 
@@ -2477,8 +2722,9 @@ GOLD
             }
         }
 
-        return response()->json(['data' => $response]);
+        return $response;
     }
+
 
     /**
      * @return mixed

@@ -20,12 +20,21 @@
         <?php
         $midashi = ['fundname', 'year', 'month', 'day', 'base_price', 'compare_front', 'yearly_return'];
 
+        $_youbi = ["日", "月", "火", "水", "木", "金", "土"];
+
         echo "<table class='table table-bordered'>";
         foreach ($result as $v){
+            $date = "$v->year-$v->month-$v->day";
+            $youbi = $_youbi[date("w", strtotime($date))];
+
             echo "<tr>";
             foreach ($midashi as $v2){
                 echo "<td>";
                 echo $v->$v2;
+
+                if ($v2 == "day"){
+                    echo " / " . $youbi;
+                }
                 echo "</td>";
             }
             echo "</tr>";

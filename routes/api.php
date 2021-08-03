@@ -50,10 +50,13 @@ Route::namespace('Api')->group(function () {
     Route::post('getgolddata', 'ApiController@getgolddata');
     Route::post('gettraindata', 'ApiController@gettraindata');
     Route::post('mercaridata', 'ApiController@mercaridata');
-    Route::post('getITFRecord', 'ApiController@getITFRecord');
+
     Route::post('getFundRecord', 'ApiController@getFundRecord');
     Route::post('getWellsRecord', 'ApiController@getWellsRecord');
     Route::post('getBalanceSheetRecord', 'ApiController@getBalanceSheetRecord');
+
+    Route::post('getITFRecord', 'ApiController@getITFRecord');
+    Route::post('getITFPrice', 'ApiController@getITFPrice');
 
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');
@@ -69,6 +72,7 @@ Route::namespace('Api')->group(function () {
     Route::post('worktimemonthdata', 'ApiController@worktimemonthdata');
     Route::post('worktimeinsert', 'ApiController@worktimeinsert');
     Route::post('workinggenbaname', 'ApiController@workinggenbaname');
+    Route::post('worktimesummary', 'ApiController@worktimesummary');
 
     //uranai
     Route::post('dailyuranai', 'ApiController@dailyuranai');

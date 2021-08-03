@@ -224,7 +224,7 @@ class MoneyController extends Controller
             }
             $ex_v = explode("|", trim($v));
 
-            if (preg_match("/^20/", trim($ex_v[0]))){
+            if (preg_match("/^20/", trim($ex_v[0]))) {
                 $uranaiDate = trim($ex_v[0]);
             }
         }
@@ -1782,6 +1782,7 @@ class MoneyController extends Controller
 プラス
 メルカリ
 投資信託
+株式買付
 ";
 
         $item = [];
@@ -2647,31 +2648,39 @@ class MoneyController extends Controller
                 break;
 
             case "sumitomo":
+
+                $dateAry = [];
                 foreach ($ex_credit as $k => $v) {
                     if (trim($v) == "") {
                         continue;
                     }
 
-                    $ex_v = explode("\t", trim($v));
+                    if (preg_match("/(.+)月(.+)日/", trim($v), $m)) {
 
-                    //date
-                    $ex_v0 = explode(".", trim($ex_v[0]));
-                    $_ye = trim(strtr($ex_v0[0], ['R' => '']));
-                    $plus_year = 2018;
-                    $year = ($_ye + $plus_year);
-                    $month = sprintf("%02d", trim($ex_v0[1]));
-                    $day = sprintf("%02d", trim($ex_v0[2]));
+                        $month = sprintf("%02d", trim($m[1]));
+                        $day = sprintf("%02d", trim($m[2]));
 
-                    //price
-                    $price = trim(strtr($ex_v[1], [',' => '', '円' => '']));
+                        $dateAry["$month$day"] = $k;
+                    }
+                }
 
-                    //item
-                    $item = $this->_getItemWord(trim($ex_v[3]));
+                ksort($dateAry);
 
-                    //bank_price
-                    $bank_price = trim(strtr($ex_v[4], [',' => '', '円' => '']));
 
-                    $credit[$k] = [
+                foreach ($dateAry as $k => $v) {
+
+                    $item = trim($ex_credit[$v - 1]);
+
+                    preg_match("/(.+)月(.+)日/", trim($ex_credit[$v]), $m);
+                    $year = date("Y");
+                    $month = sprintf("%02d", trim($m[1]));
+                    $day = sprintf("%02d", trim($m[2]));
+
+
+                    $price = strtr(trim($ex_credit[$v + 1]), ['-' => '', ',' => '', '円' => '']);
+                    $bank_price = strtr(trim($ex_credit[$v + 2]), ['-' => '', ',' => '', '円' => '']);
+
+                    $credit[] = [
                         'bank' => $databank,
                         'year' => $year,
                         'month' => $month,
