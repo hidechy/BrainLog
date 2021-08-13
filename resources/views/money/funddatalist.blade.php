@@ -18,30 +18,40 @@
 
     <div>
         <?php
-        $midashi = ['fundname', 'year', 'month', 'day', 'base_price', 'compare_front', 'yearly_return'];
+
+        $midashi = ['year', 'month', 'day', 'base_price', 'compare_front', 'yearly_return'];
 
         $_youbi = ["日", "月", "火", "水", "木", "金", "土"];
 
-        echo "<table class='table table-bordered'>";
-        foreach ($result as $v){
-            $date = "$v->year-$v->month-$v->day";
-            $youbi = $_youbi[date("w", strtotime($date))];
+        foreach ($item as $v3) {
 
-            echo "<tr>";
-            foreach ($midashi as $v2){
-                echo "<td>";
-                echo $v->$v2;
+            echo "<div class='bg-primary text-white my-3'>$v3</div>";
 
-                if ($v2 == "day"){
-                    echo " / " . $youbi;
+            echo "<table class='table table-bordered mb-5'>";
+
+            foreach ($ary[$v3] as $v) {
+                echo "<tr>";
+
+                $date = $v['year'] . "-" . $v['month'] . "-" . $v['day'];
+                $youbi = $_youbi[date("w", strtotime($date))];
+
+                foreach ($midashi as $v2) {
+                    echo "<td>";
+                    echo $v[$v2];
+
+                    if ($v2 == "day") {
+                        echo " / " . $youbi;
+                    }
+                    echo "</td>";
                 }
-                echo "</td>";
+                echo "</tr>";
             }
-            echo "</tr>";
+            echo "</table>";
+
         }
-        echo "</table>";
         ?>
     </div>
+
 
 </div>
 

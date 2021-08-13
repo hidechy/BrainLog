@@ -6,12 +6,12 @@ use Illuminate\Console\Command;
 use Carbon\Carbon;
 use DB;
 
-class LeoFortuneGet extends Command
+class MealCalorieGet extends Command
 {
 
-    protected $signature = 'LeoFortuneGet';
+    protected $signature = 'MealCalorieGet';
 
-    protected $description = 'LeoFortuneGet';
+    protected $description = 'MealCalorieGet';
 
     public function __construct()
     {
@@ -21,9 +21,25 @@ class LeoFortuneGet extends Command
     public function handle()
     {
 
-        $url = "https://www.goodfortune.jp/fortune/tomorrow/leo";
+        $url = "https://fukupon.jp/papa/a/19080921";
         $crawler = \Goutte::request('GET', $url);
 
+        $cal = $crawler->filter('.table_row.stripe')->filter('tr')->filter('td')->each(function ($node) {
+            return $node->html();
+        });
+
+        $ary = [];
+        for ($i = 0; $i < count($cal); $i += 2) {
+            $ary[] = [
+                'menu' => strtr($cal[$i], ['\?' => ' ']),
+                'calorie' => $cal[$i + 1]
+            ];
+        }
+
+        print_r($ary);
+
+
+        /*
         $dr = $crawler->filter('.fortune_daily_rank')->text();
         $daily_ranking = strtr($dr, ['位' => '']);
 
@@ -60,5 +76,6 @@ class LeoFortuneGet extends Command
         $fp = fopen($file, "a+");
         fwrite($fp, mb_convert_encoding(implode("|", $insert), "utf-8") . "\n");
         fclose($fp);
+        */
     }
 }

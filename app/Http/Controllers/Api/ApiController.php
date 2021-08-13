@@ -1978,6 +1978,8 @@ GOLD
     /**
      *
      */
+
+    /*
     public function getITFRecord(Request $request)
     {
         $response = [];
@@ -2013,11 +2015,14 @@ item = '投資信託'
 
         return response()->json(['data' => $response]);
     }
+*/
 
 
     /**
      * @param Request $request
      */
+
+    /*
     public function getITFPrice(Request $request)
     {
 
@@ -2052,6 +2057,7 @@ item = '投資信託'
         $response = $answer;
         return response()->json(['data' => $response]);
     }
+*/
 
 
     /**
@@ -2092,6 +2098,7 @@ item = '投資信託'
 
         return response()->json(['data' => $response]);
     }
+
 
     /**
      * @param Request $request
@@ -2504,6 +2511,47 @@ item = '投資信託'
 
 
     /**
+     * @param $vwork_start
+     */
+    private function startStrangeCheck($data)
+    {
+        $hit_end = date("Y-m-d");
+
+        $date = $data->year . "-" . $data->month . "-" . $data->day;
+
+        $checkValue = [
+            '2014-10-15 / 2014-10-31' => '10:00',//SBC社内
+            '2014-11-01 / 2014-12-10' => '09:00',//大門
+            '2014-12-16 / 2015-03-31' => '09:00',//新宿
+            '2015-04-01 / 2015-07-17' => '09:00',//求人
+            '2015-07-21 / 2015-09-30' => '10:00',//ラボ
+            '2015-10-01 / 2016-05-31' => '09:30',//蒲田
+            '2016-06-01 / 2019-09-30' => '09:30',//光
+            '2019-10-01 / 2019-10-31' => '10:00',//しまうま
+            '2019-12-01 / 2020-04-17' => '10:00',//ベルシステム24
+            '2020-05-18 / 2020-06-30' => '10:00',//エクスチェンジ
+            '2020-07-01 / 2020-09-30' => '11:00',//リヴァンプ
+            '2020-10-01 / 2020-11-30' => '10:00',//バルール
+            '2020-12-01 / 2021-01-31' => '09:30',//KMS
+            '2021-02-01 / ' . $hit_end => '09:00'//HIT
+        ];
+
+        $strange = 0;
+        foreach ($checkValue as $k => $v) {
+            list($day_start, $day_end) = explode(" / ", $k);
+
+            if (strtotime($date) >= strtotime($day_start) && strtotime($date) <= strtotime($day_end)) {
+                if (date("H:i", strtotime($data->work_start)) != $v) {
+                    $strange = 1;
+                }
+            }
+        }
+
+        return $strange;
+    }
+
+
+    /**
      *
      */
     public function worktimesummary()
@@ -2528,6 +2576,32 @@ item = '投資信託'
         $hit_start = "2021-02-01";
         $hit_end = date("Y-m-d");
 
+        $noRest = [
+            '2015-10-27',
+            '2016-01-19',
+            '2016-02-10',
+            '2016-02-16',
+            '2016-02-23',
+            '2016-05-19',
+            '2016-05-25',
+            '2016-06-13',
+            '2016-09-09',
+            '2016-11-11',
+            '2017-02-06',
+            '2017-03-29',
+            '2017-04-04',
+            '2017-04-19',
+            '2017-04-24',
+            '2017-05-22',
+            '2017-10-02',
+            '2017-12-13',
+            '2018-02-27',
+            '2019-01-10',
+            '2019-02-27',
+            '2019-07-17',
+            '2019-09-09',
+        ];
+
         foreach ($result as $v) {
             ///////////////////////////
             $date = $v->year . "-" . $v->month . "-" . $v->day;
@@ -2539,12 +2613,19 @@ item = '投資信託'
             }
 
             $seconds = strtotime($v->work_end) - strtotime($v->work_start);
+
+            if (in_array($date, $noRest)) {
+                $rest = 0;
+            }
+
             $worktime = round(($seconds - ($rest * 60)) / 3600, 2);
 
             if (count(explode(".", $worktime)) == 1) {
                 $worktime .= ".0";
             }
 
+            $strange = 0;
+            $strange = $this->startStrangeCheck($v);
 
             $ary7 = [];
             $ary7[] = date("H:i", strtotime($v->work_start));
@@ -2552,6 +2633,7 @@ item = '投資信託'
             $ary7[] = $worktime;
             $ary7[] = $rest;
             $ary7[] = date("w", strtotime($date));
+            $ary7[] = $strange;
 
             $ary[$date] = implode("|", $ary7);
             ///////////////////////////
@@ -2582,7 +2664,7 @@ item = '投資信託'
                 $w = date("w", strtotime($date));
                 $ary5[$ym][sprintf("%02d", $i)] = (isset($ary[$date])) ?
                     sprintf("%02d", $i) . "($youbi[$w])|" . $ary[$ym . "-" . sprintf("%02d", $i)] :
-                    sprintf("%02d", $i) . "($youbi[$w])|||||$w";
+                    sprintf("%02d", $i) . "($youbi[$w])|||||$w|0";
             }
         }
 
@@ -3219,6 +3301,249 @@ item = '投資信託'
         }
 
         $response = $ary3;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * @return mixed
+     */
+
+    /*
+    public function getStockPrice()
+    {
+
+        $response = [];
+
+        ///////////////////////////////////////////////
+        $_tables = [];
+
+        $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = database();";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            if (preg_match("/t_article/", $v->table_name)) {
+                $_tables[] = $v->table_name;
+            }
+        }
+        ///////////////////////////////////////////////
+
+        $koumoku = ['米国株式'];
+
+        $date = "";
+        $ans = [];
+        $time = "";
+        foreach ($_tables as $table) {
+            $sql = " select * from $table where article like '保有株式%'; ";
+            $result = DB::select($sql);
+            foreach ($result as $v) {
+                $ex_article = explode("\n", $v->article);
+
+                foreach ($ex_article as $v2){
+                    $ex_v2 = explode("\t", trim($v2));
+                    if (in_array(trim($ex_v2[0]), $koumoku)){
+                        $ans[] = trim(strtr($ex_v2[1], [',' => '', '円' => '']));
+                    }
+
+                    if (preg_match("/\[(.+)\]/", trim($v2), $m)){
+                        $time = trim($m[1]);
+                    }
+                }
+
+                $date = $v->year . "-" . $v->month . "-" . $v->day;
+
+                if (!empty($ans)){break;}
+            }
+        }
+
+        //////////////////////////////////
+        $result = DB::table('t_credit')
+            ->where('item', '=', '株式買付')
+            ->get();
+
+        $kabushikiKaitsuke = [];
+        foreach ($result as $v){
+            $kabushikiKaitsuke[] = $v->price;
+        }
+        //////////////////////////////////
+
+        $ary = [];
+        $ary[] = array_sum($kabushikiKaitsuke);
+        $ary[] = array_sum($ans);
+        $ary[] = $date . " " . $time;
+
+        $response = implode("|", $ary);
+
+        return response()->json(['data' => $response]);
+    }
+*/
+
+
+    /**
+     * @return mixed
+     */
+    public function getITFRecord()
+    {
+        $response = [];
+
+        ///////////////////////////////////////////////
+        $_tables = [];
+
+        $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = database();";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            if (preg_match("/t_article/", $v->table_name)) {
+                $_tables[] = $v->table_name;
+            }
+        }
+        ///////////////////////////////////////////////
+
+        $shintaku = 0;
+        $stock = 0;
+        $dateTime = "";
+
+        $RakutenCredits = [];
+
+        foreach ($_tables as $table) {
+
+            $result = DB::table($table)
+                ->where('article', 'like', '資産合計※楽天銀行残高除く%')
+                ->first();
+
+            if (!empty($result)) {
+                $ex_article = explode("\n", trim($result->article));
+
+                $time = "";
+                foreach ($ex_article as $v) {
+                    if (preg_match("/投資信託/", trim($v))) {
+                        $ex_v = explode("\t", trim($v));
+                        $shintaku += trim(strtr($ex_v[1], [',' => '', '円' => '']));
+                    }
+
+                    if (
+                        preg_match("/国内株式/", trim($v)) ||
+                        preg_match("/米国株式/", trim($v))
+                    ) {
+                        $ex_v = explode("\t", trim($v));
+                        $stock += trim(strtr($ex_v[1], [',' => '', '円' => '']));
+                    }
+
+                    $time = trim(strtr(trim($v), ['[' => '', ']' => '']));
+                }
+
+                $da = [];
+                $da[] = $result->year;
+                $da[] = $result->month;
+                $da[] = $result->day;
+                $date = implode("-", $da);
+
+                $dateTime = "$date $time";
+            }
+
+            /////////////////////////////////////////
+            $result2 = DB::table($table)
+                ->where('article', 'like', '%楽天カード内訳%')->get();
+
+            foreach ($result2 as $v2) {
+                $date = $v2->year . "-" . $v2->month . "-" . $v2->day;
+                $RakutenCredits[$date] = explode("\n", trim($v2->article));
+            }
+            /////////////////////////////////////////
+
+        }
+
+        ///////////////////////////////////////////
+
+        $shin = 0;
+        $date_shin = "";
+        $sql = "
+select
+year,month,day,koumoku item,price
+from
+t_dailyspend
+where
+koumoku = '投資信託'
+union all
+select
+year,month,day,item,price
+from
+t_credit
+where
+item = '投資信託'
+";
+        $result = DB::select($sql);
+        foreach ($result as $v) {
+            $shin += trim($v->price);
+
+            $date_shin = $v->year . "-" . $v->month . "-" . $v->day;
+        }
+
+        //>>>>>>>>>>>.//
+        foreach ($RakutenCredits as $_date => $v) {
+            foreach ($v as $v2) {
+                if (preg_match("/投信積立（楽天証券）/", trim($v2))) {
+                    $ex_v2 = explode("\t", trim($v2));
+                    $sh = trim(strtr($ex_v2[4], ['¥' => '', ',' => '']));
+                    $shin += $sh;
+
+                    $date_shin = $_date;
+                }
+            }
+        }
+
+        //---------------------
+
+        $stk = 0;
+        $date_stk = "";
+        $sql = "
+select
+year,month,day,koumoku item,price
+from
+t_dailyspend
+where
+koumoku = '株式買付'
+union all
+select
+year,month,day,item,price
+from
+t_credit
+where
+item = '株式買付'
+";
+        $result = DB::select($sql);
+        foreach ($result as $v) {
+            $stk += trim($v->price);
+
+            $date_stk = $v->year . "-" . $v->month . "-" . $v->day;
+        }
+
+        ///////////////////////////////////////////
+
+        $response[] = $dateTime;
+        $response[] = $date_shin . ";" . $shin . ";" . $shintaku;
+        $response[] = $date_stk . ";" . $stk . ";" . $stock;
+
+        $response2 = $response;
+        $response = implode("/", $response2);
 
         return response()->json(['data' => $response]);
     }

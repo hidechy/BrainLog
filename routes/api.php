@@ -58,6 +58,8 @@ Route::namespace('Api')->group(function () {
     Route::post('getITFRecord', 'ApiController@getITFRecord');
     Route::post('getITFPrice', 'ApiController@getITFPrice');
 
+    Route::post('getStockPrice', 'ApiController@getStockPrice');
+
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');
     Route::post('stockdatedata', 'ApiController@stockdatedata');

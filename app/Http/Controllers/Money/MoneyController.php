@@ -3079,8 +3079,27 @@ class MoneyController extends Controller
             ->orderBy('day')
             ->get();
 
+        $_item = [];
+        $ary = [];
+        foreach ($result as $v){
+            $ary[$v->fundname][] = [
+                'year' => $v->year,
+                'month' => $v->month,
+                'day' => $v->day,
+                'fundname' => $v->fundname,
+                'base_price' => $v->base_price,
+                'compare_front' => $v->compare_front,
+                'yearly_return' => $v->yearly_return
+            ];
+
+            $_item[$v->fundname] = "";
+        }
+
+        $item = array_keys($_item);
+
         return view('money.funddatalist')
-            ->with('result', $result);
+            ->with('item', $item)
+            ->with('ary', $ary);
     }
 
     /**
@@ -3101,6 +3120,9 @@ class MoneyController extends Controller
 
             $a = 0;
             $b = 0;
+
+            $dateLine = "";
+
             foreach ($ex_postdata as $k => $v) {
                 if (preg_match("/^金額/", trim($v))) {
                     $a = $k;
@@ -3108,6 +3130,8 @@ class MoneyController extends Controller
                 if (preg_match("/^・本メールは/", trim($v))) {
                     $b = $k;
                 }
+
+                $dateLine = trim($v);
             }
 
             $ary = [];
@@ -3122,14 +3146,14 @@ class MoneyController extends Controller
                 $insert[$k]['fundname'] = strtr(trim($ex_v[0]), ['\r' => '', '\n' => '']);
                 $insert[$k]['base_price'] = strtr(trim($ex_v[1]), [',' => '', '円' => '']);
                 $insert[$k]['compare_front'] = strtr(trim($ex_v[2]), ['\r' => '', '\n' => '']);
+                $insert[$k]['yearly_return'] = strtr(trim($ex_v[3]), ['\r' => '', '\n' => '']);
+            }
 
-                $ex_v_3 = explode("|", trim($ex_v[3]));
-                $insert[$k]['yearly_return'] = trim($ex_v_3[0]);
+            $year = date("Y");
+            $month = substr(trim($dateLine), 0, 2);
+            $day = substr(trim($dateLine), 2);
 
-                $year = date("Y");
-                $month = substr(trim($ex_v_3[1]), 0, 2);
-                $day = substr(trim($ex_v_3[1]), 2);
-
+            foreach ($insert as $k => $v) {
                 $insert[$k]['year'] = $year;
                 $insert[$k]['month'] = $month;
                 $insert[$k]['day'] = $day;
