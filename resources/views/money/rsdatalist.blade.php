@@ -8,35 +8,36 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 
-    <title>golddatalist</title>
+    <title>rsdatalist</title>
 </head>
 <body>
-<h1>golddatalist</h1>
+<h1>rsdatalist</h1>
 
 <div class="container">
-    <a href="{{ url('/money/golddatainput') }}" class="btn btn-success">input</a>
+    <a href="{{ url('/money/rsdatainput') }}" class="btn btn-success">input</a>
 
     <div>
         <?php
-        $midashi = ['year', 'month', 'day', 'yakujou_date', 'gold_tanka', 'gram_num', 'gold_price', 'tesuuryou', 'ukewatashi_date', 'ukewatashi_price'];
+
+        $midashi = ['year', 'month', 'day', 'rs_increase', 'rs_decrease', 'content', 'remarks', 'price'];
 
         $_youbi = ["日", "月", "火", "水", "木", "金", "土"];
 
-        echo "<table class='table table-bordered'>";
-        foreach ($result as $v){
+        echo "<table class='table table-bordered mb-5'>";
 
-            $date = "$v->year-$v->month-$v->day";
+        foreach ($result as $v) {
+            echo "<tr>";
+
+            $date = $v->year . "-" . $v->month . "-" . $v->day;
             $youbi = $_youbi[date("w", strtotime($date))];
 
-            echo "<tr>";
-            foreach ($midashi as $v2){
+            foreach ($midashi as $v2) {
                 echo "<td>";
                 echo $v->$v2;
 
-                if ($v2 == "day"){
+                if ($v2 == "day") {
                     echo " / " . $youbi;
                 }
-
                 echo "</td>";
             }
             echo "</tr>";
@@ -45,7 +46,7 @@
         ?>
     </div>
 
-    <a href="{{ url('/money/golddatainput') }}" class="btn btn-success">input</a>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"

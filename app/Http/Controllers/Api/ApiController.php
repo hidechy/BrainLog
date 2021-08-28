@@ -597,13 +597,24 @@ class ApiController extends Controller
         $response = [];
 
         $result = DB::table('t_timeplace')
-            ->where('price', '=', 0)
             ->orderBy('year')->orderBy('month')->orderBy('day')
             ->get();
 
+        $ary = [];
         foreach ($result as $v) {
-            $response[] = $v->year . "-" . $v->month . "-" . $v->day;
+            $ary[$v->year . "-" . $v->month . "-" . $v->day][] = $v->price;
         }
+
+        $ary2 = [];
+        foreach ($ary as $date => $v) {
+            if (count($v) == 1) {
+                if ($v[0] == 0) {
+                    $ary2[] = $date;
+                }
+            }
+        }
+
+        $response = $ary2;
 
         return response()->json(['data' => $response]);
     }
@@ -3490,12 +3501,16 @@ t_credit
 where
 item = '投資信託'
 ";
+        $dshin = [];
         $result = DB::select($sql);
         foreach ($result as $v) {
             $shin += trim($v->price);
 
-            $date_shin = $v->year . "-" . $v->month . "-" . $v->day;
+//            $date_shin = $v->year . "-" . $v->month . "-" . $v->day;
+            $dshin[] = $v->year . "-" . $v->month . "-" . $v->day;
         }
+
+        $date_shin = max($dshin);
 
         //>>>>>>>>>>>.//
         foreach ($RakutenCredits as $_date => $v) {
@@ -3529,12 +3544,19 @@ t_credit
 where
 item = '株式買付'
 ";
+
+        $dstk = [];
         $result = DB::select($sql);
         foreach ($result as $v) {
             $stk += trim($v->price);
 
-            $date_stk = $v->year . "-" . $v->month . "-" . $v->day;
+//            $date_stk = $v->year . "-" . $v->month . "-" . $v->day;
+
+            $dstk[] = $v->year . "-" . $v->month . "-" . $v->day;
         }
+
+        $date_stk = max($dstk);
+
 
         ///////////////////////////////////////////
 

@@ -95,6 +95,10 @@ Route::post('/money/balancesheetinputexecute', 'Money\MoneyController@balanceshe
 
 Route::post('/money/makeMoneyTotalList', 'Money\MoneyController@makeMoneyTotalList');
 
+Route::get('/money/rsdatalist', 'Money\MoneyController@rsdatalist');
+Route::get('/money/rsdatainput', 'Money\MoneyController@rsdatainput');
+Route::post('/money/rsdatainputexecute', 'Money\MoneyController@rsdatainputexecute');
+
 //[other]
 Route::get('/other/tuning', 'Other\OtherController@tuning');
 Route::get('/other/holiday', 'Other\OtherController@holiday');

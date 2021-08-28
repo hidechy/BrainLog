@@ -103,10 +103,20 @@ class MoneyController extends Controller
         $MoneyTotal = [];
         $lastDay = 0;
         for ($i = 1; $i <= $monthEnd; $i++) {
+
+
             $DailySpend .= "<div style='background: #ddffdd;'>" . sprintf("%02d", $i) . "</div>";
+
+
+            /*
+                        $DailySpend .= "<div style='background: #ddffdd;'>" . sprintf("%02d", $i) . "（";
+                        $DailySpend .= $youbi[date("w", strtotime($thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)))];
+                        $DailySpend .= "）</div>";
+            */
 
             if (isset($_mt[$thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)])) {
                 $DailySpend .= "<div>" . number_format($_mt[$thisMonthYear . '-' . $thisMonthMonth . '-' . sprintf("%02d", $i)]) . "</div>";
+
 
                 $spent = [];
                 $DailySpend .= "<table border='0' cellspacing='2' cellpadding='2' style='width: 100%;'>";
@@ -121,7 +131,10 @@ class MoneyController extends Controller
 
                 if (isset($result3)) {
                     foreach ($result3 as $v) {
-                        $DailySpend .= "<tr><td>収入</td><td style='text-align: right;'>" . number_format($v->salary) . "<td></tr>";
+                        $DailySpend .= "<tr>";
+                        $DailySpend .= "<td>収入</td>";
+                        $DailySpend .= "<td style='text-align: right;'>" . number_format($v->salary) . "</td>";
+                        $DailySpend .= "</tr>";
                         $spent[] = ($v->salary * -1);
                     }
                 }
@@ -137,7 +150,10 @@ class MoneyController extends Controller
 
                 if (isset($result)) {
                     foreach ($result as $v) {
-                        $DailySpend .= "<tr><td>" . $v->koumoku . "</td><td style='text-align: right;'>" . number_format($v->price) . "</td></tr>";
+                        $DailySpend .= "<tr>";
+                        $DailySpend .= "<td>" . $v->koumoku . "</td>";
+                        $DailySpend .= "<td style='text-align: right;'>" . number_format($v->price) . "</td>";
+                        $DailySpend .= "</tr>";
                         $spent[] = $v->price;
                         $DisplayKoumoku[$v->koumoku][] = $v->price;
                     }
@@ -154,7 +170,10 @@ class MoneyController extends Controller
 
                 if (isset($result2)) {
                     foreach ($result2 as $v) {
-                        $DailySpend .= "<tr><td>" . $v->item . "</td><td style='text-align: right;'>" . number_format($v->price) . "<td></tr>";
+                        $DailySpend .= "<tr>";
+                        $DailySpend .= "<td>" . $v->item . "</td>";
+                        $DailySpend .= "<td style='text-align: right;'>" . number_format($v->price) . "</td>";
+                        $DailySpend .= "</tr>";
                         $spent[] = $v->price;
                         $DisplayKoumoku[$v->item][] = $v->price;
                     }
@@ -3081,7 +3100,7 @@ class MoneyController extends Controller
 
         $_item = [];
         $ary = [];
-        foreach ($result as $v){
+        foreach ($result as $v) {
             $ary[$v->fundname][] = [
                 'year' => $v->year,
                 'month' => $v->month,
@@ -3332,5 +3351,135 @@ class MoneyController extends Controller
         return redirect('/money/index');
     }
 
+
+    /**
+     *
+     */
+    public function rsdatalist()
+    {
+
+        $result = DB::table('t_rakuten_stock_increase_decrease')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
+
+        return view('money.rsdatalist')
+            ->with('result', $result);
+
+    }
+
+    /**
+     *
+     */
+    public function rsdatainput()
+    {
+        return view('money.rsdatainput');
+    }
+
+    /**
+     *
+     */
+    public function rsdatainputexecute()
+    {
+
+        if (trim($_POST['rsdata']) != "") {
+            $ex_postdata = explode("\n", $_POST['rsdata']);
+
+            $ary = [];
+            $__date = [];
+            foreach ($ex_postdata as $k => $v) {
+                if (trim($v) == "") {
+                    continue;
+                }
+
+                list($ymd,) = explode("\t", trim($v));
+                list($year, $month, $day) = explode("/", trim($ymd));
+
+                $date = sprintf("%04d", $year) . "-" . sprintf("%02d", $month) . "-" . sprintf("%02d", $day);
+                $__date[$date] = "";
+                $ary[$date][] = trim($v);
+            }
+            $_date = array_keys($__date);
+            sort($_date);
+
+            $i = 0;
+
+            $insert = [];
+
+            $risoku = [0];
+
+            foreach ($_date as $date) {
+                foreach ($ary[$date] as $data) {
+                    $ex_data = explode("\t", trim($data));
+                    $rsi = trim(strtr($ex_data[1], [',' => '']));
+                    $rsd = trim(strtr($ex_data[2], [',' => '']));
+                    $content = trim($ex_data[3]);
+
+//                    $out_to = (isset($ex_data[4])) ? trim($ex_data[4]) : "";
+
+                    if ($i == 0) {
+                        $price = 15002;
+                    }
+
+                    if (strtotime($date) >= strtotime("2021-03-31")) {
+                        if ($risoku[0] == 0) {
+                            $price += 5;
+                            $risoku[0] = 1;
+                        }
+                    }
+
+                    $remarks = "";
+                    switch ($content) {
+
+                        case "通常振込入金":
+                        case "リアルタイム入金":
+                            break;
+
+                        case "自動出金(スイープ)":
+                            $price += $rsd;
+                            break;
+
+                        case "金・プラチナ積立(自動入金)":
+                            $price -= $rsi;
+                            $remarks = "gold";
+                            break;
+
+                        case "米国株式(自動入金)":
+                            $price -= $rsi;
+                            $remarks = "stock";
+                            break;
+
+                        case "投信積立(自動入金)":
+                            $price -= $rsi;
+                            $remarks = "itf";
+                            break;
+                    }
+
+                    list($year, $month, $day) = explode("-", $date);
+
+                    $insert[] = [
+                        'year' => $year,
+                        'month' => $month,
+                        'day' => $day,
+                        'rs_increase' => $rsi,
+                        'rs_decrease' => $rsd,
+                        'content' => $content,
+
+//                        'out_to' => $out_to,
+
+                        'price' => $price,
+                        'remarks' => $remarks
+                    ];
+
+                    $i++;
+                }
+            }
+
+            DB::table('t_rakuten_stock_increase_decrease')->insert($insert);
+        }
+
+        return redirect('/money/rsdatalist');
+    }
 
 }

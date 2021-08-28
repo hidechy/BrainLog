@@ -52,6 +52,8 @@
         ?>
     </div>
 
+    <a href="{{ url('/money/funddatainput') }}" class="btn btn-success">input</a>
+
 
 </div>
 

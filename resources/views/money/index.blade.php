@@ -22,6 +22,11 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
 @section('title', '所持金一覧')
 
 @section('content')
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
     <table border="0">
         <tr>
             <td>
@@ -70,19 +75,6 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
                                 echo "<td class='midashiTd' style='text-align : center;'>day</td>";
                                 echo "<td class='midashiTd' style='text-align : center;'>youbi</td>";
                                 break;
-                            case "average":
-                                echo "<td class='midashiTd' style='text-align : center;'>average</td>";
-
-
-//                                $spentBG = (strtotime($year . "-" . $month . "-" . $line['day']) >= strtotime("2018-08-19")) ? "#daa520" : "#339933";
-//                                echo "<td class='midashiTd' style='text-align : center;background : " . $spentBG . ";'>";
-//                                echo "<a href='/BrainLog/public/money/" . $year . "-" . $month . "-" . $line['day'] . "/weeklydisp'>";
-//                                echo $year . "-" . $month . "-" . $line['day'];
-//                                echo "</a>";
-//                                echo "</td>";
-
-
-                                break;
 
                             case "pay_a":
                                 echo "<td class='midashiTd' style='text-align : center;'>Suica</td>";
@@ -90,7 +82,6 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
                             case "pay_b":
                                 echo "<td class='midashiTd' style='text-align : center;'>paypay</td>";
                                 break;
-
 
                             case "pay_c":
                                 echo "<td class='midashiTd' style='text-align : center;'>Pasumo</td>";
@@ -170,64 +161,76 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
 
     </table>
 
-    <div><br><br></div>
 
-    <table style="width: 400px;">
-        <tr>
-            <td style="vertical-align: top;">
-                <div style="height: 400px; overflow: auto;">
-                    <?php
-                    if (trim($DailySpend) != "") {
-                        echo $DailySpend;
-                    }
-                    ?>
-                </div>
-            </td>
-        </tr>
-    </table>
 
-    <div><br><br></div>
+
 
     <table>
         <tr>
-            <td style="vertical-align: top;">
-                <?php
-                if (count($DisplayKoumoku) > 0) {
-                    echo "<div>" . $lastDay . "日分</div>";
+            <td style="padding: 20px;">
 
-                    echo "<table border='0' cellspacing='2' cellpadding='2' id='KoumokuTable'>";
-                    foreach ($DisplayKoumoku as $koumoku => $price) {
+                <table style="width: 400px;">
+                    <tr>
+                        <td style="vertical-align: top;">
+                            <div style="height: 400px; overflow: auto;">
+                                <?php
+                                if (trim($DailySpend) != "") {
+                                    echo $DailySpend;
+                                }
+                                ?>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
 
-                        $percent = "0%";
-                        if ($thisMonthSpendTotal > 0){
-                            $percent = ($koumoku == "プラス") ? '-' : ceil($price / $thisMonthSpendTotal * 100) . "%";
-                        }
+            </td>
 
-                        $average = '-';
-                        if ($koumoku == "食費") {
-                            $average = number_format(ceil($price / $lastDay)) . "円";
-                        }
+            <td style="padding: 20px;">
 
-                        echo "<tr>";
-                        echo "<td>" . $koumoku . "</td>";
-                        echo "<td style='text-align: right;'>" . number_format($price) . "円</td>";
-                        echo "<td style='text-align: right;'>" . $percent . "</td>";
-                        echo "<td style='text-align: right;'>" . $average . "</td>";
-                        echo "</tr>";
-                    }
+                <table>
+                    <tr>
+                        <td style="vertical-align: top;">
+                            <?php
+                            if (count($DisplayKoumoku) > 0) {
+                                echo "<div>" . $lastDay . "日分</div>";
 
-                    echo "<tr>";
-                    echo "<td>合計</td>";
-                    echo "<td style='text-align: right;'>" . number_format($thisMonthSpendTotal) . "円</td>";
-                    echo "<td></td>";
-                    echo "<td>" . number_format(ceil($thisMonthSpendTotal / $lastDay)) . "円</td>";
-                    echo "</tr>";
+                                echo "<table border='0' cellspacing='2' cellpadding='2' id='KoumokuTable'>";
+                                foreach ($DisplayKoumoku as $koumoku => $price) {
 
-                    echo "</table>";
-                }
-                ?>
+                                    $percent = "0%";
+                                    if ($thisMonthSpendTotal > 0){
+                                        $percent = ($koumoku == "プラス") ? '-' : ceil($price / $thisMonthSpendTotal * 100) . "%";
+                                    }
 
-                <button id="btn_summary_open">summary</button>
+                                    $average = '-';
+                                    if ($koumoku == "食費") {
+                                        $average = number_format(ceil($price / $lastDay)) . "円";
+                                    }
+
+                                    echo "<tr>";
+                                    echo "<td>" . $koumoku . "</td>";
+                                    echo "<td style='text-align: right;'>" . number_format($price) . "円</td>";
+                                    echo "<td style='text-align: right;'>" . $percent . "</td>";
+                                    echo "<td style='text-align: right;'>" . $average . "</td>";
+                                    echo "</tr>";
+                                }
+
+                                echo "<tr>";
+                                echo "<td>合計</td>";
+                                echo "<td style='text-align: right;'>" . number_format($thisMonthSpendTotal) . "円</td>";
+                                echo "<td></td>";
+                                echo "<td>" . number_format(ceil($thisMonthSpendTotal / $lastDay)) . "円</td>";
+                                echo "</tr>";
+
+                                echo "</table>";
+                            }
+                            ?>
+
+                            <button id="btn_summary_open">summary</button>
+
+                        </td>
+                    </tr>
+                </table>
 
             </td>
         </tr>
@@ -255,40 +258,18 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
         <button id="btn_timeplace_input">input</button>
     </div>
 
-    <a href="{{ url('/money/golddatalist') }}" target="_blank">GOLD</a>
-    <br>
-    <a href="{{ url('/money/mercaridatalist') }}" target="_blank">MERCARI</a>
-    <br>
-    <a href="{{ url('/money/funddatalist') }}" target="_blank">FUND</a>
-    <br>
-    <a href="{{ url('/money/balancesheetlist') }}" target="_blank">BalanceSheet</a>
-    <br>
+    <div><br><br></div>
 
     <form method="POST" action="{{ url('/money/makeMoneyTotalList') }}" id="form_makeMoneyTotalList_input">
         {{ csrf_field() }}
-        <button class="btn bg-success text-white">makeMoneyTotalList</button>
+        <button class="btn bg-success text-white" class="m-1">makeMoneyTotalList</button>
     </form>
 
-
-
-
-    <br>
-    <div>{{ $uranaiDate }}</div>
-    <a href="{{ url('/article/YahooUranaiGet') }}" target="_blank">YahooUranaiGet</a>
-    <br>
-    <div>{{ $leoFortuneDate }}</div>
-    <a href="{{ url('/article/LeoFortuneGet') }}" target="_blank">LeoFortuneGet</a>
-
-
-
-
-
-
-
-
-
-
-
+    <a href="{{ url('/money/golddatalist') }}" target="_blank" class="btn btn-primary m-1">GOLD</a>
+    <a href="{{ url('/money/mercaridatalist') }}" target="_blank" class="btn btn-primary m-1">MERCARI</a>
+    <a href="{{ url('/money/funddatalist') }}" target="_blank" class="btn btn-primary m-1">FUND</a>
+    <a href="{{ url('/money/rsdatalist') }}" target="_blank" class="btn btn-primary m-1">RakutenStocks</a>
+    <a href="{{ url('/money/balancesheetlist') }}" target="_blank" class="btn btn-primary m-1">BalanceSheet</a>
 
     <div><br><br></div>
 
