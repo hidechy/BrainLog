@@ -271,6 +271,11 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
     <a href="{{ url('/money/rsdatalist') }}" target="_blank" class="btn btn-primary m-1">RakutenStocks</a>
     <a href="{{ url('/money/balancesheetlist') }}" target="_blank" class="btn btn-primary m-1">BalanceSheet</a>
 
+    <hr>
+
+    <a href="{{ url('/money/stockdatalist') }}" target="_blank" class="btn btn-info m-1">StockData</a>
+    <a href="{{ url('/money/shintakudatalist') }}" target="_blank" class="btn btn-info m-1">ShintakuData</a>
+
     <div><br><br></div>
 
     <style type="text/css">

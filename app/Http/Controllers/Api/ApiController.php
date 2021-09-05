@@ -2083,6 +2083,7 @@ item = '投資信託'
 
         $youbi = ['日', '月', '火', '水', '木', '金', '土'];
 
+        $ary = [];
         foreach ($result as $v) {
             $result2 = DB::table('t_fund')
                 ->where('fundname', '=', $v->fundname)
@@ -2096,16 +2097,19 @@ item = '投資信託'
                 $date = "$v2->year-$v2->month-$v2->day";
                 $_youbi = $youbi[date("w", strtotime($date))];
 
-                $response[$v->fundname][] = [
-                    'year' => $v2->year,
-                    'month' => $v2->month,
-                    'day' => $v2->day . "(" . $_youbi . ")",
-                    'base_price' => $v2->base_price,
-                    'compare_front' => $v2->compare_front,
-                    'yearly_return' => $v2->yearly_return
-                ];
+                $flag = (preg_match("/\+/", trim($v2->compare_front))) ? 1 : 0;
+
+                $ary[$v->fundname][] = $v2->year . "|" . $v2->month . "|" . $v2->day . "(" . $_youbi . ")|" . $v2->base_price . "|" . $v2->compare_front . "|" . $v2->yearly_return . "|" . $flag;
+
             }
         }
+
+        $ary2 = [];
+        foreach ($ary as $fundname => $v) {
+            $ary2[] = $fundname . ":" . implode("/", $v);
+        }
+
+        $response = $ary2;
 
         return response()->json(['data' => $response]);
     }

@@ -3482,4 +3482,167 @@ class MoneyController extends Controller
         return redirect('/money/rsdatalist');
     }
 
+
+    /**
+     *
+     */
+    public function stockdatalist()
+    {
+
+        $result = DB::table('t_stock_datas')
+            ->orderBy('ticker')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
+
+        return view('money.stockdatalist')
+            ->with('result', $result);
+    }
+
+    /**
+     *
+     */
+    public function stockdatainput()
+    {
+        return view('money.stockdatainput');
+    }
+
+    /**
+     *
+     */
+    public function stockdatainputexecute()
+    {
+
+        if (trim($_POST['stockdata']) != "") {
+            $columns = ["ticker", "name", "hoyuu_suuryou", "heikin_shutoku_kagaku", "genzaichi", "jika_hyoukagaku", "hyouka_soneki", "soneki_ritsu"];
+
+            $year = date("Y");
+            $month = date("m");
+            $day = date("d");
+
+            DB::table("t_stock_datas")
+                ->where("year", "=", $year)
+                ->where("month", "=", $month)
+                ->where("day", "=", $day)
+                ->delete();
+
+            $ex_postdata = explode("\n", $_POST['stockdata']);
+
+            $ary = [];
+            $j = 0;
+            $i = 0;
+            foreach ($ex_postdata as $v) {
+                if (trim($v) == "") {
+                    continue;
+                }
+                if (trim($v) == "@") {
+                    $i = 0;
+                    $j++;
+                    continue;
+                }
+
+                $ary[$j][$columns[$i]] = trim($v);
+                $i++;
+            }
+
+            foreach ($ary as $k => $v) {
+                $ary[$k]['year'] = $year;
+                $ary[$k]['month'] = $month;
+                $ary[$k]['day'] = $day;
+                $ary[$k]['time'] = date("H");
+            }
+
+            DB::table("t_stock_datas")->insert($ary);
+        }
+
+        return redirect('/money/stockdatalist');
+    }
+
+
+    /**
+     *
+     */
+    public function shintakudatalist()
+    {
+
+        $result = DB::table('t_toushi_shintaku_datas')
+            ->orderBy('name')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
+
+        return view('money.shintakudatalist')
+            ->with('result', $result);
+    }
+
+    /**
+     *
+     */
+    public function shintakudatainput()
+    {
+        return view('money.shintakudatainput');
+    }
+
+    /**
+     *
+     */
+    public function shintakudatainputexecute()
+    {
+
+        if (trim($_POST['shintakudata']) != "") {
+            $columns = ["name", "bunpaikin_course", "hoyuu_suuryou", "heikin_shutoku_kagaku", "shutoku_sougaku", "kijun_kagaku", "zenjitsuhi_zengetsuhi", "jika_hyoukagaku", "hyouka_soneki", "total_return"];
+
+            $year = date("Y");
+            $month = date("m");
+            $day = date("d");
+
+            DB::table("t_toushi_shintaku_datas")
+                ->where("year", "=", $year)
+                ->where("month", "=", $month)
+                ->where("day", "=", $day)
+                ->delete();
+
+            $ex_postdata = explode("\n", $_POST['shintakudata']);
+
+            $ary = [];
+            $j = 0;
+            $i = 0;
+            foreach ($ex_postdata as $v) {
+                if (trim($v) == "") {
+                    continue;
+                }
+                if (trim($v) == "@") {
+                    $i = 0;
+                    $j++;
+                    continue;
+                }
+
+                switch ($columns[$i]) {
+                    case "hoyuu_suuryou":
+                        $ary[$j][$columns[$i]] = trim(strtr($v, ['保有数量の内訳' => '']));
+                        break;
+
+                    default:
+                        $ary[$j][$columns[$i]] = trim($v);
+                        break;
+                }
+
+                $i++;
+            }
+
+            foreach ($ary as $k => $v) {
+                $ary[$k]['year'] = $year;
+                $ary[$k]['month'] = $month;
+                $ary[$k]['day'] = $day;
+                $ary[$k]['time'] = date("H");
+            }
+
+            DB::table("t_toushi_shintaku_datas")->insert($ary);
+        }
+
+        return redirect('/money/shintakudatalist');
+    }
+
 }

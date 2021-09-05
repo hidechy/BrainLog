@@ -99,6 +99,14 @@ Route::get('/money/rsdatalist', 'Money\MoneyController@rsdatalist');
 Route::get('/money/rsdatainput', 'Money\MoneyController@rsdatainput');
 Route::post('/money/rsdatainputexecute', 'Money\MoneyController@rsdatainputexecute');
 
+Route::get('/money/stockdatalist', 'Money\MoneyController@stockdatalist');
+Route::get('/money/stockdatainput', 'Money\MoneyController@stockdatainput');
+Route::post('/money/stockdatainputexecute', 'Money\MoneyController@stockdatainputexecute');
+
+Route::get('/money/shintakudatalist', 'Money\MoneyController@shintakudatalist');
+Route::get('/money/shintakudatainput', 'Money\MoneyController@shintakudatainput');
+Route::post('/money/shintakudatainputexecute', 'Money\MoneyController@shintakudatainputexecute');
+
 //[other]
 Route::get('/other/tuning', 'Other\OtherController@tuning');
 Route::get('/other/holiday', 'Other\OtherController@holiday');
