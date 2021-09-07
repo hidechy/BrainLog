@@ -3575,4 +3575,147 @@ item = '株式買付'
     }
 
 
+    /**
+     * @return mixed
+     */
+    public function homeFixData()
+    {
+
+        $response = [];
+
+        ///////////////////////////////////////////////
+        $_tables = [];
+
+        $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = database();";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            if (preg_match("/t_article/", $v->table_name)) {
+                $_tables[] = $v->table_name;
+            }
+        }
+        ///////////////////////////////////////////////
+
+        $gas = [];
+        $denki = [];
+        $suidou = [];
+        $mobile = [];
+        $wifi = [];
+
+        $_ym2 = [];
+        foreach ($_tables as $table) {
+            $result = DB::table($table)
+                ->where('article', 'like', '%内訳%')
+                ->orderBy('year')
+                ->orderBy('month')
+                ->orderBy('day')
+                ->get();
+
+            foreach ($result as $v) {
+
+                $ym = "{$v->year}-{$v->month}";
+                if ($v->year >= 2020) {
+                    $_ym2[$ym] = "";
+                }
+
+                $ex_v = explode("\n", trim($v->article));
+                foreach ($ex_v as $v2) {
+                    if (preg_match("/\((.+)\) 水道光熱費(.+)円.+ガス代/", trim($v2), $m)) {
+                        $day = trim($m[1]);
+                        $price = trim(strtr($m[2], [',' => '']));
+                        $gas[$ym][] = number_format($price) . " ({$day})";
+                    }
+
+                    if (preg_match("/\((.+)\) 水道光熱費(.+)円.+電気代/", trim($v2), $m)) {
+                        $day = trim($m[1]);
+                        $price = trim(strtr($m[2], [',' => '']));
+                        $denki[$ym][] = number_format($price) . " ({$day})";
+                    }
+
+                    if (preg_match("/\((.+)\) 水道光熱費(.+)円.+水道代/", trim($v2), $m)) {
+                        $day = trim($m[1]);
+                        $price = trim(strtr($m[2], [',' => '']));
+                        $suidou[$ym][] = number_format($price) . " ({$day})";
+                    }
+
+                    if (preg_match("/20.+楽天/", trim($v2))) {
+                        $ex_v2 = explode("\t", trim($v2));
+                        $ex_date = explode("/", trim($ex_v2[0]));
+                        $yearmonth = "{$ex_date[0]}-{$ex_date[1]}";
+                        $_day = trim($ex_date[2]);
+                        $price = trim(strtr($ex_v2[4], ['¥' => '', ',' => '']));
+                        if (preg_match("/ブロードバンド/", trim($v2))) {
+                            $wifi[$yearmonth][] = number_format($price) . " ({$_day})";
+                        } else {
+                            if (
+                                preg_match("/市場/", trim($v2)) ||
+                                preg_match("/証券/", trim($v2))
+                            ) {
+                                //
+                            } else {
+                                $mobile[$yearmonth][] = number_format($price) . " ({$_day})";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $yachin = [];
+        $result2 = DB::table("t_credit")
+            ->where("price", "=", 67000)
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('day')
+            ->get();
+
+        foreach ($result2 as $v) {
+
+            if ($v->year >= 2020) {
+                $_ym2["{$v->year}-{$v->month}"] = "";
+            }
+
+            $yachin["{$v->year}-{$v->month}"][] = number_format($v->price) . " ({$v->day})";
+        }
+
+        $denki["2021-08"][] = "4,400 (19)";
+        $suidou["2021-02"][] = "30,003 (05)";
+
+        $wifi["2020-01"][] = "16,812 (06)";
+        $wifi["2020-01"][] = "16,900 (31)";
+        $wifi["2020-03"][] = "24,914 (02)";
+
+        $mobile["2020-03"][] = "5,080 (31)";
+        $mobile["2020-04"][] = "5,080 (30)";
+        $mobile["2020-06"][] = "5,080 (01)";
+
+        $YM2 = array_keys($_ym2);
+        sort($YM2);
+
+        $ary2 = [];
+        foreach ($YM2 as $v3) {
+            $ary2[$v3] = [
+                'ym' => $v3,
+                'yachin' => (isset($yachin)) ? implode(" / ", $yachin[$v3]) : "",
+                'wifi' => (isset($wifi[$v3])) ? implode(" / ", $wifi[$v3]) : "",
+                'mobile' => (isset($mobile[$v3])) ? implode(" / ", $mobile[$v3]) : "",
+                'gas' => (isset($gas[$v3])) ? implode(" / ", $gas[$v3]) : "",
+                'denki' => (isset($denki[$v3])) ? implode(" / ", $denki[$v3]) : "",
+                'suidou' => (isset($suidou[$v3])) ? implode(" / ", $suidou[$v3]) : ""
+            ];
+        }
+
+        $ary3 = [];
+        foreach ($ary2 as $v) {
+            $ary3[] = implode("|", $v);
+        }
+
+
+        $response = $ary3;
+
+        return response()->json(['data' => $response]);
+
+    }
+
+
 }

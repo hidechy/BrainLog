@@ -40,7 +40,10 @@ Route::namespace('Api')->group(function () {
     Route::post('seiyuuPurchaseList', 'ApiController@seiyuuPurchaseList');
     Route::post('seiyuuPurchaseItemList', 'ApiController@seiyuuPurchaseItemList');
     Route::post('dutyData', 'ApiController@dutyData');
+
     Route::post('yachinData', 'ApiController@yachinData');
+    Route::post('homeFixData', 'ApiController@homeFixData');
+
     Route::post('timeplacezerousedate', 'ApiController@timeplacezerousedate');
     Route::post('monthlyspenditem', 'ApiController@monthlyspenditem');
     Route::post('monthlytraindata', 'ApiController@monthlytraindata');
