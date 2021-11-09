@@ -2,6 +2,10 @@
 
 use Illuminate\Http\Request;
 
+
+use App\Models\User;
+
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -20,6 +24,28 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::namespace('Api')->group(function () {
 
     Route::post('getholiday', 'ApiController@getholiday');
+
+    //login
+    Route::post("login", function () {
+        $email = request()->get("email");
+        $password = request()->get("password");
+        $user = User::where("email", $email)->first();
+        if ($user && Hash::check($password, $user->password)) {
+            $token = str_random(60);
+            $user->api_token = $token;
+            $user->save();
+            return [
+                "token" => $token,
+                "user" => $user
+            ];
+        } else {
+            return [
+                "token" => '',
+                "user" => null
+            ];
+        }
+    });
+
 
     //money
     Route::post('getmonthstartmoney', 'ApiController@getmonthstartmoney');
@@ -63,6 +89,20 @@ Route::namespace('Api')->group(function () {
 
     Route::post('getStockPrice', 'ApiController@getStockPrice');
 
+    Route::post('getDataStock', 'ApiController@getDataStock');
+    Route::post('getDataShintaku', 'ApiController@getDataShintaku');
+
+    Route::post('getAllMoney', 'ApiController@getAllMoney');
+    Route::post('getAllBenefit', 'ApiController@getAllBenefit');
+
+    Route::post('getStockDetail', 'ApiController@getStockDetail');
+    Route::post('getShintakuDetail', 'ApiController@getShintakuDetail');
+
+    Route::post('monthSpendItem', 'ApiController@monthSpendItem');
+    Route::post('creditDetail', 'ApiController@creditDetail');
+
+    Route::post('getCreditDateData', 'ApiController@getCreditDateData');
+
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');
     Route::post('stockdatedata', 'ApiController@stockdatedata');
@@ -78,6 +118,7 @@ Route::namespace('Api')->group(function () {
     Route::post('worktimeinsert', 'ApiController@worktimeinsert');
     Route::post('workinggenbaname', 'ApiController@workinggenbaname');
     Route::post('worktimesummary', 'ApiController@worktimesummary');
+    Route::post('workingmonthdata', 'ApiController@workingmonthdata');
 
     //uranai
     Route::post('dailyuranai', 'ApiController@dailyuranai');
@@ -90,5 +131,20 @@ Route::namespace('Api')->group(function () {
     Route::post('getkotowaza', 'ApiController@getkotowaza');
     Route::post('changekotowazaflag', 'ApiController@changekotowazaflag');
     Route::post('getkotowazachecktest', 'ApiController@getkotowazachecktest');
+
+    //tarot
+    Route::post('tarotcard', 'ApiController@tarotcard');
+    Route::post('tarotcategory', 'ApiController@tarotcategory');
+    Route::post('tarotselect', 'ApiController@tarotselect');
+    Route::post('tarothistory', 'ApiController@tarothistory');
+    Route::post('tarotthree', 'ApiController@tarotthree');
+    Route::post('getAllTarot', 'ApiController@getAllTarot');
+
+    //dice
+    Route::post('dice', 'ApiController@dice');
+
+    //temple
+    Route::post('getAllTemple', 'ApiController@getAllTemple');
+    Route::post('getDateTemple', 'ApiController@getDateTemple');
 
 });

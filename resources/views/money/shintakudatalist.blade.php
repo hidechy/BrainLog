@@ -24,26 +24,48 @@
 
         echo "<table class='table table-bordered mb-5'>";
 
+        echo "<tr>";
+        foreach ($midashi as $v){
+            echo "<td>";
+            echo $v;
+            echo "</td>";
+        }
+        echo "</tr>";
+
         foreach ($result as $v) {
-            echo "<tr>";
+        echo "
+        <tr>";
 
             $date = $v->year . "-" . $v->month . "-" . $v->day;
             $youbi = $_youbi[date("w", strtotime($date))];
 
             foreach ($midashi as $v2) {
-                echo "<td>";
+
+            $bgColor = (
+            $v2 == "shutoku_sougaku" ||
+            $v2 == "jika_hyoukagaku"
+            ) ? "background: #ffff99;" : "";
+
+            echo "
+            <td style='{$bgColor}'>";
                 echo $v->$v2;
 
                 if ($v2 == "day") {
-                    echo " / " . $youbi;
+                echo " / " . $youbi;
                 }
-                echo "</td>";
+                echo "
+            </td>
+            ";
             }
-            echo "</tr>";
+            echo "
+        </tr>
+        ";
         }
         echo "</table>";
         ?>
     </div>
+
+    <a href="{{ url('/money/shintakudatainput') }}" class="btn btn-success">input</a>
 
 
 </div>
@@ -53,7 +75,9 @@
         crossorigin="anonymous"></script>
 
 <style type="text/css">
-    td {font-size: 12px;}
+    td {
+        font-size: 12px;
+    }
 </style>
 
 </body>

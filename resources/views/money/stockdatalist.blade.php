@@ -24,6 +24,17 @@
 
         echo "<table class='table table-bordered mb-5'>";
 
+        echo "<tr>";
+        foreach ($midashi as $v) {
+            echo "<td>";
+            echo $v;
+            echo "</td>";
+            if ($v == "heikin_shutoku_kagaku"){
+                echo "<td>price</td>";
+            }
+        }
+        echo "</tr>";
+
         foreach ($result as $v) {
             echo "<tr>";
 
@@ -31,19 +42,33 @@
             $youbi = $_youbi[date("w", strtotime($date))];
 
             foreach ($midashi as $v2) {
-                echo "<td>";
+
+                $bgColor = ($v2 == "jika_hyoukagaku") ? "background: #ffff99;" : "";
+
+                echo "<td style='{$bgColor}'>";
                 echo $v->$v2;
 
                 if ($v2 == "day") {
                     echo " / " . $youbi;
                 }
+
                 echo "</td>";
+
+                if ($v2 == "heikin_shutoku_kagaku") {
+                    echo "<td style='background: #ffff99;'>";
+                    echo($v->hoyuu_suuryou * trim(strtr($v->heikin_shutoku_kagaku, [',' => ''])));
+                    echo "</td>";
+                }
+
+
             }
             echo "</tr>";
         }
         echo "</table>";
         ?>
     </div>
+
+    <a href="{{ url('/money/stockdatainput') }}" class="btn btn-success">input</a>
 
 
 </div>
@@ -53,7 +78,9 @@
         crossorigin="anonymous"></script>
 
 <style type="text/css">
-    td {font-size: 12px;}
+    td {
+        font-size: 12px;
+    }
 </style>
 
 </body>

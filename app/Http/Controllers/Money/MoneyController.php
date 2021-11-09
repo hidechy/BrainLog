@@ -260,6 +260,23 @@ class MoneyController extends Controller
             $leoFortuneDate = trim($ex_v[0]) . "-" . trim($ex_v[1]) . "-" . trim($ex_v[2]);
         }
 
+
+        $sql = " select * from t_stock_datas order by year, month, day; ";
+        $result = DB::select($sql);
+
+        $stockDatasDate = "";
+        foreach ($result as $v) {
+            $stockDatasDate = "{$v->year}-{$v->month}-{$v->day}";
+        }
+
+        $sql = " select * from t_toushi_shintaku_datas order by name, year, month, day; ";
+        $result = DB::select($sql);
+
+        $shintakuDatasDate = "";
+        foreach ($result as $v) {
+            $shintakuDatasDate = "{$v->year}-{$v->month}-{$v->day}";
+        }
+
         return view('money.index')
             ->with('year', $thisMonthYear)
             ->with('month', $thisMonthMonth)
@@ -277,7 +294,9 @@ class MoneyController extends Controller
             ->with('lastDay', $lastDay)
             ->with('thisMonthSpendTotal', $thisMonthSpendTotal)
             ->with('uranaiDate', $uranaiDate)
-            ->with('leoFortuneDate', $leoFortuneDate);
+            ->with('leoFortuneDate', $leoFortuneDate)
+            ->with('stockDatasDate', $stockDatasDate)
+            ->with('shintakuDatasDate', $shintakuDatasDate);
         ////////////////////////////// 暫定　20210718
 
     }

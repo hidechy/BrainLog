@@ -23,9 +23,12 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
 
 @section('content')
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+            crossorigin="anonymous"></script>
 
     <table border="0">
         <tr>
@@ -198,7 +201,7 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
                                 foreach ($DisplayKoumoku as $koumoku => $price) {
 
                                     $percent = "0%";
-                                    if ($thisMonthSpendTotal > 0){
+                                    if ($thisMonthSpendTotal > 0) {
                                         $percent = ($koumoku == "プラス") ? '-' : ceil($price / $thisMonthSpendTotal * 100) . "%";
                                     }
 
@@ -265,6 +268,10 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
         <button class="btn bg-success text-white" class="m-1">makeMoneyTotalList</button>
     </form>
 
+    <hr>
+    <a href="https://www.rakuten-sec.co.jp/ITS/V_ACT_Login.html" target="_blank" class="btn btn-danger">link</a>
+    <hr>
+
     <a href="{{ url('/money/golddatalist') }}" target="_blank" class="btn btn-primary m-1">GOLD</a>
     <a href="{{ url('/money/mercaridatalist') }}" target="_blank" class="btn btn-primary m-1">MERCARI</a>
     <a href="{{ url('/money/funddatalist') }}" target="_blank" class="btn btn-primary m-1">FUND</a>
@@ -273,8 +280,17 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
 
     <hr>
 
-    <a href="{{ url('/money/stockdatalist') }}" target="_blank" class="btn btn-info m-1">StockData</a>
-    <a href="{{ url('/money/shintakudatalist') }}" target="_blank" class="btn btn-info m-1">ShintakuData</a>
+    <div>
+        <a href="{{ url('/money/stockdatalist') }}" target="_blank" class="btn btn-info m-1">StockData</a>
+        {{ $stockDatasDate }}
+    </div>
+
+    <div>
+        <a href="{{ url('/money/shintakudatalist') }}" target="_blank" class="btn btn-info m-1">ShintakuData</a>
+        {{ $shintakuDatasDate }}
+    </div>
+
+
 
     <div><br><br></div>
 
