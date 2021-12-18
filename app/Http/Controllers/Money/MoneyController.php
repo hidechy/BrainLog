@@ -1807,7 +1807,8 @@ class MoneyController extends Controller
 保険料
 水道光熱費
 共済代
-税金
+所得税
+住民税
 年金
 国民年金基金
 国民健康保険
@@ -1815,8 +1816,6 @@ class MoneyController extends Controller
 手数料
 不明
 利息
-臨時収入
-給付金
 プラス
 メルカリ
 投資信託

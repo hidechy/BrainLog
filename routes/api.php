@@ -66,10 +66,8 @@ Route::namespace('Api')->group(function () {
     Route::post('seiyuuPurchaseList', 'ApiController@seiyuuPurchaseList');
     Route::post('seiyuuPurchaseItemList', 'ApiController@seiyuuPurchaseItemList');
     Route::post('dutyData', 'ApiController@dutyData');
-
     Route::post('yachinData', 'ApiController@yachinData');
     Route::post('homeFixData', 'ApiController@homeFixData');
-
     Route::post('timeplacezerousedate', 'ApiController@timeplacezerousedate');
     Route::post('monthlyspenditem', 'ApiController@monthlyspenditem');
     Route::post('monthlytraindata', 'ApiController@monthlytraindata');
@@ -79,29 +77,25 @@ Route::namespace('Api')->group(function () {
     Route::post('getgolddata', 'ApiController@getgolddata');
     Route::post('gettraindata', 'ApiController@gettraindata');
     Route::post('mercaridata', 'ApiController@mercaridata');
-
     Route::post('getFundRecord', 'ApiController@getFundRecord');
     Route::post('getWellsRecord', 'ApiController@getWellsRecord');
     Route::post('getBalanceSheetRecord', 'ApiController@getBalanceSheetRecord');
-
     Route::post('getITFRecord', 'ApiController@getITFRecord');
     Route::post('getITFPrice', 'ApiController@getITFPrice');
-
     Route::post('getStockPrice', 'ApiController@getStockPrice');
-
     Route::post('getDataStock', 'ApiController@getDataStock');
     Route::post('getDataShintaku', 'ApiController@getDataShintaku');
-
     Route::post('getAllMoney', 'ApiController@getAllMoney');
     Route::post('getAllBenefit', 'ApiController@getAllBenefit');
-
     Route::post('getStockDetail', 'ApiController@getStockDetail');
     Route::post('getShintakuDetail', 'ApiController@getShintakuDetail');
-
     Route::post('monthSpendItem', 'ApiController@monthSpendItem');
     Route::post('creditDetail', 'ApiController@creditDetail');
-
     Route::post('getCreditDateData', 'ApiController@getCreditDateData');
+    Route::post('updateBankMoney', 'ApiController@updateBankMoney');
+    Route::post('getYearSpendSummay', 'ApiController@getYearSpendSummay');
+    Route::post('getYearCreditSummay', 'ApiController@getYearCreditSummay');
+    Route::post('getYearCreditCommonItem', 'ApiController@getYearCreditCommonItem');
 
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');
@@ -146,5 +140,19 @@ Route::namespace('Api')->group(function () {
     //temple
     Route::post('getAllTemple', 'ApiController@getAllTemple');
     Route::post('getDateTemple', 'ApiController@getDateTemple');
+    Route::post('getTempleLatLng', 'ApiController@getTempleLatLng');
+
+    //train
+    Route::post('getTrain', 'ApiController@getTrain');
+    Route::post('getTrainStation', 'ApiController@getTrainStation');
+    Route::post('getTrainCompany', 'ApiController@getTrainCompany');
+    Route::post('updateTrainFlag', 'ApiController@updateTrainFlag');
+
+    //walk
+    Route::post('getWalkRecord', 'ApiController@getWalkRecord');
+
+    //agent
+    Route::post('getAgentName', 'ApiController@getAgentName');
+    Route::post('getAgentDocument', 'ApiController@getAgentDocument');
 
 });
