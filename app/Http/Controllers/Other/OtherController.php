@@ -99,13 +99,13 @@ class OtherController extends Controller
         $date = [];
         $ex_AAA1 = explode("|", strtr($ex_AAA[1], ['><' => '>|<']));
         foreach ($ex_AAA1 as $value) {
-            if (preg_match("/<th.+class=\"date\">(.+)<\/th>/",trim($value),$m)){
-                $ex_m1 = explode("日",trim($m[1]));
+            if (preg_match("/<th.+class=\"date\">(.+)<\/th>/", trim($value), $m)) {
+                $ex_m1 = explode("日", trim($m[1]));
                 $date[] = trim($ex_m1[0]);
             }
         }
 
-        $startDate = date("Y-m-").$date[0];
+        $startDate = date("Y-m-") . $date[0];
         $date[1] = $startDate;
         for ($i = 2; $i < count($date); $i++) {
             $date[$i] = date("Y-m-d", strtotime($startDate) + (86400 * ($i - 1)));
@@ -1097,6 +1097,78 @@ class OtherController extends Controller
         ]);
 
 
+    }
+
+
+    /**
+     *
+     */
+    public function youtubedatalist()
+    {
+
+        $result = DB::table('t_youtube_data')
+            ->orderBy('getdate', 'desc')
+            ->get();
+
+        return view('other.youtubedatalist')
+            ->with('result', $result);
+    }
+
+    /**
+     *
+     */
+    public function youtubedatainput()
+    {
+        return view('other.youtubedatainput');
+    }
+
+    /**
+     *
+     */
+    public function youtubedatainputexecute()
+    {
+        if (trim($_POST['youtubedata']) != "") {
+            $ex_youtubedata = explode("\n", trim($_POST['youtubedata']));
+            foreach ($ex_youtubedata as $v) {
+                if (trim($v) == "") {
+                    continue;
+                }
+
+                $ex_v = explode("\t", trim($v));
+
+                $insert = [];
+                $insert['getdate'] = trim(strtr($ex_v[0], ['/' => '']));
+
+                preg_match("/\"(.+)\"/", trim($ex_v[1]), $m);
+
+                if (!isset($m[1])) {
+                    continue;
+                }
+
+                $insert['title'] = trim($m[1]);
+
+                preg_match("/youtu\.be\/(.+)/", trim($ex_v[2]), $m);
+
+                if (!isset($m[1])) {
+                    continue;
+                }
+
+                $insert['youtube_id'] = trim($m[1]);
+                $insert['url'] = trim($ex_v[2]);
+
+                $result = DB::table('t_youtube_data')
+                    ->where('youtube_id', '=', $insert['youtube_id'])
+                    ->first();
+
+                if (!empty($result)) {
+                    continue;
+                }
+
+                DB::table('t_youtube_data')->insert($insert);
+            }
+        }
+
+        return redirect('/other/youtubedatalist');
     }
 
 

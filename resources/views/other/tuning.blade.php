@@ -39,6 +39,21 @@ $public_path = implode("/" , $ex_phpself);
 
     </div>
 
+
+
+
+    <hr>
+    <div><a href="{{ url('/other/youtubedatalist') }}">youtubedatalist</a></div>
+
+
+
+
+
+
+
+
+
+
     <style type="text/css">
     <!--
     #btn_article_index {cursor : pointer; margin : 2px; }

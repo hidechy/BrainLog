@@ -3610,7 +3610,14 @@ class MoneyController extends Controller
     {
 
         if (trim($_POST['shintakudata']) != "") {
-            $columns = ["name", "bunpaikin_course", "hoyuu_suuryou", "heikin_shutoku_kagaku", "shutoku_sougaku", "kijun_kagaku", "zenjitsuhi_zengetsuhi", "jika_hyoukagaku", "hyouka_soneki", "total_return"];
+
+            $columns_a = ["name", "bunpaikin_course", "hoyuu_suuryou", "heikin_shutoku_kagaku", "shutoku_sougaku", "kijun_kagaku", "zenjitsuhi_zengetsuhi", "jika_hyoukagaku", "hyouka_soneki", "total_return", "bbb"];
+            $columns_b = ["name", "bunpaikin_course", "hoyuu_suuryou", "xxx", "heikin_shutoku_kagaku", "shutoku_sougaku", "kijun_kagaku", "zenjitsuhi_zengetsuhi", "jika_hyoukagaku", "hyouka_soneki", "total_return"];
+            if (preg_match("/積立設定中/", trim($_POST['shintakudata']))) {
+                $columns = $columns_b;
+            } else {
+                $columns = $columns_a;
+            }
 
             $year = date("Y");
             $month = date("m");
@@ -3637,14 +3644,16 @@ class MoneyController extends Controller
                     continue;
                 }
 
-                switch ($columns[$i]) {
-                    case "hoyuu_suuryou":
-                        $ary[$j][$columns[$i]] = trim(strtr($v, ['保有数量の内訳' => '']));
-                        break;
+                if ($columns[$i] != "xxx") {
+                    switch ($columns[$i]) {
+                        case "hoyuu_suuryou":
+                            $ary[$j][$columns[$i]] = trim(strtr($v, ['保有数量の内訳' => '']));
+                            break;
 
-                    default:
-                        $ary[$j][$columns[$i]] = trim($v);
-                        break;
+                        default:
+                            $ary[$j][$columns[$i]] = trim($v);
+                            break;
+                    }
                 }
 
                 $i++;

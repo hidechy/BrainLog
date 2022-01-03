@@ -155,4 +155,9 @@ Route::namespace('Api')->group(function () {
     Route::post('getAgentName', 'ApiController@getAgentName');
     Route::post('getAgentDocument', 'ApiController@getAgentDocument');
 
+    //youtube
+    Route::post('getYoutubeList', 'ApiController@getYoutubeList');
+    Route::post('bunruiYoutubeData', 'ApiController@bunruiYoutubeData');
+    Route::post('getBunruiName', 'ApiController@getBunruiName');
+
 });

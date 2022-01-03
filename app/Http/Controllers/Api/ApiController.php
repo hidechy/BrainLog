@@ -5704,4 +5704,129 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
     }
 
 
+    /**
+     *
+     */
+    public function getYoutubeList(Request $request)
+    {
+
+        $response = [];
+
+        if (trim($request->bunrui) == "") {
+            $result = DB::table('t_youtube_data')->orderBy('getdate', 'desc')->get();
+        } else {
+            if (trim($request->bunrui) == "blank") {
+//                $result = DB::table('t_youtube_data')
+//                    ->whereNull('bunrui')
+//                    ->orderBy('getdate', 'desc')->get();
+
+
+                $sql = " select * from t_youtube_data where (bunrui is null or bunrui = '') order by getdate; ";
+                $result = DB::select($sql);
+
+
+            } else {
+                $result = DB::table('t_youtube_data')
+                    ->where('bunrui', '=', $request->bunrui)
+                    ->orderBy('getdate', 'desc')->get();
+            }
+        }
+
+        $ary = [];
+        foreach ($result as $v) {
+
+            if ($v->del == '1') {
+                continue;
+            }
+
+            $ary[] = [
+                'youtube_id' => $v->youtube_id,
+                'title' => $v->title,
+                'getdate' => $v->getdate,
+                'url' => $v->url,
+                'bunrui' => $v->bunrui,
+                'special' => $v->special
+            ];
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @param Request $request
+     */
+    public function bunruiYoutubeData(Request $request)
+    {
+
+
+        try {
+            DB::beginTransaction();
+
+            switch ($request->bunrui) {
+                case "delete":
+                    $sql = " update t_youtube_data set del = '1' where youtube_id in ({$request->youtube_id}); ";
+                    break;
+
+                case "erase":
+                    $sql = " update t_youtube_data set bunrui = '' where youtube_id in ({$request->youtube_id}); ";
+                    break;
+
+                case "special":
+                    $ex_val = explode(",", $request->youtube_id);
+                    foreach ($ex_val as $v) {
+                        $ex_v = explode("|", trim($v));
+                        $sql = " update t_youtube_data set special = '{$ex_v[1]}' where youtube_id = '{$ex_v[0]}'; ";
+                        DB::statement($sql);
+                    }
+                    break;
+
+                default:
+                    $sql = " update t_youtube_data set bunrui = '{$request->bunrui}' where youtube_id in ({$request->youtube_id}); ";
+                    break;
+            }
+
+
+            if ($request->bunrui != 'special') {
+                DB::statement($sql);
+            }
+
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
+    }
+
+
+    /**
+     * @param Request $request
+     */
+    public function getBunruiName(Request $request)
+    {
+
+        $response = [];
+
+        $sql = " select bunrui from t_youtube_data where bunrui is not null group by bunrui; ";
+        $result = DB::select($sql);
+
+        $ary = [];
+        foreach ($result as $v) {
+            $ary[] = $v->bunrui;
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+
+
+    }
+
+
 }

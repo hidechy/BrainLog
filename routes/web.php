@@ -133,6 +133,9 @@ Route::get('/other/{str}/kabukaselectapi', 'Other\OtherController@kabukaselectap
 Route::get('/other/route', 'Other\OtherController@route');
 Route::post('/other/routemap', 'Other\OtherController@routemap');
 
+Route::get('/other/youtubedatalist', 'Other\OtherController@youtubedatalist');
+Route::get('/other/youtubedatainput', 'Other\OtherController@youtubedatainput');
+Route::post('/other/youtubedatainputexecute', 'Other\OtherController@youtubedatainputexecute');
 
 
 

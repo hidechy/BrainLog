@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "brainlog",
+  "private_key_id": "e7a9793af15bb95c0e72245b26fd9938b6723773",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDipBm3sGujStHv\nPBs9UMSEkg316o8Wojil5MTa5XJ5Kikb/6mJZG5wGRTU9T9r+cDnlXFexyJeZZbe\nZAWUXPq7prEvMntISG8KmS1pSSv4Kbobo7mSZh9sl55Jqv6FZ9MOelPnDgHNALCX\n0zX06MwE/Loeo0Mdos4/VDgq7qWwekQ9xiNxnmi/2NRoYHUtTylqRKSnkZZIRi/o\nIz6pEWPiewayS+Hg/ZmE6BSsNXLcXeH15zKnOg2QhRAGZqgt/UKGpCCP7a8gcv5V\nQ1dXUzFSs3+l5M9jp1cbEtnO5oVobSH5Lqbr3ptaE56yweePLZcR5l3xlUGiEfBx\nBG9FNdYZAgMBAAECggEACZ54XvT0ZI5Q4av15gDPDmdag1TstMO2zseqWTYCyUSy\nUPdlXSjvjP9rhGxSQEVt3AZaNPETstjx8cdh+z2FAMDe5UdptxQn7lW4+S57WMGA\nnhqxThbaf5PhynOg8M2KxiMH+5b7GZXNaOw0bowQ2KdXSOSZ/SCDS2nKJnxReO9r\nDtXv2VSJrQ5DHQT+ilU1amuS6uGIQeDswApN/CTkjsDlXrPRFML+ENrARnv8fa/T\nEQbdylG+xBi7QDmOaqrKBxohoBPP9EPRfBWblsio7hdqwggz1FnwPhg8Y4tYEL53\nEdjMErI7+uWDjFK8+mhLtFGKcJcPEeHY+7K750moBwKBgQD6XLYANq69JXijIpDA\nPvR6M25ZTTeMmd8CnyG757LWcADrUVeMH8j6Qq2sEy24OBnXzRTL4bN4kKwc9zkg\nMaYxAXK+FeJRdFS9V4fZPiPXhhEUJz1tv7lmKd2FADiutQS9tWHIr0XR1umPk8ai\nbrwGH8bBvawBQeNpVKl79AHLswKBgQDnvqRMttP3eoloynjpIbvaLvgKbNsPfN7b\n1gBEFUWjVqPhVy5uF1hZJA6WUX5d2k7sNxf/fUYOdNOIh+bVgYtTy/RX61jnZepG\ntNSx1T0uv8NtzON+fShIpm42IiKH9JEikWZBLT6TMtzkM27usN62HjuE/1u6+Vaf\nRCQiHahBAwKBgQDyk5+4Z0M5ezP/BH+x9Y2VVX3Gwt1eurvsY1khImcSBKWvWznz\nR9zINpDlmBOFWb4YbNmIjeABolNRIWzVN6Xp95hAex20hH2Sk1vJ7r51la24lCid\nzNULGudKdaN2C2hTk4nyE3kXzx6wAaPFQHunh2Rh1a/x6/A231P0CMEwpwKBgBYf\nLK/mA/XrzJIkQcZ/Yd9B/IuCOKcR1HRHyV62aR9edeZc3CHGOLjJqFrRDK8I19/U\nooXQ/48Bt++giXh4FUS6g2ihHqt4HxUAzgzrvhtoUs94b37zk5Tbzkl8mK9BuVkD\naC9wkjia8lsWTdCbMadQ232moqsGgi5R4uEe06DhAoGAbLyEnLuGL31Es9pxdC+C\nmytyaRw3YrXK5lNHW4aUvq3npx4ktaIjlGwKpqKjvX/XaUrQn7YttGYCHGsPno3U\nJH6soWQrcEzMEAEyneOBKvKPLJpi9lv4R2zGUg+Z3pEsHaqOdSWaqnyRQEUo1IZ8\n47XmsBLm96IfeFqmzz+kkWQ=\n-----END PRIVATE KEY-----\n",
+  "client_email": "brainlog@brainlog.iam.gserviceaccount.com",
+  "client_id": "107369290722482267840",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/brainlog%40brainlog.iam.gserviceaccount.com"
+}
