@@ -1379,7 +1379,7 @@ GOLD
         list($year, $month, $day) = explode("-", $request->date);
         $table = 't_article' . $year;
 
-        $result = DB::table($table)->where('article', 'like', '%** Amazon **%')->first();
+        $result = DB::table($table)->where('article', 'like', '%●Amazon●%')->first();
 
         if ($result->article) {
 
@@ -3095,7 +3095,7 @@ item = '投資信託'
             $hour = "";
             if (isset($worktimeSalary[$ym])) {
                 $salary = $worktimeSalary[$ym];
-                $hour = floor($salary / $summary);
+                $hour = ($summary != 0) ? floor($salary / $summary) : 0;
             }
 
             $ary6[] = $ym . ";" . $summary . ";$company;$genba;$salary;$hour;" . $str;
@@ -3309,6 +3309,110 @@ item = '投資信託'
         }
 
     }
+
+
+    /**
+     * @param Request $request
+     */
+    public function getMonthlyUranaiData(Request $request)
+    {
+        $response = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        //-----------------------------------------//
+        $file = public_path() . "/mySetting/uranai.data";
+        $content = file_get_contents($file);
+        $ary = [];
+        if (!empty($content)) {
+            $ex_content = explode("\n", $content);
+            if (!empty($ex_content)) {
+                foreach ($ex_content as $v) {
+                    if (trim($v) == "") {
+                        continue;
+                    }
+
+                    $ex_v = explode("|", trim($v));
+
+                    $ex_v0 = explode("-", trim($ex_v[0]));
+
+                    if (($year == trim($ex_v0[0])) && (trim($ex_v0[1]) == $month)) {
+                        $ex_v1 = explode("<br>", trim($ex_v[1]));
+                        $ex_v1_1 = explode(";", trim($ex_v1[1]));
+
+                        $ary[trim($ex_v[0])] = [
+                            'date' => trim($ex_v[0]),
+                            'total' => [
+                                trim($ex_v1[0]),
+                                trim($ex_v1_1[0]),
+                                trim($ex_v1_1[1])
+                            ],
+
+                            'love' => explode(";", trim($ex_v[2])),
+                            'money' => explode(";", trim($ex_v[3])),
+                            'work' => explode(";", trim($ex_v[4])),
+                        ];
+                    }
+                }
+            }
+        }
+        //-----------------------------------------//
+
+        //-----------------------------------------//
+        $file = public_path() . "/mySetting/leofortune.data";
+        $content = file_get_contents($file);
+        $ex_content = explode("\n", $content);
+        $ary2 = [];
+        foreach ($ex_content as $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+
+            $str = trim($v);
+            $str = strtr($str, ['明日' => '今日']);
+            $ex_v = explode("|", trim($str));
+
+            $ary2["{$ex_v[0]}-{$ex_v[1]}-{$ex_v[2]}"] = [
+                'sachikoi_rank' => trim($ex_v[3]),
+                'sachikoi_love' => trim($ex_v[4]),
+                'sachikoi_money' => trim($ex_v[5]),
+                'sachikoi_work' => trim($ex_v[6]),
+                'sachikoi_man' => trim($ex_v[7])
+            ];
+        }
+        //-----------------------------------------//
+
+        $ary3 = [];
+        foreach ($ary as $date => $v) {
+            $ary3[] = [
+                'date' => $v['date'],
+
+                'total_title' => $v['total'][0],
+                'total_description' => $v['total'][1],
+                'total_point' => $v['total'][2],
+
+                'love_description' => $v['love'][0],
+                'love_point' => $v['love'][1],
+
+                'money_description' => $v['money'][0],
+                'money_point' => $v['money'][1],
+
+                'work_description' => $v['work'][0],
+                'work_point' => $v['work'][1],
+
+                'sachikoi_rank' => $ary2[$date]['sachikoi_rank'],
+                'sachikoi_love' => $ary2[$date]['sachikoi_love'],
+                'sachikoi_money' => $ary2[$date]['sachikoi_money'],
+                'sachikoi_work' => $ary2[$date]['sachikoi_work'],
+                'sachikoi_man' => $ary2[$date]['sachikoi_man']
+            ];
+        }
+
+        $response = $ary3;
+
+        return response()->json(['data' => $response]);
+    }
+
 
     /**
      * @return mixed
@@ -5544,10 +5648,11 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
     /**
      * @return mixed
      */
-    public function getWalkRecord()
+    public function getWalkRecord(Request $request)
     {
         $response = [];
 
+        $ex_date = explode("-", $request->date);
 
         ////////////////////////////////////////////////
         $mercari = [];
@@ -5568,6 +5673,8 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         $ary = [];
 
         $result = DB::table('t_walk_record')
+            ->where('year', '=', trim($ex_date[0]))
+            ->where('month', '=', trim($ex_date[1]) * 1)
             ->orderBy('id')
             ->get();
 
@@ -5612,13 +5719,35 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
 
             $date = "{$year}-{$month}-{$day}";
 
+            //-----------------------------------------//
+            $table = "t_article{$year}";
+            $train = '';
+            $result5 = DB::table($table)
+                ->where('year', '=', $year)
+                ->where('month', '=', $month)
+                ->where('day', '=', $day)
+                ->where('tag', '=', '電車乗車')
+                ->first();
+
+            if (isset($result5)) {
+                $ex_article = explode("\n", $result5->article);
+                $ary5 = [];
+                foreach ($ex_article as $v5) {
+                    $ary5[] = trim($v5);
+                }
+
+                $train = implode(" | ", $ary5);
+            }
+            //-----------------------------------------//
+
             $ary[$k] = [
                 'date' => $date,
                 'step' => $v->step,
                 'distance' => $v->distance,
                 'mercari' => (isset($mercari[$date])) ? 'mercari' : '',
                 'temple' => (!empty($temple)) ? implode("、", $temple) : '',
-                'place' => $imp_ary2
+                'place' => $imp_ary2,
+                'train' => $train
             ];
         }
 
@@ -5813,7 +5942,7 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
 
         $response = [];
 
-        $sql = " select bunrui from t_youtube_data where bunrui is not null group by bunrui; ";
+        $sql = " select bunrui from t_youtube_data where bunrui is not null and del = '0' group by bunrui; ";
         $result = DB::select($sql);
 
         $ary = [];

@@ -1172,4 +1172,57 @@ class OtherController extends Controller
     }
 
 
+    /**
+     *
+     */
+    public function walkdatalist()
+    {
+
+        $result = DB::table('t_walk_record')
+            ->orderBy('id')
+            ->get();
+
+        return view('other.walkdatalist')
+            ->with('result', $result);
+    }
+
+    /**
+     *
+     */
+    public function walkdatainput()
+    {
+        return view('other.walkdatainput');
+    }
+
+    /**
+     *
+     */
+    public function walkdatainputexecute()
+    {
+        if (trim($_POST['walkdata']) != "") {
+
+            $ex_walkdata = explode("\n", trim($_POST['walkdata']));
+
+            foreach ($ex_walkdata as $v) {
+                if (trim($v) == "") {
+                    continue;
+                }
+
+                $ex_v = explode("\t", trim($v));
+
+                $insert = [];
+                $insert['year'] = trim($ex_v[0]);
+                $insert['month'] = trim($ex_v[1]);
+                $insert['day'] = trim($ex_v[2]);
+                $insert['step'] = trim($ex_v[3]);
+                $insert['distance'] = trim($ex_v[4]);
+
+                DB::table('t_walk_record')->insert($insert);
+            }
+        }
+
+        return redirect('/other/walkdatalist');
+    }
+
+
 }

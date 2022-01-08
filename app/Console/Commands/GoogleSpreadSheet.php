@@ -84,7 +84,7 @@ class GoogleSpreadSheet extends Command
             }
 
             $title = trim($m[1]);
-            $title = json_decode($title);
+//            $title = json_decode($title);
 
             $m = null;
 
@@ -99,8 +99,10 @@ class GoogleSpreadSheet extends Command
             print_r($insert);
             echo "\n\n";
 
-            DB::table('t_youtube_data')->insert($insert);
-
+            try {
+                DB::table('t_youtube_data')->insert($insert);
+            } catch (\Exception $e) {
+            }
         }
     }
 }

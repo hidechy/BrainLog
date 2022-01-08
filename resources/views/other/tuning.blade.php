@@ -36,23 +36,13 @@ $public_path = implode("/" , $ex_phpself);
 */
 ?>
 
-
     </div>
-
-
-
 
     <hr>
     <div><a href="{{ url('/other/youtubedatalist') }}">youtubedatalist</a></div>
 
-
-
-
-
-
-
-
-
+    <hr>
+    <div><a href="{{ url('/other/walkdatalist') }}">walkdatalist</a></div>
 
     <style type="text/css">
     <!--
