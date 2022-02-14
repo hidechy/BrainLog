@@ -290,7 +290,25 @@ $link_nextMonth = "/money/" . $nextMonth . "/index";
         {{ $shintakuDatasDate }}
     </div>
 
+    <hr>
 
+    <div>
+        <a href="https://www2.uccard.co.jp/cs/atu/01.html" target="_blank">uc card</a>
+        <div>
+            hidechy<br>
+            hidechy4819
+        </div>
+    </div>
+
+    <br>
+
+    <div>
+        <a href="https://www.rakuten-card.co.jp/e-navi/" target="_blank">rakuten card</a>
+        <div>
+            hide.toyoda@gmail.com<br>
+            4647
+        </div>
+    </div>
 
     <div><br><br></div>
 

@@ -96,6 +96,7 @@ Route::namespace('Api')->group(function () {
     Route::post('getYearSpendSummay', 'ApiController@getYearSpendSummay');
     Route::post('getYearCreditSummay', 'ApiController@getYearCreditSummay');
     Route::post('getYearCreditCommonItem', 'ApiController@getYearCreditCommonItem');
+    Route::post('getSamedaySpend', 'ApiController@getSamedaySpend');
 
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');
