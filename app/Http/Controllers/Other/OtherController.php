@@ -1224,5 +1224,75 @@ class OtherController extends Controller
         return redirect('/other/walkdatalist');
     }
 
+    /**
+     *
+     */
+    public function youtubeShortcutDataInput()
+    {
+        return view('other.youtubeShortcutDataInput');
+    }
+
+    /**
+     *
+     */
+    public function youtubeShortcutDataInputExecute()
+    {
+        if (trim($_POST['mode']) == "windows"){
+
+            $url = trim($_POST['youtubeShortcutData']);
+
+            $ex_url = explode("/", $url);
+            $ex_url_url = explode("=", trim($ex_url[count($ex_url) - 1]));
+            $youtube_id = trim($ex_url_url[1]);
+
+            $result = DB::table('t_youtube_data')
+                ->where('youtube_id', '=', $youtube_id)
+                ->first();
+
+            if (empty($result)) {
+
+                $sUrl = "https://youtu.be/{$youtube_id}";
+
+                $insert = [];
+                $insert['getdate'] = date("Ymd");
+                $insert['youtube_id'] = $youtube_id;
+                $insert['title'] = "-";
+                $insert['url'] = $sUrl;
+
+                DB::table('t_youtube_data')->insert($insert);
+
+            }
+
+        }else if (trim($_POST['mode']) == "mac"){
+
+            $title = $_FILES['youtubeShortcutData']['name'];
+
+            $content = simplexml_load_file($_FILES['youtubeShortcutData']['tmp_name']);
+            $url = $content->dict->string;
+
+            $ex_url = explode("/", $url);
+            $ex_url_url = explode("=", trim($ex_url[count($ex_url) - 1]));
+            $youtube_id = trim($ex_url_url[1]);
+
+            $result = DB::table('t_youtube_data')
+                ->where('youtube_id', '=', $youtube_id)
+                ->first();
+
+            if (empty($result)){
+
+                $sUrl = "https://youtu.be/{$youtube_id}";
+
+                $insert = [];
+                $insert['getdate'] = date("Ymd");
+                $insert['title'] = trim($title);
+                $insert['youtube_id'] = $youtube_id;
+                $insert['url'] = $sUrl;
+
+                DB::table('t_youtube_data')->insert($insert);
+            }
+        }
+        
+        return redirect('/other/youtubedatalist');
+    }
 
 }

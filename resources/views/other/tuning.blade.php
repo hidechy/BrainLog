@@ -44,6 +44,9 @@ $public_path = implode("/" , $ex_phpself);
     <hr>
     <div><a href="{{ url('/other/walkdatalist') }}">walkdatalist</a></div>
 
+    <hr>
+    <div><a href="{{ url('/other/youtubeShortcutDataInput') }}">youtubeShortcutDataInput</a></div>
+
     <style type="text/css">
     <!--
     #btn_article_index {cursor : pointer; margin : 2px; }

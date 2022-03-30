@@ -90,13 +90,24 @@ Route::namespace('Api')->group(function () {
     Route::post('getStockDetail', 'ApiController@getStockDetail');
     Route::post('getShintakuDetail', 'ApiController@getShintakuDetail');
     Route::post('monthSpendItem', 'ApiController@monthSpendItem');
-    Route::post('creditDetail', 'ApiController@creditDetail');
-    Route::post('getCreditDateData', 'ApiController@getCreditDateData');
     Route::post('updateBankMoney', 'ApiController@updateBankMoney');
     Route::post('getYearSpendSummay', 'ApiController@getYearSpendSummay');
+    Route::post('getSamedaySpend', 'ApiController@getSamedaySpend');
+
+    Route::post('creditDetail', 'ApiController@creditDetail');
+    Route::post('getCreditDateData', 'ApiController@getCreditDateData');
     Route::post('getYearCreditSummay', 'ApiController@getYearCreditSummay');
     Route::post('getYearCreditCommonItem', 'ApiController@getYearCreditCommonItem');
-    Route::post('getSamedaySpend', 'ApiController@getSamedaySpend');
+
+    Route::post('everydaySpendSearch', 'ApiController@everydaySpendSearch');
+    Route::post('setBankMove', 'ApiController@setBankMove');
+    Route::post('setKeihiData', 'ApiController@setKeihiData');
+
+    Route::post('itemDetailDisplay', 'ApiController@itemDetailDisplay');
+
+    //money // riverpod
+    Route::post('creditCompanySearch', 'ApiController@creditCompanySearch');
+    Route::post('bankSearch', 'ApiController@bankSearch');
 
     //stock
     Route::post('stockdataexists', 'ApiController@stockdataexists');
@@ -114,6 +125,7 @@ Route::namespace('Api')->group(function () {
     Route::post('workinggenbaname', 'ApiController@workinggenbaname');
     Route::post('worktimesummary', 'ApiController@worktimesummary');
     Route::post('workingmonthdata', 'ApiController@workingmonthdata');
+    Route::post('getGenbaWorkTime', 'ApiController@getGenbaWorkTime');
 
     //uranai
     Route::post('dailyuranai', 'ApiController@dailyuranai');
@@ -150,8 +162,13 @@ Route::namespace('Api')->group(function () {
     Route::post('getTrainCompany', 'ApiController@getTrainCompany');
     Route::post('updateTrainFlag', 'ApiController@updateTrainFlag');
 
+    Route::get('getTrain2', 'ApiController@getTrain2');
+    Route::post('getTrainStation2', 'ApiController@getTrainStation2');
+//    Route::post('getTrainCompany2', 'ApiController@getTrainCompany2');
+
     //walk
     Route::post('getWalkRecord', 'ApiController@getWalkRecord');
+    Route::get('getWalkRecord2', 'ApiController@getWalkRecord2');
 
     //agent
     Route::post('getAgentName', 'ApiController@getAgentName');

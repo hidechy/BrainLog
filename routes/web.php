@@ -141,6 +141,11 @@ Route::get('/other/walkdatalist', 'Other\OtherController@walkdatalist');
 Route::get('/other/walkdatainput', 'Other\OtherController@walkdatainput');
 Route::post('/other/walkdatainputexecute', 'Other\OtherController@walkdatainputexecute');
 
+Route::get('/other/youtubeShortcutDataInput', 'Other\OtherController@youtubeShortcutDataInput');
+Route::post('/other/youtubeShortcutDataInputExecute', 'Other\OtherController@youtubeShortcutDataInputExecute');
+
+
+
 // //[affi]
 // Route::get('/affi/index', 'Affi\AffiController@index');
 // Route::get('/affi/input', 'Affi\AffiController@input');

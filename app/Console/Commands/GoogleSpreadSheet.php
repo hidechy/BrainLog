@@ -51,7 +51,7 @@ class GoogleSpreadSheet extends Command
         //-------------------------//
 
         $m = null;
-        foreach ($values as $v) {
+        foreach ($values as $k => $v) {
 
 //print_r($v);
 

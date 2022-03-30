@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Money;
 
 use App\Http\Controllers\Controller;
-use App\Models\Money;
 use App\MyClass\Utility;
 use DB;
 
@@ -301,6 +300,102 @@ class MoneyController extends Controller
 
     }
 
+    private function makeListData($result, $beforeMonthEnd)
+    {
+
+        //-----------------------------------//（前月末の合計金額）
+        list($bYear, $bMonth, $bDay) = explode("-", $beforeMonthEnd);
+        $result2 = DB::table('t_money')->where('year', '=', $bYear)->where('month', '=', $bMonth)->where('day', '=', $bDay)->get();
+        $sum = [];
+        $bank = [];
+        if (isset($result2[0])) {
+            $lineSum = $this->Utility->makeLineSum($result2[0]);
+            $sum = $lineSum[0];
+            $bank = $lineSum[1];
+            $pay = $lineSum[2];
+        }
+        if (isset($pay)) {
+            $bm_all = array_sum($sum) + array_sum($bank) + array_sum($pay);
+        } else {
+            $bm_all = array_sum($sum) + array_sum($bank);
+        }
+        //-----------------------------------//（前月末の合計金額）
+
+        $column = [];
+        $data = [];
+
+        $total = 0;
+
+        foreach ($result as $k => $v) {
+
+            //column
+            if ($k == 0) {
+                $column = ['day'];
+
+                foreach ($v as $k2 => $v2) {
+                    if (preg_match("/^yen_(.+)/", $k2, $m)) {
+                        list(, $yen) = $m;
+                        $column[] = $yen;
+
+                        if ($yen == 1) {
+                            $column[] = "sum";
+                        }
+
+                    }
+
+                    if (preg_match("/^bank/", $k2)) {
+                        $column[] = $k2;
+                    }
+
+                    if (preg_match("/^pay/", $k2)) {
+                        $column[] = $k2;
+                    }
+                }
+
+//$column[] = "sum";
+                $column[] = "all";
+                $column[] = "spend";
+                $column[] = "total";
+                $column[] = "average";
+            }
+
+            //data
+            $data[($v->day * 1)]['day'] = $v->day;
+
+            foreach ($v as $k2 => $v2) {
+                if (preg_match("/^yen_(.+)/", $k2, $m)) {
+                    list(, $yen) = $m;
+                    $data[($v->day * 1)][$yen] = $v2;
+                }
+
+                if (preg_match("/^bank/", $k2)) {
+                    $data[($v->day * 1)][$k2] = $v2;
+                }
+
+                if (preg_match("/^pay/", $k2)) {
+                    $data[($v->day * 1)][$k2] = $v2;
+                }
+            }
+
+            $lineSum = $this->Utility->makeLineSum($v);
+            $sum = $lineSum[0];
+            $bank = $lineSum[1];
+            $pay = $lineSum[2];
+
+            $data[($v->day * 1)]['sum'] = array_sum($sum);
+            $data[($v->day * 1)]['all'] = array_sum($sum) + array_sum($bank) + array_sum($pay);
+
+            $data[($v->day * 1)]['spend'] = ($k > 0) ? ($data[($v->day * 1) - 1]['all'] - $data[($v->day * 1)]['all']) : ($bm_all - $data[($v->day * 1)]['all']);
+
+            $total += $data[($v->day * 1)]['spend'];
+            $data[($v->day * 1)]['total'] = $total;
+
+            $data[($v->day * 1)]['average'] = floor($data[($v->day * 1)]['total'] / ($v->day * 1));
+        } //foreach ($result as $k=>$v)
+
+        return [$column, $data, $bm_all];
+    }
+
     public function input()
     {
         $today = date("Y-m-d");
@@ -475,6 +570,27 @@ class MoneyController extends Controller
         //--------------------------------------------------//
 
         return redirect('/money/index');
+    }
+
+    private function getYenCount($yen, $YENTYPE)
+    {
+        $ret = array();
+
+        foreach ($YENTYPE as $v) {
+            if ($v == 2000) {
+                $ret[$v] = 0;
+                continue;
+            }
+
+            $ret[$v] = 0;
+
+            while ($yen >= $v) {
+                $yen -= $v;
+                $ret[$v]++;
+            }
+        }
+
+        return $ret;
     }
 
     public function singleinput()
@@ -1116,123 +1232,6 @@ class MoneyController extends Controller
             ->with('nextMonth', $nextMonth);
     }
 
-    private function makeListData($result, $beforeMonthEnd)
-    {
-
-        //-----------------------------------//（前月末の合計金額）
-        list($bYear, $bMonth, $bDay) = explode("-", $beforeMonthEnd);
-        $result2 = DB::table('t_money')->where('year', '=', $bYear)->where('month', '=', $bMonth)->where('day', '=', $bDay)->get();
-        $sum = [];
-        $bank = [];
-        if (isset($result2[0])) {
-            $lineSum = $this->Utility->makeLineSum($result2[0]);
-            $sum = $lineSum[0];
-            $bank = $lineSum[1];
-            $pay = $lineSum[2];
-        }
-        if (isset($pay)) {
-            $bm_all = array_sum($sum) + array_sum($bank) + array_sum($pay);
-        } else {
-            $bm_all = array_sum($sum) + array_sum($bank);
-        }
-        //-----------------------------------//（前月末の合計金額）
-
-        $column = [];
-        $data = [];
-
-        $total = 0;
-
-        foreach ($result as $k => $v) {
-
-            //column
-            if ($k == 0) {
-                $column = ['day'];
-
-                foreach ($v as $k2 => $v2) {
-                    if (preg_match("/^yen_(.+)/", $k2, $m)) {
-                        list(, $yen) = $m;
-                        $column[] = $yen;
-
-                        if ($yen == 1) {
-                            $column[] = "sum";
-                        }
-
-                    }
-
-                    if (preg_match("/^bank/", $k2)) {
-                        $column[] = $k2;
-                    }
-
-                    if (preg_match("/^pay/", $k2)) {
-                        $column[] = $k2;
-                    }
-                }
-
-//$column[] = "sum";
-                $column[] = "all";
-                $column[] = "spend";
-                $column[] = "total";
-                $column[] = "average";
-            }
-
-            //data
-            $data[($v->day * 1)]['day'] = $v->day;
-
-            foreach ($v as $k2 => $v2) {
-                if (preg_match("/^yen_(.+)/", $k2, $m)) {
-                    list(, $yen) = $m;
-                    $data[($v->day * 1)][$yen] = $v2;
-                }
-
-                if (preg_match("/^bank/", $k2)) {
-                    $data[($v->day * 1)][$k2] = $v2;
-                }
-
-                if (preg_match("/^pay/", $k2)) {
-                    $data[($v->day * 1)][$k2] = $v2;
-                }
-            }
-
-            $lineSum = $this->Utility->makeLineSum($v);
-            $sum = $lineSum[0];
-            $bank = $lineSum[1];
-            $pay = $lineSum[2];
-
-            $data[($v->day * 1)]['sum'] = array_sum($sum);
-            $data[($v->day * 1)]['all'] = array_sum($sum) + array_sum($bank) + array_sum($pay);
-
-            $data[($v->day * 1)]['spend'] = ($k > 0) ? ($data[($v->day * 1) - 1]['all'] - $data[($v->day * 1)]['all']) : ($bm_all - $data[($v->day * 1)]['all']);
-
-            $total += $data[($v->day * 1)]['spend'];
-            $data[($v->day * 1)]['total'] = $total;
-
-            $data[($v->day * 1)]['average'] = floor($data[($v->day * 1)]['total'] / ($v->day * 1));
-        } //foreach ($result as $k=>$v)
-
-        return [$column, $data, $bm_all];
-    }
-
-    private function getYenCount($yen, $YENTYPE)
-    {
-        $ret = array();
-
-        foreach ($YENTYPE as $v) {
-            if ($v == 2000) {
-                $ret[$v] = 0;
-                continue;
-            }
-
-            $ret[$v] = 0;
-
-            while ($yen >= $v) {
-                $yen -= $v;
-                $ret[$v]++;
-            }
-        }
-
-        return $ret;
-    }
-
     public function weeklydisp($ymd)
     {
 
@@ -1701,14 +1700,17 @@ class MoneyController extends Controller
 
     public function timeplaceinput()
     {
+        $i = 0;
         $ex_data = explode("\n", $_POST['timeplacedata']);
         foreach ($ex_data as $v) {
             if (trim($v) == "") {
                 continue;
             }
 
+
             $ex_v = explode("\t", trim($v));
             $date = trim($ex_v[0]);
+
             $time = sprintf("%04d", trim($ex_v[2]));
             $place = trim($ex_v[3]);
             $price = trim($ex_v[4]);
@@ -1720,6 +1722,15 @@ class MoneyController extends Controller
             $year = date("Y");
             $month = sprintf("%02d", trim($m[1]));
             $day = sprintf("%02d", trim($m[2]));
+
+
+            if ($i == 0) {
+                DB::table('t_timeplace')
+                    ->where('year', '=', $year)
+                    ->where('month', '=', $month)
+                    ->where('day', '=', $day)
+                    ->delete();
+            }
 
             $insert['year'] = $year;
             $insert['month'] = $month;
@@ -1737,6 +1748,8 @@ class MoneyController extends Controller
             $insert['created_at'] = date("Y-m-d H:i:s");
 
             DB::table('t_timeplace')->insert($insert);
+
+            $i++;
         }
 
         return redirect('/money/' . $_POST['thisMonth'] . '/index');
@@ -1794,12 +1807,14 @@ class MoneyController extends Controller
 住居費
 交通費
 支払い
+credit
 遊興費
 ジム会費
 お賽銭
 交際費
 雑費
 教育費
+機材費
 被服費
 医療費
 美容費
@@ -1807,6 +1822,9 @@ class MoneyController extends Controller
 保険料
 水道光熱費
 共済代
+GOLD
+牛乳代
+弁当代
 所得税
 住民税
 年金
