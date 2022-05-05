@@ -4,7 +4,6 @@ Route::get('/', function () {
 });
 
 
-
 //[article]
 Route::get('/article/index', 'Article\ArticleController@index');
 Route::get('/article/{yearmonth}/index', 'Article\ArticleController@index');
@@ -122,7 +121,7 @@ Route::post('/other/seiyuuarticle', 'Other\OtherController@seiyuuarticle');
 Route::get('/other/work', 'Other\OtherController@work');
 Route::post('/other/workinput', 'Other\OtherController@workinput');
 Route::get('/other/shokureki', 'Other\OtherController@shokureki');
-Route::match(['get', 'post'] , '/other/souvenir', 'Other\OtherController@souvenir');
+Route::match(['get', 'post'], '/other/souvenir', 'Other\OtherController@souvenir');
 Route::get('/other/kinmu', 'Other\OtherController@kinmu');
 Route::get('/other/{yearmonth}/kinmu', 'Other\OtherController@kinmu');
 Route::post('/other/kinmuinput', 'Other\OtherController@kinmuinput');
@@ -144,6 +143,13 @@ Route::post('/other/walkdatainputexecute', 'Other\OtherController@walkdatainpute
 Route::get('/other/youtubeShortcutDataInput', 'Other\OtherController@youtubeShortcutDataInput');
 Route::post('/other/youtubeShortcutDataInputExecute', 'Other\OtherController@youtubeShortcutDataInputExecute');
 
+Route::get('/other/seiyuPhotoList', 'Other\OtherController@seiyuPhotoList');
+Route::get('/other/seiyuPhotoInput', 'Other\OtherController@seiyuPhotoInput');
+Route::post('/other/seiyuPhotoInputExecute', 'Other\OtherController@seiyuPhotoInputExecute');
+
+Route::get('/other/amazonPhotoList', 'Other\OtherController@amazonPhotoList');
+Route::get('/other/amazonPhotoInput', 'Other\OtherController@amazonPhotoInput');
+Route::post('/other/amazonPhotoInputExecute', 'Other\OtherController@amazonPhotoInputExecute');
 
 
 // //[affi]
@@ -156,7 +162,6 @@ Route::post('/other/youtubeShortcutDataInputExecute', 'Other\OtherController@you
 // Route::post('/affi/yahooretry', 'Affi\AffiController@yahooretry');
 
 
-
 // //[temple]
 // Route::get('/temple/index', 'Temple\TempleController@index');
 // Route::get('/temple/input', 'Temple\TempleController@input');
@@ -165,12 +170,10 @@ Route::post('/other/youtubeShortcutDataInputExecute', 'Other\OtherController@you
 // Route::post('/temple/callphoto', 'Temple\TempleController@callphoto');
 
 
-
 //[movie]
 Route::get('/movie/input', 'Movie\MovieController@input');
 Route::post('/movie/datainput', 'Movie\MovieController@datainput');
 Route::get('/movie/api', 'Movie\MovieController@api');
-
 
 
 //[anken]
@@ -181,6 +184,9 @@ Route::get('/anken/edit', 'Anken\AnkenController@edit');
 Route::post('/anken/update', 'Anken\AnkenController@update');
 
 
-
 //[url]
 Route::get('/url/index', 'Url\UrlController@index');
+
+
+//[moneyHistoryDisplay]
+Route::get('/moneyhistory/moneyHistoryDisplay', 'MoneyHistory\MoneyHistoryController@moneyHistoryDisplay');

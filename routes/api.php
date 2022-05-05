@@ -1,9 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
-
-
 use App\Models\User;
+use Illuminate\Http\Request;
 
 
 /*
@@ -178,5 +176,6 @@ Route::namespace('Api')->group(function () {
     Route::post('getYoutubeList', 'ApiController@getYoutubeList');
     Route::post('bunruiYoutubeData', 'ApiController@bunruiYoutubeData');
     Route::post('getBunruiName', 'ApiController@getBunruiName');
+    Route::post('getSpecialVideo', 'ApiController@getSpecialVideo');
 
 });

@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-
 use DB;
+use Exception;
+use Illuminate\Console\Command;
 
 class YoutubeInfoGet extends Command
 {
@@ -19,11 +19,16 @@ class YoutubeInfoGet extends Command
         $sql = " select * from t_youtube_data where playtime = '' or playtime is null; ";
         $result = DB::select($sql);
 
-        foreach ($result as $k=>$v){
+        foreach ($result as $k => $v) {
 
             print_r($v);
 
             try {
+
+                //---------------------------------------//
+//                DB::table('t_youtube_data')->where('del', '=', '1')->delete();
+                //---------------------------------------//
+
 
                 $url = "https://www.googleapis.com/youtube/v3/videos?id={$v->youtube_id}&part=snippet,contentDetails&key=AIzaSyD9PkTM1Pur3YzmO-v4VzS0r8ZZ0jRJTIU";
 
@@ -31,7 +36,7 @@ class YoutubeInfoGet extends Command
                 $jsonStr = json_decode($content);
 
                 $v3_pubDate = substr($jsonStr->items[0]->snippet->publishedAt, 0, 10);
-                $v3_channelId = $jsonStr->items[0]->snippet->channelId;;
+                $v3_channelId = $jsonStr->items[0]->snippet->channelId;
                 $v3_channelTitle = $jsonStr->items[0]->snippet->channelTitle;
                 $v3_playtime = $jsonStr->items[0]->contentDetails->duration;
 //                $v3_title = $jsonStr->items[0]->snippet->title;
@@ -55,7 +60,7 @@ class YoutubeInfoGet extends Command
 
                 DB::table('t_youtube_data')->where('youtube_id', '=', $v->youtube_id)->update($update);
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
 
                 print_r($e->getMessage());
 

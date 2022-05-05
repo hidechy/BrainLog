@@ -1637,9 +1637,30 @@ GOLD
             $replace['キャンセルリクエスト'] = '';
             $replace['置き配指定'] = '';
             $replace['注文内容を表示'] = '';
+            $replace['商品について質問する'] = '';
+            $replace['商品を表示'] = '';
 
             $article = strtr($result->article, $replace);
             $ex_article = explode("注文日", $article);
+
+            //-------------------------------------------------//
+            $amazonPhoto = [];
+            $file = public_path() . "/mySetting/amazonPhoto.data";
+            $content = file_get_contents($file);
+            $ex_content = explode("\n", $content);
+
+            foreach ($ex_content as $v) {
+                if (trim($v) == "") {
+                    continue;
+                }
+
+                $ex_v = explode("|", trim($v));
+
+                if (trim($ex_v[0]) != "") {
+                    $amazonPhoto[trim($ex_v[1])] = trim($ex_v[0]);
+                }
+            }
+            //-------------------------------------------------//
 
             $ary = [];
             $_keys = [];
@@ -1722,7 +1743,19 @@ GOLD
                 }
                 ///////////////////////////////////
 
-                $ary[$purchase_date][] = ['date' => $purchase_date, 'price' => $price, 'order_number' => $order_number, 'item' => implode("\n", $other)];
+                $_item = "";
+                foreach ($other as $v3) {
+                    if (trim($v3) != "") {
+                        $_item = trim($v3);
+                        break;
+                    }
+                }
+
+                $item = $_item;
+
+                $img = (isset($amazonPhoto[$item])) ? $amazonPhoto[$item] : "";
+
+                $ary[$purchase_date][] = ['date' => $purchase_date, 'price' => $price, 'order_number' => $order_number, 'item' => $item, 'img' => $img];
                 $_keys[$purchase_date] = '';
             }
 
@@ -1824,6 +1857,23 @@ GOLD
         sort($_key_date);
         ///////////////////////////////////////////////
 
+        //--------------------------------------------
+        $seiyuPhoto = [];
+        $file = public_path() . "/mySetting/seiyuPhoto.data";
+        $content = file_get_contents($file);
+//        $ex_content = explode("\n", mb_convert_encoding($content, "utf8", "sjis-win"));
+        $ex_content = explode("\n", $content);
+
+        foreach ($ex_content as $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+
+            $ex_v = explode("|", trim($v));
+            $seiyuPhoto[trim($ex_v[1])] = trim($ex_v[0]);
+        }
+        //--------------------------------------------
+
         $ary = [];
         $result = DB::table($table)->where('article', 'like', '%西友ネットスーパー内訳%')
             ->orderBy('year')->orderBy('month')->orderBy('day')
@@ -1849,13 +1899,18 @@ GOLD
 
                 $pos = array_search($date, $_key_date);
 
+                $imgItem = strtr(trim($item), ['　（非食品）' => '']);
+                $img = (isset($seiyuPhoto[$imgItem])) ?
+                    $seiyuPhoto[$imgItem] : "";
+
                 $ary[] = [
                     'date' => $date,
                     'pos' => $pos,
                     'item' => $item,
                     'tanka' => $tanka,
                     'kosuu' => $kosuu,
-                    'price' => $price
+                    'price' => $price,
+                    'img' => $img
                 ];
             }
         }
@@ -3318,7 +3373,12 @@ item = '投資信託'
             'ギークス' => 1,
             'レバテック' => 1,
             'アンコンサルティング' => 2,
-            'ジェニュイン' => 2];
+            'ジェニュイン' => 2,
+
+            'フォスターネット' => 1,
+            'マノア・リノ' => 2,
+
+        ];
 
         $result = DB::table('t_salary')
             ->orderBy('year')
@@ -4954,7 +5014,7 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
     {
         $response = [];
 
-        $sql = " select year, month, day, name, hoyuu_suuryou, heikin_shutoku_kagaku, shutoku_sougaku, jika_hyoukagaku from t_toushi_shintaku_datas order by name, year, month, day; ";
+        $sql = " select year, month, day, name, hoyuu_suuryou, heikin_shutoku_kagaku, shutoku_sougaku, jika_hyoukagaku, kijun_kagaku from t_toushi_shintaku_datas order by name, year, month, day; ";
         $result = DB::select($sql);
 
         $ary = [];
@@ -4964,13 +5024,17 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
             $shutoku = strtr($v->heikin_shutoku_kagaku, [',' => '', '円' => '']);
             $cost = strtr($v->shutoku_sougaku, [',' => '', '円' => '']);
             $price = strtr($v->jika_hyoukagaku, [',' => '', '円' => '']);
+
+            $kijunKagaku = strtr($v->kijun_kagaku, [',' => '', '円' => '']);
+
             $ary[$v->name][] = [
                 'date' => $date,
                 'num' => trim($num),
                 'shutoku' => trim($shutoku),
                 'cost' => trim($cost),
                 'price' => trim($price),
-                'diff' => (trim($price) - trim($cost))
+                'diff' => (trim($price) - trim($cost)),
+                'kijun' => trim($kijunKagaku),
             ];
         }
 
@@ -5844,6 +5908,111 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         }
         //-----------------------------//
 
+        ///////////////////////////////////////////////////////////////////////////////
+        $table = 't_article' . $year;
+
+        $ary99 = [];
+
+        //------------------------------------------//
+        $result = DB::table($table)
+            ->where('article', 'like', '%ユーシーカード内訳%')->get();
+
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/円.+円/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr(trim($ex_val[1]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
+
+                    if (trim($price) == "") {
+                        continue;
+                    }
+
+                    $item = $this->makeItemName(trim($ex_val[3]));
+
+                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'uc card'];
+                }
+            }
+        }
+        //------------------------------------------//
+
+        //------------------------------------------//
+        $result = DB::table($table)
+            ->where('article', 'like', '%楽天カード内訳%')->get();
+
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/本人/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
+
+                    if (trim($price) == "") {
+                        continue;
+                    }
+
+                    $item = $this->makeItemName(trim($ex_val[1]));
+
+                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
+                }
+            }
+        }
+        //------------------------------------------//
+
+        //------------------------------------------//
+        $result = DB::table($table)
+            ->where('article', 'like', '%Amexカード内訳%')->get();
+
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/本人/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
+
+                    if (trim($price) == "") {
+                        continue;
+                    }
+
+                    $item = $this->makeItemName(trim($ex_val[1]));
+
+                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'amex'];
+                }
+            }
+        }
+        //------------------------------------------//
+
+        //------------------------------------------//
+        $result = DB::table($table)
+            ->where('article', 'like', '%住友カード内訳%')->get();
+
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+                if (preg_match("/◎/", trim($val))) {
+                    $ex_val = explode("\t", $val);
+                    $date = strtr("20" . trim($ex_val[0]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[2]), [',' => '']);
+
+                    if (trim($price) == "") {
+                        continue;
+                    }
+
+                    $item = $this->makeItemName(trim($ex_val[1]));
+
+                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
+                }
+            }
+        }
+        ///////////////////////////////////////////////////////////////////////////////
+
         $file = public_path() . "/mySetting/MoneyTotal.data";
         $content = file_get_contents($file);
         $ex_content = explode("\n", mb_convert_encoding($content, "utf8", "sjis-win"));
@@ -5868,6 +6037,15 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                 if (!isset($ary3[$date])) {
                     $ary3[$date][0] = "-|-|0|x";
                 }
+
+                ///////////////////////////////////////////////////////////////////////////////
+                if (isset($ary99[$date])) {
+                    foreach ($ary99[$date] as $v99) {
+                        $flag = "x";
+                        $ary3[$date][] = "-|{$v99['item']} [{$v99['kind']}]|{$v99['price']}|{$flag}";
+                    }
+                }
+                ///////////////////////////////////////////////////////////////////////////////
 
                 $record = (isset($ary3[$date])) ? implode("/", $ary3[$date]) : "";
 
@@ -6915,9 +7093,13 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
             } else if ($request->bunrui == "search") {
 
                 if (trim($request->searchBunrui) != "") {
-                    $sql = " select * from t_youtube_data where (title like '%{$request->word}%' or youtube_id like '%{$request->word}%') and bunrui = '{$request->searchBunrui}' order by bunrui asc, pubdate desc; ";
+
+                    $sql = " select * from t_youtube_data where (title like '%{$request->word}%' or youtube_id like '%{$request->word}%' or channel_title like '%{$request->word}%') and bunrui = '{$request->searchBunrui}' order by bunrui asc, pubdate desc; ";
+
                 } else {
-                    $sql = " select * from t_youtube_data where (title like '%{$request->word}%' or youtube_id like '%{$request->word}%') order by bunrui asc, pubdate desc; ";
+
+                    $sql = " select * from t_youtube_data where (title like '%{$request->word}%' or youtube_id like '%{$request->word}%' or channel_title like '%{$request->word}%') order by bunrui asc, pubdate desc; ";
+
                 }
 
                 $result = DB::select($sql);
@@ -7034,7 +7216,7 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
     /**
      * @param Request $request
      */
-    public function getBunruiName(Request $request)
+    public function getBunruiName()
     {
 
         $response = [];
@@ -7043,17 +7225,88 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         $result = DB::select($sql);
 
         $ary = [];
+        $ary2 = [];
         foreach ($result as $v) {
             if (trim($v->bunrui) == "") {
                 continue;
             }
             $ary[] = $v->bunrui;
+
+            $ex_bunrui = explode(" ", $v->bunrui);
+            if (count($ex_bunrui) > 1) {
+                $ary2[] = trim($ex_bunrui[0]);
+            }
+            $ex_bunrui2 = explode("_", $v->bunrui);
+            if (count($ex_bunrui2) > 1) {
+                $ary2[] = trim($ex_bunrui2[0]);
+            }
+            $ex_bunrui3 = explode("-", $v->bunrui);
+            if (count($ex_bunrui3) > 1) {
+                $ary2[] = trim($ex_bunrui3[0]);
+            }
+        }
+
+        $ary4 = array_unique($ary2);
+
+        $ary3 = [];
+        foreach ($ary as $k => $v) {
+            $ar = [];
+            $ar[] = $v;
+
+            $ex_v = explode(" ", $v);
+            $ex_v2 = explode("_", $v);
+            $ex_v3 = explode("-", $v);
+
+            $flag = 0;
+            if (
+                (in_array($ex_v[0], $ary4)) or (in_array($ex_v2[0], $ary4)) or (in_array($ex_v3[0], $ary4))
+            ) {
+                $flag = 1;
+            }
+
+            $ar[] = $flag;
+            $ary3[] = implode("|", $ar);
+        }
+
+        $response = $ary3;
+
+        return response()->json(['data' => $response]);
+
+    }
+
+
+    /**
+     *
+     */
+    public function getSpecialVideo()
+    {
+
+        $response = [];
+
+        $result = DB::table('t_youtube_data')
+            ->where('special', '=', '1')
+            ->orderBy('bunrui')
+            ->orderBy('getdate', 'desc')
+            ->get();
+
+        $ary = [];
+        foreach ($result as $v) {
+            $ary[$v->bunrui][] = [
+                'youtube_id' => $v->youtube_id,
+                'title' => $v->title,
+                'getdate' => $v->getdate,
+                'url' => $v->url,
+                'pubdate' => $v->pubdate,
+                'channel_id' => $v->channel_id,
+                'channel_title' => $v->channel_title,
+                'playtime' => $v->playtime,
+                'special' => $v->special,
+            ];
         }
 
         $response = $ary;
 
         return response()->json(['data' => $response]);
-
 
     }
 

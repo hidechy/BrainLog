@@ -1237,7 +1237,7 @@ class OtherController extends Controller
      */
     public function youtubeShortcutDataInputExecute()
     {
-        if (trim($_POST['mode']) == "windows"){
+        if (trim($_POST['mode']) == "windows") {
 
             $url = trim($_POST['youtubeShortcutData']);
 
@@ -1263,7 +1263,7 @@ class OtherController extends Controller
 
             }
 
-        }else if (trim($_POST['mode']) == "mac"){
+        } else if (trim($_POST['mode']) == "mac") {
 
             $title = $_FILES['youtubeShortcutData']['name'];
 
@@ -1278,7 +1278,7 @@ class OtherController extends Controller
                 ->where('youtube_id', '=', $youtube_id)
                 ->first();
 
-            if (empty($result)){
+            if (empty($result)) {
 
                 $sUrl = "https://youtu.be/{$youtube_id}";
 
@@ -1291,8 +1291,152 @@ class OtherController extends Controller
                 DB::table('t_youtube_data')->insert($insert);
             }
         }
-        
+
         return redirect('/other/youtubedatalist');
     }
+
+
+    /**
+     *
+     */
+    public function seiyuPhotoList()
+    {
+
+        return view('other.seiyuPhotoList');
+    }
+
+    /**
+     *
+     */
+    public function seiyuPhotoInput()
+    {
+        return view('other.seiyuPhotoInput');
+    }
+
+    /**
+     *
+     */
+    public function seiyuPhotoInputExecute()
+    {
+        if (trim($_POST['seiyuPhotoData']) != "") {
+
+            //------------------//
+            $seiyuPhoto = [];
+            $file = public_path() . "/mySetting/seiyuPhoto.data";
+            $content = file_get_contents($file);
+            $ex_content = explode("\n", $content);
+            foreach ($ex_content as $v) {
+                if (trim($v) == "") {
+                    continue;
+                }
+                $seiyuPhoto[trim($v)] = "";
+            }
+            //------------------//
+
+            $exData = explode("\n", trim($_POST['seiyuPhotoData']));
+            $str = implode("", $exData);
+            $exStr = explode("@", strtr($str, ['><' => '>@<']));
+
+            foreach ($exStr as $v) {
+                if (preg_match("/<img/", trim($v))) {
+
+                    preg_match("/src=\"(.+)\?fit/", trim($v), $m);
+                    preg_match("/alt=\"(.+)\">/", trim($v), $m2);
+
+                    $a = trim($m[1]);
+                    $b = trim($m2[1]);
+
+                    $seiyuPhoto["https:{$a}|{$b}"] = "";
+
+                }
+            }
+
+            $file = public_path() . "/mySetting/seiyuPhoto.data";
+            file_put_contents($file, implode("\n", array_keys($seiyuPhoto)));
+
+            return redirect('/other/seiyuPhotoList');
+        }
+    }
+
+
+    /**
+     *
+     */
+    public function amazonPhotoList()
+    {
+
+        return view('other.amazonPhotoList');
+    }
+
+    /**
+     *
+     */
+    public function amazonPhotoInput()
+    {
+        return view('other.amazonPhotoInput');
+    }
+
+    /**
+     *
+     */
+    public function amazonPhotoInputExecute()
+    {
+        if (trim($_POST['amazonPhotoData']) != "") {
+            //------------------//
+            $amazonPhoto = [];
+            $file = public_path() . "/mySetting/amazonPhoto.data";
+            $content = file_get_contents($file);
+            $ex_content = explode("\n", $content);
+            foreach ($ex_content as $v) {
+                if (trim($v) == "") {
+                    continue;
+                }
+                $amazonPhoto[trim($v)] = "";
+            }
+            //------------------//
+
+            $exData = explode("\n", trim($_POST['amazonPhotoData']));
+
+            $zStr = [];
+            for ($i = 0; $i < count($exData); $i++) {
+                $zStr[] = trim(strtr($exData[$i], ['<img' => 'img']));
+            }
+            $str = implode("", $zStr);
+
+            $exStr = explode("@", strtr($str, ['><' => '>@<']));
+
+            $pickup = [];
+            for ($i = 0; $i < count($exStr); $i++) {
+                if (
+                    preg_match("/class=\"a-link-normal\"/", trim($exStr[$i])) &&
+                    !preg_match("/こちら/", trim($exStr[$i])) &&
+                    !preg_match("/購入明細書/", trim($exStr[$i]))
+                ) {
+                    $pickup[] = trim($exStr[$i]);
+                }
+            }
+
+            for ($i = 0; $i < count($pickup); $i += 2) {
+                $exLine0 = explode("\"", trim($pickup[$i]));
+                $img = "";
+                foreach ($exLine0 as $v) {
+                    if (preg_match("/SY90/", $v)) {
+                        $img = $v;
+                        break;
+                    }
+                }
+
+                $item = trim(strip_tags($pickup[$i + 1]));
+                $item = strtr($item, ['"' => '\"']);
+                $amazonPhoto["{$img}|{$item}"] = "";
+            }
+
+            $file = public_path() . "/mySetting/amazonPhoto.data";
+            file_put_contents($file, implode("\n", array_keys($amazonPhoto)));
+
+            return redirect('/other/amazonPhotoList');
+        }
+    }
+
 
 }
