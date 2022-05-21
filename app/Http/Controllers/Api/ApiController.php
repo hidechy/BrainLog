@@ -3084,6 +3084,18 @@ item = '投資信託'
             $ary[$ym][] = $spend;
         }
 
+
+        //---------------------------------------//
+        $result = DB::table('t_salary')
+            ->where('day', '<=', $day)
+            ->orderBy('year')->orderBy('month')->orderBy('day')
+            ->get();
+
+        foreach ($result as $v) {
+            $ary["{$v->year}-{$v->month}"][] = $v->salary;
+        }
+        //---------------------------------------//
+
         $ary2 = [];
         $i = 0;
         foreach ($ary as $_ym => $v) {
@@ -5307,27 +5319,21 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         }
 
         $ary4 = [];
-        $last_name = "";
+
         foreach ($ary3 as $name => $v) {
+            $_flag = false;
             foreach ($v as $date => $v2) {
 
-                if ($last_name != $name) {
-                    $flag = false;
-                }
-
-                if ($flag == false) {
+                if ($_flag == false) {
                     if ($v2 != "-|-|-|-") {
-                        $flag = true;
+                        $_flag = true;
                     }
                 }
 
-                if ($flag == true) {
+                if ($_flag == true) {
                     $ary4[$name][] = $date . "|" . date("w", strtotime($date)) . "|" . $v2;
                 }
             }
-
-            $last_name = $name;
-
         }
 
         $ary5 = [];
