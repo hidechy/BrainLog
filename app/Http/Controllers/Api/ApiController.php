@@ -4495,6 +4495,21 @@ item = '株式買付'
                             }
                         }
                     }
+
+
+                    if (preg_match("/ドコモご利用料金/", trim($v2))) {
+                        $ex__v2 = explode(" ", trim($v2));
+                        preg_match("/(.+)ドコモご利用料金/", trim($ex__v2[0]), $__m);
+                        $__ymd = trim($__m[1]);
+                        $ex__ymd = explode("/", trim($__ymd));
+                        $__year = trim($ex__ymd[0]);
+                        $__month = trim($ex__ymd[1]);
+                        $__day = trim($ex__ymd[2]);
+                        $__price = trim(strtr($ex__v2[1], [',' => '', 'リボへ変更する' => '']));
+                        $wifi["{$__year}-{$__month}"][] = number_format($__price) . " ({$__day})";
+                    }
+
+
                 }
             }
         }
