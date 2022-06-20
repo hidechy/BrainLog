@@ -3815,6 +3815,62 @@ item = '投資信託'
     }
 
     /**
+     * @return mixed
+     */
+    public function yearlyuranai(Request $request)
+    {
+        try {
+
+            $response = [];
+
+            list($year, $month, $day) = explode("-", $request->date);
+
+            //-----------------------------------------//
+            $uranai = "";
+
+            $file = public_path() . "/mySetting/uranai.data";
+            $content = file_get_contents($file);
+
+            if (!empty($content)) {
+                $ex_content = explode("\n", $content);
+                if (!empty($ex_content)) {
+                    foreach ($ex_content as $v) {
+                        if (trim($v) == "") {
+                            continue;
+                        }
+                        $ex_v = explode("|", trim($v));
+
+                        if (preg_match("/^" . $year . "/", trim($ex_v[0]))) {
+
+                            $ex_v1 = explode(";", trim($ex_v[1]));
+                            $ex_v2 = explode(";", trim($ex_v[2]));
+                            $ex_v3 = explode(";", trim($ex_v[3]));
+                            $ex_v4 = explode(";", trim($ex_v[4]));
+
+                            $ex_v1_0 = explode("<br>", trim($ex_v1[0]));
+
+                            $response[] = [
+                                'date' => trim($ex_v[0]),
+                                'title_total' => trim($ex_v1_0[0]),
+                                'point_total' => trim($ex_v1[1]),
+                                'point_love' => trim($ex_v2[1]),
+                                'point_money' => trim($ex_v3[1]),
+                                'point_work' => trim($ex_v4[1]),
+                            ];
+                        }
+                    }
+                }
+            }
+            //-----------------------------------------//
+
+            return response()->json(['data' => $response]);
+
+        } catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    /**
      * @param Request $request
      * @return int
      */

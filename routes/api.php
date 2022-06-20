@@ -127,7 +127,10 @@ Route::namespace('Api')->group(function () {
 
     //uranai
     Route::post('dailyuranai', 'ApiController@dailyuranai');
+
     Route::post('monthlyuranai', 'ApiController@monthlyuranai');
+    Route::post('yearlyuranai', 'ApiController@yearlyuranai');
+
     Route::post('monthlyuranaidetail', 'ApiController@monthlyuranaidetail');
     Route::post('leofortune', 'ApiController@leofortune');
     Route::post('getMonthlyUranaiData', 'ApiController@getMonthlyUranaiData');
@@ -166,7 +169,7 @@ Route::namespace('Api')->group(function () {
 
     //walk
     Route::post('getWalkRecord', 'ApiController@getWalkRecord');
-    Route::get('getWalkRecord2', 'ApiController@getWalkRecord2');
+    Route::match(['get', 'post'], "getWalkRecord2", "ApiController@getWalkRecord2");
 
     //agent
     Route::post('getAgentName', 'ApiController@getAgentName');

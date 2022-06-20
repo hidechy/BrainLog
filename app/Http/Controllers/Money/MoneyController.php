@@ -3551,7 +3551,18 @@ GOLD
     {
 
         if (trim($_POST['stockdata']) != "") {
-            $columns = ["ticker", "name", "hoyuu_suuryou", "heikin_shutoku_kagaku", "genzaichi", "jika_hyoukagaku", "hyouka_soneki", "soneki_ritsu"];
+            $columns = [
+                "ticker",
+                "name",
+                "hoyuu_suuryou",
+                "heikin_shutoku_kagaku",
+                "shutoku_sougaku",
+                "genzaichi",
+                "zenjitsuhi",
+                "jika_hyoukagaku",
+                "hyouka_soneki",
+//                "soneki_ritsu"
+            ];
 
             $year = date("Y");
             $month = date("m");
@@ -3587,9 +3598,25 @@ GOLD
                 $ary[$k]['month'] = $month;
                 $ary[$k]['day'] = $day;
                 $ary[$k]['time'] = date("H");
+
+                //
+                $ary[$k]['soneki_ritsu'] = '';
             }
 
-            DB::table("t_stock_datas")->insert($ary);
+            $ary2 = [];
+            foreach ($ary as $k => $v) {
+                foreach ($v as $k2 => $v2) {
+                    if ($k2 == "shutoku_sougaku") {
+                        continue;
+                    }
+                    if ($k2 == "zenjitsuhi") {
+                        continue;
+                    }
+                    $ary2[$k][$k2] = $v2;
+                }
+            }
+
+            DB::table("t_stock_datas")->insert($ary2);
         }
 
         return redirect('/money/stockdatalist');
