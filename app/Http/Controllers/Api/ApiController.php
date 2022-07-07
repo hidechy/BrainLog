@@ -4985,6 +4985,22 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
     }
 
     /**
+     * @return mixed
+     */
+    public function getCatTarot()
+    {
+        $response = [];
+
+        $file = public_path() . "/mySetting/CatTarot.data";
+        $content = file_get_contents($file);
+        $ex_content = explode("\n", $content);
+
+        $response = $ex_content;
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
      *
      */
     public function dice(Request $request)
@@ -5846,6 +5862,36 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
 
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * @param Request $request
      * @return mixed
@@ -5941,7 +5987,13 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
             $toBankUpper = strtoupper($v7->to_bank);
             $ex_toBankUpper = explode("_", $toBankUpper);
             $flag = "x";
-            $Bank_Arrival[$to_date] = "-|Bank_Arrival ({$ex_toBankUpper[1]})|-100000|{$flag}";
+
+
+
+//            $Bank_Arrival[$to_date] = "-|Bank_Arrival ({$ex_toBankUpper[1]})|-100000|{$flag}";
+            $Bank_Arrival[$to_date][] = "-|Bank_Arrival ({$ex_toBankUpper[1]})|-100000|{$flag}";
+
+
 
             $ary4[$to_date][] = -100000;
         }
@@ -5964,6 +6016,15 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
             }
             $last_bankD = $v6->bank_d;
         }
+
+
+
+        $ary3['2022-07-01'][] = "-|Bank_Departure (D)|100000|{$flag}";//***
+        $ary4['2022-07-01'][] = 100000;
+
+
+
+
         //-----------------------------//
 
         //-----------------------------//
@@ -6108,7 +6169,17 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                 $spd = ($spend + $sal);
 
                 if (isset($Bank_Arrival[$date])) {
-                    $ary3[$date][] = $Bank_Arrival[$date];
+//                    $ary3[$date][] = $Bank_Arrival[$date];
+
+
+                    foreach ($Bank_Arrival[$date] as $v100){
+                        $ary3[$date][] = $v100;
+                    }
+
+
+
+
+
                 }
 
                 if (!isset($ary3[$date])) {
@@ -6147,6 +6218,34 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         return response()->json(['data' => $response]);
 
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * @param Request $request

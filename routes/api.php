@@ -148,6 +148,7 @@ Route::namespace('Api')->group(function () {
     Route::post('tarothistory', 'ApiController@tarothistory');
     Route::post('tarotthree', 'ApiController@tarotthree');
     Route::post('getAllTarot', 'ApiController@getAllTarot');
+    Route::post('getCatTarot', 'ApiController@getCatTarot');
 
     //dice
     Route::post('dice', 'ApiController@dice');
