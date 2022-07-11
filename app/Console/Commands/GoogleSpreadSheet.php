@@ -104,5 +104,57 @@ class GoogleSpreadSheet extends Command
             } catch (\Exception $e) {
             }
         }
+
+
+
+        //----------------------------------//
+        $file = public_path() . "/mySetting/self_youtube.data";
+        $content = file_get_contents($file);
+        $ex_content = explode("\n", $content);
+
+        $ary2 = [];
+        foreach ($ex_content as $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+
+            $ex_v = explode("?", trim($v));
+            $ex_v_1 = explode("&", trim($ex_v[1]));
+
+            $youtube_id = "";
+            foreach ($ex_v_1 as $v2){
+                if (preg_match("/v=(.+)/", trim($v2), $m)){
+                    $youtube_id = $m[1];
+                    break;
+                }
+            }
+
+            if ($youtube_id == ""){
+                continue;
+            }
+
+            $result = DB::table('t_youtube_data')
+                ->where('youtube_id', '=', $youtube_id)
+                ->first();
+
+            if (isset($result->id)) {
+                continue;
+            }
+
+            $insert = [];
+            $insert['youtube_id'] = $youtube_id;
+            $insert['getdate'] = date("Ymd");
+            $insert['title'] = "";
+            $insert['url'] = "https://youtu.be/{$youtube_id}";
+            $insert['del'] = 0;
+            $insert['special'] = 0;
+
+            DB::table('t_youtube_data')->insert($insert);
+
+        }
+
+        file_put_contents($file, "");
+        //----------------------------------//
+
     }
 }

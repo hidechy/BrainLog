@@ -39,7 +39,12 @@ class YoutubeInfoGet extends Command
                 $v3_channelId = $jsonStr->items[0]->snippet->channelId;
                 $v3_channelTitle = $jsonStr->items[0]->snippet->channelTitle;
                 $v3_playtime = $jsonStr->items[0]->contentDetails->duration;
-//                $v3_title = $jsonStr->items[0]->snippet->title;
+
+
+
+                $v3_title = $jsonStr->items[0]->snippet->title;
+
+
 
                 echo "////////////////////////////\n";
                 print_r([
@@ -57,6 +62,16 @@ class YoutubeInfoGet extends Command
                 $update['channel_id'] = $v3_channelId;
                 $update['channel_title'] = $v3_channelTitle;
                 $update['playtime'] = $v3_playtime;
+
+
+                if (trim($v->title) == ""){
+                    $update['title'] = $v3_title;
+                }
+
+
+
+
+
 
                 DB::table('t_youtube_data')->where('youtube_id', '=', $v->youtube_id)->update($update);
 

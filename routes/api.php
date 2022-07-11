@@ -181,5 +181,6 @@ Route::namespace('Api')->group(function () {
     Route::post('bunruiYoutubeData', 'ApiController@bunruiYoutubeData');
     Route::post('getBunruiName', 'ApiController@getBunruiName');
     Route::post('getSpecialVideo', 'ApiController@getSpecialVideo');
+    Route::post('getOrderedVideo', 'ApiController@getOrderedVideo');
 
 });

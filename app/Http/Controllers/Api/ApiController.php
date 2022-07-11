@@ -7486,6 +7486,67 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
 
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     *
+     */
+    public function getOrderedVideo()
+    {
+
+        $response = [];
+
+        $result = DB::table('t_youtube_data')
+            ->where('del', '=', '0')
+            ->orderBy('getdate', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $ary = [];
+        foreach ($result as $v) {
+            $ary[] = [
+                'youtube_id' => $v->youtube_id,
+                'title' => $v->title,
+                'getdate' => $v->getdate,
+                'url' => $v->url,
+                'pubdate' => $v->pubdate,
+                'channel_id' => $v->channel_id,
+                'channel_title' => $v->channel_title,
+                'playtime' => $v->playtime,
+                'special' => $v->special,
+            ];
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+
+    }
+
+
+
+
+
+
+
+
+
+
     /**
      * @param $year
      * @return array
