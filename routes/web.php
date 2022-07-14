@@ -152,6 +152,21 @@ Route::get('/other/amazonPhotoInput', 'Other\OtherController@amazonPhotoInput');
 Route::post('/other/amazonPhotoInputExecute', 'Other\OtherController@amazonPhotoInputExecute');
 
 
+
+
+Route::get('/other/youtubeUrlList', 'Other\OtherController@youtubeUrlList');
+Route::get('/other/youtubeUrlInput', 'Other\OtherController@youtubeUrlInput');
+Route::post('/other/youtubeUrlInputExecute', 'Other\OtherController@youtubeUrlInputExecute');
+
+
+
+
+
+
+
+
+
+
 // //[affi]
 // Route::get('/affi/index', 'Affi\AffiController@index');
 // Route::get('/affi/input', 'Affi\AffiController@input');

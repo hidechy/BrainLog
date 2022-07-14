@@ -1438,5 +1438,101 @@ class OtherController extends Controller
         }
     }
 
+    /**
+     *
+     */
+    public function youtubeUrlList()
+    {
+
+        $result = DB::table('t_youtube_data')
+            ->orderBy('getdate', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return view('other.youtubeUrlList')
+            ->with('result', $result);
+    }
+
+    /**
+     *
+     */
+    public function youtubeUrlInput()
+    {
+        return view('other.youtubeUrlInput');
+    }
+
+    /**
+     *
+     */
+    public function youtubeUrlInputExecute()
+    {
+
+        if (trim($_POST['youtubeUrlData']) != "") {
+
+            $exData = explode("\n", trim($_POST['youtubeUrlData']));
+
+            foreach ($exData as $v){
+
+                if (trim($v) == "") {
+                    continue;
+                }
+
+                $ex_v = explode("?", trim($v));
+                $ex_v_1 = explode("&", trim($ex_v[1]));
+
+                $youtube_id = "";
+                foreach ($ex_v_1 as $v2){
+                    if (preg_match("/v=(.+)/", trim($v2), $m)){
+                        $youtube_id = $m[1];
+                        break;
+                    }
+                }
+
+                if ($youtube_id == ""){
+                    continue;
+                }
+
+                $result = DB::table('t_youtube_data')
+                    ->where('youtube_id', '=', $youtube_id)
+                    ->first();
+
+                if (isset($result->id)) {
+                    continue;
+                }
+
+                $url = "https://www.googleapis.com/youtube/v3/videos?id={$youtube_id}&part=snippet,contentDetails&key=AIzaSyD9PkTM1Pur3YzmO-v4VzS0r8ZZ0jRJTIU";
+
+                $content = file_get_contents($url);
+                $jsonStr = json_decode($content);
+
+                $v3_pubDate = substr($jsonStr->items[0]->snippet->publishedAt, 0, 10);
+                $v3_channelId = $jsonStr->items[0]->snippet->channelId;
+                $v3_channelTitle = $jsonStr->items[0]->snippet->channelTitle;
+                $v3_playtime = $jsonStr->items[0]->contentDetails->duration;
+                $v3_title = $jsonStr->items[0]->snippet->title;
+
+                $insert = [];
+                $insert['youtube_id'] = $youtube_id;
+                $insert['title'] = $v3_title;
+                $insert['url'] = "https://youtu.be/{$youtube_id}";
+
+                $insert['del'] = 0;
+                $insert['special'] = 0;
+
+                $insert['getdate'] = date("Ymd");
+
+                $insert['pubdate'] = $v3_pubDate;
+                $insert['channel_id'] = $v3_channelId;
+                $insert['channel_title'] = $v3_channelTitle;
+                $insert['playtime'] = $v3_playtime;
+
+                DB::table('t_youtube_data')->insert($insert);
+
+            }
+        }
+
+        return redirect('/other/youtubeUrlList');
+
+    }
 
 }
