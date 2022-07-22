@@ -7341,6 +7341,56 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
     }
 
     /**
+     * @return void
+     */
+    public function getDeletedVideo()
+    {
+
+        $result = DB::table('t_youtube_data')
+            ->where('del', '=', '1')
+            ->get();
+
+        $ary = [];
+        foreach ($result as $v){
+
+            $playtime = "";
+            if (trim($v->playtime) != "") {
+                if (preg_match("/PT(.+)H(.+)M(.+)S/", trim($v->playtime), $m)) {
+                    $hour = sprintf("%02d", $m[1]);
+                    $minute = sprintf("%02d", $m[2]);
+                    $second = sprintf("%02d", $m[3]);
+                    $playtime = "{$hour}:{$minute}:{$second}";
+                } else if (preg_match("/PT(.+)M(.+)S/", trim($v->playtime), $m)) {
+                    $minute = sprintf("%02d", $m[1]);
+                    $second = sprintf("%02d", $m[2]);
+                    $playtime = "00:{$minute}:{$second}";
+                }
+            }
+
+            $ary[] = [
+                'youtube_id' => $v->youtube_id,
+                'title' => $v->title,
+                'getdate' => $v->getdate,
+                'url' => $v->url,
+
+                'bunrui' => (trim($v->bunrui) != "") ? $v->bunrui : 0,
+                'special' => (trim($v->special) != "") ? $v->special : 0,
+
+                'pubdate' => (trim($v->pubdate) != "") ? $v->pubdate : "",
+                'channel_id' => (trim($v->channel_id) != "") ? $v->channel_id : "",
+                'channel_title' => (trim($v->channel_title) != "") ? $v->channel_title : "",
+
+                'playtime' => $playtime
+            ];
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+
+    }
+
+        /**
      * @param Request $request
      */
     public function bunruiYoutubeData(Request $request)
@@ -7351,6 +7401,11 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
             DB::beginTransaction();
 
             switch ($request->bunrui) {
+
+                case "recycling":
+                    $sql = " update t_youtube_data set del = '0', bunrui = '' where youtube_id in ({$request->youtube_id}); ";
+                    break;
+
                 case "delete":
                     $sql = " update t_youtube_data set del = '1' where youtube_id in ({$request->youtube_id}); ";
                     break;
