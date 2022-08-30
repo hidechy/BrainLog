@@ -103,6 +103,9 @@ Route::namespace('Api')->group(function () {
 
     Route::post('itemDetailDisplay', 'ApiController@itemDetailDisplay');
 
+    Route::post('getYearSpend', 'ApiController@getYearSpend');
+
+
     //money // riverpod
     Route::post('creditCompanySearch', 'ApiController@creditCompanySearch');
     Route::post('bankSearch', 'ApiController@bankSearch');

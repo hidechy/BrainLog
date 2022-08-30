@@ -14,6 +14,111 @@ class ApiController extends Controller
     /**
      *
      */
+    public function getYearSpend(Request $request)
+    {
+        $response = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+
+
+        $ary2 = [];
+        $result2 = DB::table('t_salary')
+            ->where('year', '=', $year)
+            ->get();
+        foreach ($result2 as $v2){
+            $date = $v2->year."-".$v2->month."-".$v2->day;
+            $ary2[$date] = $v2->salary;
+        }
+
+
+
+        $ary3 = [];
+        $result3 = DB::table('t_bank_move')
+            ->get();
+        foreach ($result3 as $v3){
+            $from_date = $v3->from_year."-".$v3->from_month."-".$v3->from_day;
+            $ary3[$from_date][] = ($v3->price * -1);
+
+            $to_date = $v3->to_year."-".$v3->to_month."-".$v3->to_day;
+            $ary3[$to_date][] = ($v3->price * 1);
+        }
+        $ary4 = [];
+        foreach ($ary3 as $date=>$v3){
+            $ary4[$date] = array_sum($v3);
+        }
+
+
+
+        //-----------------------------//
+        $ary5 = [];
+
+        $result5 = DB::table('t_dailyspend')
+            ->where('year', '=', $year)
+            ->orderBy('id')
+            ->get();
+        foreach ($result5 as $v5){
+            $date = $v5->year."-".$v5->month."-".$v5->day;
+            $ary5[$date][] = [
+                'item' => $v5->koumoku,
+                'price' => $v5->price,
+                'flag' => 0
+            ];
+        }
+
+        $result5 = DB::table('t_credit')
+            ->where('year', '=', $year)
+            ->orderBy('id')
+            ->get();
+        foreach ($result5 as $v5){
+            $date = $v5->year."-".$v5->month."-".$v5->day;
+            $ary5[$date][] = [
+                'item' => $v5->item,
+                'price' => $v5->price,
+                'flag' => 1
+            ];
+        }
+        //-----------------------------//
+
+
+
+        ////////////////////
+        ///
+        $ary = [];
+
+        $file = public_path() . "/mySetting/MoneyTotal.data";
+        $content = file_get_contents($file);
+        $ex_content = explode("\n", mb_convert_encoding($content, "utf8", "sjis-win"));
+        foreach ($ex_content as $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+
+            if (preg_match("/^".$year."/", trim($v))){
+
+                list($date, $x, $total, $spend) = explode("|", trim($v));
+
+                $salary = (isset($ary2[$date])) ? $ary2[$date] : 0;
+                $move = (isset($ary4[$date])) ? $ary4[$date] : 0;
+
+                $ary[] = [
+                    'date' => $date,
+                    'spend' => ($spend + $salary + $move),
+                    'item' => (isset($ary5[$date]))?$ary5[$date]:[]
+                ];
+
+            }
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+
+    }
+
+    /**
+     *
+     */
     public function getmonthstartmoney()
     {
 
@@ -7516,6 +7621,7 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
 
         $result = DB::table('t_youtube_data')
             ->where('special', '=', '1')
+            ->where('del', '=', '0')
             ->orderBy('bunrui')
             ->orderBy('getdate', 'desc')
             ->get();
@@ -7535,28 +7641,25 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
             ];
         }
 
-        $response = $ary;
+        $ary2 = [];
+        $keepBunrui = '';
+        foreach ($result as $v) {
+            if ($keepBunrui != $v->bunrui) {
+                $ary2[] = [
+                    'bunrui' => $v->bunrui,
+                    'count' => count($ary[$v->bunrui]),
+                    'item' => $ary[$v->bunrui],
+                ];
+            }
+
+            $keepBunrui = $v->bunrui;
+        }
+
+        $response = $ary2;
 
         return response()->json(['data' => $response]);
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      *
