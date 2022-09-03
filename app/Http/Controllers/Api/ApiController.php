@@ -7495,7 +7495,32 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
 
     }
 
-        /**
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function updateVideoPlayedAt(Request $request)
+    {
+
+        try {
+            DB::beginTransaction();
+
+            $update = [];
+            $update['last_played_at'] = $request->date;
+
+            DB::table('t_youtube_data')->where('youtube_id', '=', $request->youtube_id)->update($update);
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
+    }
+
+/**
      * @param Request $request
      */
     public function bunruiYoutubeData(Request $request)

@@ -186,5 +186,6 @@ Route::namespace('Api')->group(function () {
     Route::post('getSpecialVideo', 'ApiController@getSpecialVideo');
     Route::post('getOrderedVideo', 'ApiController@getOrderedVideo');
     Route::post('getDeletedVideo', 'ApiController@getDeletedVideo');
+    Route::post('updateVideoPlayedAt', 'ApiController@updateVideoPlayedAt');
 
 });
