@@ -3851,11 +3851,11 @@ item = '投資信託'
                 'work_description' => $v['work'][0],
                 'work_point' => $v['work'][1],
 
-                'sachikoi_rank' => $ary2[$date]['sachikoi_rank'],
-                'sachikoi_love' => $ary2[$date]['sachikoi_love'],
-                'sachikoi_money' => $ary2[$date]['sachikoi_money'],
-                'sachikoi_work' => $ary2[$date]['sachikoi_work'],
-                'sachikoi_man' => $ary2[$date]['sachikoi_man']
+                'sachikoi_rank' => isset($ary2[$date])? $ary2[$date]['sachikoi_rank']:"",
+                'sachikoi_love' => isset($ary2[$date])?$ary2[$date]['sachikoi_love']:"",
+                'sachikoi_money' => isset($ary2[$date])?$ary2[$date]['sachikoi_money']:"",
+                'sachikoi_work' => isset($ary2[$date])?$ary2[$date]['sachikoi_work']:"",
+                'sachikoi_man' => isset($ary2[$date])?$ary2[$date]['sachikoi_man']:""
             ];
         }
 
