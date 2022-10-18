@@ -157,9 +157,10 @@ Route::namespace('Api')->group(function () {
     Route::post('dice', 'ApiController@dice');
 
     //temple
-    Route::post('getAllTemple', 'ApiController@getAllTemple');
-    Route::post('getDateTemple', 'ApiController@getDateTemple');
-    Route::post('getTempleLatLng', 'ApiController@getTempleLatLng');
+    Route::post('getAllTemple', 'ApiControllerSecond@getAllTemple');
+    Route::post('getDateTemple', 'ApiControllerSecond@getDateTemple');
+    Route::post('getTempleLatLng', 'ApiControllerSecond@getTempleLatLng');
+    Route::post('getTempleName', 'ApiControllerSecond@getTempleName');
 
     //train
     Route::post('getTrain', 'ApiController@getTrain');
@@ -187,5 +188,9 @@ Route::namespace('Api')->group(function () {
     Route::post('getOrderedVideo', 'ApiController@getOrderedVideo');
     Route::post('getDeletedVideo', 'ApiController@getDeletedVideo');
     Route::post('updateVideoPlayedAt', 'ApiController@updateVideoPlayedAt');
+
+    //kigo
+    Route::post('getKigoSeasonRandomList', 'ApiControllerSecond@getKigoSeasonRandomList');
+    Route::post('getKigoSearchedList', 'ApiControllerSecond@getKigoSearchedList');
 
 });
