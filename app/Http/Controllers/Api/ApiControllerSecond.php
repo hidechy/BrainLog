@@ -44,6 +44,7 @@ class ApiControllerSecond extends Controller
             }
         }
 
+
         foreach ($getIds as $k => $v) {
             $result = DB::table('t_haiku_kigo')
                 ->where('id', '=', $k)->first();
@@ -52,9 +53,12 @@ class ApiControllerSecond extends Controller
                 "title" => $result->title,
                 "yomi" => $result->yomi,
                 "detail" => $result->detail,
-                "length" => $result->length
+                "length" => $result->length,
+                "category" => $result->category,
             ];
         }
+
+
         ////////////////////////////////////////////////
 
         ////////////////////////////////////////////////
@@ -98,6 +102,10 @@ class ApiControllerSecond extends Controller
             $query .= " and length = {$request->length}";
         }
 
+        if (isset($request->category)) {
+            $query .= " and category = '{$request->category}'";
+        }
+
         $query .= " order by id";
 
         $result = DB::select($query);
@@ -111,7 +119,8 @@ class ApiControllerSecond extends Controller
                 "title" => $v->title,
                 "yomi" => $v->yomi,
                 "detail" => $v->detail,
-                "length" => $v->length
+                "length" => $v->length,
+                "category" => $v->category,
             ];
 
             $len[] = $v->length;
@@ -215,7 +224,7 @@ class ApiControllerSecond extends Controller
                     }
                 }
 
-                $ary[$year][] = [
+                $ary['list'][] = [
                     'date' => $date,
                     'temple' => $result->temple,
                     'address' => $result->address,
@@ -232,9 +241,11 @@ class ApiControllerSecond extends Controller
             }
         }
 
-        $response = $ary;
+        return $ary;
 
-        return response()->json(['data' => $response]);
+//        $response = $ary;
+//
+//        return response()->json(['data' => $response]);
     }
 
     /**
@@ -291,7 +302,7 @@ class ApiControllerSecond extends Controller
 
         /////////////////////////////////////////////////
 
-        $ary[$year][] = [
+        $ary = [
             'date' => $request->date,
             'temple' => $result->temple,
             'address' => $result->address,
@@ -306,9 +317,11 @@ class ApiControllerSecond extends Controller
             'photo' => $photo
         ];
 
-        $response = $ary;
+        return $ary;
 
-        return response()->json(['data' => $response]);
+//        $response = $ary;
+//
+//        return response()->json(['data' => $response]);
     }
 
     /**
@@ -322,16 +335,19 @@ class ApiControllerSecond extends Controller
 
         $ary = [];
         foreach ($result as $v) {
-            $ary[$v->temple][] = [
+            $ary['list'][] = [
+                'temple' => $v->temple,
                 'address' => $v->address,
                 'lat' => $v->lat,
                 'lng' => $v->lng
             ];
         }
 
-        $response = $ary;
+        return $ary;
 
-        return response()->json(['data' => $response]);
+//        $response = $ary;
+//
+//        return response()->json(['data' => $response]);
     }
 
     /**
@@ -469,7 +485,7 @@ class ApiControllerSecond extends Controller
 
         $response = $ary;
 
-        return response()->json(['data' => $response]);
+        return response()->json(['list' => $response]);
 
     }
 
