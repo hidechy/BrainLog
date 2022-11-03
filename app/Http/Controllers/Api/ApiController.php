@@ -4778,6 +4778,8 @@ item = '株式買付'
         }
 
         $ary = [];
+        $ary["id"] = $result->id;
+
         $ary["name"] = $result->name;
         $ary["prof1"] = $result->prof1;
         $ary["prof2"] = $result->prof2;
@@ -5060,6 +5062,8 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
 
         $ary = [];
         foreach ($result as $k => $v) {
+            $ary[$k]["id"] = $v->id;
+
             $ary[$k]["name"] = $v->name;
             $ary[$k]["image"] = $v->image;
 

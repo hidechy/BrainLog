@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-
 use Carbon\Carbon;
 use DB;
 use Exception;
@@ -15,8 +14,13 @@ class ApiControllerSecond extends Controller
     /*
      *
      */
-    public function getKigoSeasonRandomList(Request $request)
+    public function getKigoSeasonRandomList(Request $request): array
     {
+
+        if ($request->season != '-') {
+            $sql = " update t_haiku_season set cnt=cnt+1 where season_en = '{$request->season}'; ";
+            DB::statement($sql);
+        }
 
         $query_common = " select id from t_haiku_kigo";
         $query_common .= " where season = '{$request->season}'";
@@ -45,7 +49,13 @@ class ApiControllerSecond extends Controller
         }
 
 
+        $result5 = DB::table('t_haiku_season')
+            ->where('season_en', $request->season)
+            ->first();
+
+
         foreach ($getIds as $k => $v) {
+
             $result = DB::table('t_haiku_kigo')
                 ->where('id', '=', $k)->first();
 
@@ -55,7 +65,13 @@ class ApiControllerSecond extends Controller
                 "detail" => $result->detail,
                 "length" => $result->length,
                 "category" => $result->category,
+                "cnt" => ($result->cnt + 1),
+                "seasonCnt" => $result5->cnt,
             ];
+
+            DB::table('t_haiku_kigo')
+                ->where('id', $k)
+                ->update(['cnt' => ($result->cnt + 1)]);
         }
 
 
@@ -89,20 +105,29 @@ class ApiControllerSecond extends Controller
     /*
      *
      */
-    public function getKigoSearchedList(Request $request)
+    public function getKigoSearchedList(Request $request): array
     {
+
+        if ($request->season != '-') {
+            $sql = " update t_haiku_season set cnt=cnt+1 where season_en = '{$request->season}'; ";
+            DB::statement($sql);
+        }
 
         $query = " select * from t_haiku_kigo where season = '{$request->season}'";
 
-        if (isset($request->yomi_head)) {
+        if (isset($request->title) && trim($request->title) != "") {
+            $query .= " and title like '{$request->title}%'";
+        }
+
+        if (isset($request->yomi_head) && trim($request->yomi_head) != "") {
             $query .= " and yomi like '{$request->yomi_head}%'";
         }
 
-        if (isset($request->length)) {
+        if (isset($request->length) && $request->length > 0) {
             $query .= " and length = {$request->length}";
         }
 
-        if (isset($request->category)) {
+        if (isset($request->category) && trim($request->category) != "") {
             $query .= " and category = '{$request->category}'";
         }
 
@@ -113,6 +138,12 @@ class ApiControllerSecond extends Controller
         ////////////////////////////////////////////////
         $len = [];
 
+
+        $result5 = DB::table('t_haiku_season')
+            ->where('season_en', $request->season)
+            ->first();
+
+
         $list = [];
         foreach ($result as $v) {
             $list[] = [
@@ -121,9 +152,16 @@ class ApiControllerSecond extends Controller
                 "detail" => $v->detail,
                 "length" => $v->length,
                 "category" => $v->category,
+                "cnt" => ($v->cnt + 1),
+                "seasonCnt" => $result5->cnt,
             ];
 
             $len[] = $v->length;
+
+            DB::table('t_haiku_kigo')
+                ->where('id', $v->id)
+                ->update(['cnt' => ($v->cnt + 1)]);
+
         }
         ////////////////////////////////////////////////
 
@@ -133,6 +171,25 @@ class ApiControllerSecond extends Controller
             'list' => $list
         ];
 
+    }
+
+    /*
+     *
+     */
+    public function getKigoSeasonList(Request $request): array
+    {
+        $result = DB::table('t_haiku_season')->get();
+
+        $ary = [];
+        foreach ($result as $v) {
+            $ary[] = [
+                'season_en' => $v->season_en,
+                'season_jp' => $v->season_jp,
+                'cnt' => $v->cnt,
+            ];
+        }
+
+        return $ary;
     }
 
     /**
@@ -488,5 +545,74 @@ class ApiControllerSecond extends Controller
         return response()->json(['list' => $response]);
 
     }
+
+
+    /**
+     *
+     */
+    public function getCategoryRate(Request $request)
+    {
+        $response = [];
+
+        //----------------------------------------//
+        $ary2 = [];
+        $result2 = DB::table('t_tarot')
+            ->orderBy('id')
+            ->get();
+        foreach ($result2 as $v2) {
+            $ary2[$v2->id] = 0;
+        }
+        //---
+        $ary3 = [];
+        $result3 = DB::table('t_tarotdraw')
+            ->get();
+        foreach ($result3 as $v3) {
+            $ary3[$v3->tarot_id][] = "";
+        }
+        $allDraw = count($result3);
+        //---
+        $ary4 = [];
+        foreach ($ary2 as $id => $v4) {
+            $cnt = (isset($ary3[$id])) ? count($ary3[$id]) : 0;
+            $ary4[$id] = "{$cnt} / {$allDraw}";
+        }
+        //----------------------------------------//
+
+        $change = [];
+        $change["Cups"] = "";
+        $change["Pentacles"] = "";
+        $change["Swords"] = "";
+        $change["Wands"] = "";
+        $change["of Cups"] = "";
+        $change["of Pentacles"] = "";
+        $change["of Swords"] = "";
+        $change["of Wands"] = "";
+
+        $result = DB::table("t_tarot")
+            ->where("image", "like", $request->category . "%")
+            ->orderBy('image')
+            ->get();
+
+        $ary = [];
+        foreach ($result as $v) {
+//            $ary[] = "{$v->id}:" . trim(strtr($v->name, $change)) . ":" . $ary4[$v->id];
+
+
+            $name = trim(strtr($v->name, $change));
+            $ary[] = [
+                "id" => $v->id,
+                "name" => "{$request->category} {$name}",
+                "rate" => $ary4[$v->id],
+            ];
+
+
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+
+    }
+
 
 }

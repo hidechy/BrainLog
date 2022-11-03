@@ -152,6 +152,7 @@ Route::namespace('Api')->group(function () {
     Route::post('tarotthree', 'ApiController@tarotthree');
     Route::post('getAllTarot', 'ApiController@getAllTarot');
     Route::post('getCatTarot', 'ApiController@getCatTarot');
+    Route::post('getCategoryRate', 'ApiControllerSecond@getCategoryRate');
 
     //dice
     Route::post('dice', 'ApiController@dice');
@@ -190,6 +191,7 @@ Route::namespace('Api')->group(function () {
     Route::post('updateVideoPlayedAt', 'ApiController@updateVideoPlayedAt');
 
     //kigo
+    Route::post('getKigoSeasonList', 'ApiControllerSecond@getKigoSeasonList');
     Route::post('getKigoSeasonRandomList', 'ApiControllerSecond@getKigoSeasonRandomList');
     Route::post('getKigoSearchedList', 'ApiControllerSecond@getKigoSearchedList');
 
