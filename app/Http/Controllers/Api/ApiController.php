@@ -21,33 +21,30 @@ class ApiController extends Controller
         list($year, $month, $day) = explode("-", $request->date);
 
 
-
         $ary2 = [];
         $result2 = DB::table('t_salary')
             ->where('year', '=', $year)
             ->get();
-        foreach ($result2 as $v2){
-            $date = $v2->year."-".$v2->month."-".$v2->day;
+        foreach ($result2 as $v2) {
+            $date = $v2->year . "-" . $v2->month . "-" . $v2->day;
             $ary2[$date] = $v2->salary;
         }
-
 
 
         $ary3 = [];
         $result3 = DB::table('t_bank_move')
             ->get();
-        foreach ($result3 as $v3){
-            $from_date = $v3->from_year."-".$v3->from_month."-".$v3->from_day;
+        foreach ($result3 as $v3) {
+            $from_date = $v3->from_year . "-" . $v3->from_month . "-" . $v3->from_day;
             $ary3[$from_date][] = ($v3->price * -1);
 
-            $to_date = $v3->to_year."-".$v3->to_month."-".$v3->to_day;
+            $to_date = $v3->to_year . "-" . $v3->to_month . "-" . $v3->to_day;
             $ary3[$to_date][] = ($v3->price * 1);
         }
         $ary4 = [];
-        foreach ($ary3 as $date=>$v3){
+        foreach ($ary3 as $date => $v3) {
             $ary4[$date] = array_sum($v3);
         }
-
 
 
         //-----------------------------//
@@ -57,8 +54,8 @@ class ApiController extends Controller
             ->where('year', '=', $year)
             ->orderBy('id')
             ->get();
-        foreach ($result5 as $v5){
-            $date = $v5->year."-".$v5->month."-".$v5->day;
+        foreach ($result5 as $v5) {
+            $date = $v5->year . "-" . $v5->month . "-" . $v5->day;
             $ary5[$date][] = [
                 'item' => $v5->koumoku,
                 'price' => $v5->price,
@@ -70,8 +67,8 @@ class ApiController extends Controller
             ->where('year', '=', $year)
             ->orderBy('id')
             ->get();
-        foreach ($result5 as $v5){
-            $date = $v5->year."-".$v5->month."-".$v5->day;
+        foreach ($result5 as $v5) {
+            $date = $v5->year . "-" . $v5->month . "-" . $v5->day;
             $ary5[$date][] = [
                 'item' => $v5->item,
                 'price' => $v5->price,
@@ -79,7 +76,6 @@ class ApiController extends Controller
             ];
         }
         //-----------------------------//
-
 
 
         ////////////////////
@@ -94,7 +90,7 @@ class ApiController extends Controller
                 continue;
             }
 
-            if (preg_match("/^".$year."/", trim($v))){
+            if (preg_match("/^" . $year . "/", trim($v))) {
 
                 list($date, $x, $total, $spend) = explode("|", trim($v));
 
@@ -104,7 +100,7 @@ class ApiController extends Controller
                 $ary[] = [
                     'date' => $date,
                     'spend' => ($spend + $salary + $move),
-                    'item' => (isset($ary5[$date]))?$ary5[$date]:[]
+                    'item' => (isset($ary5[$date])) ? $ary5[$date] : []
                 ];
 
             }
@@ -903,6 +899,8 @@ class ApiController extends Controller
 
         $str = "
 食費
+牛乳代
+弁当代
 住居費
 交通費
 支払い
@@ -922,21 +920,19 @@ credit
 水道光熱費
 共済代
 GOLD
-牛乳代
-弁当代
+投資信託
+株式買付
+アイアールシー
+手数料
+不明
+メルカリ
+利息
+プラス
 所得税
 住民税
 年金
 国民年金基金
 国民健康保険
-アイアールシー
-手数料
-不明
-利息
-プラス
-メルカリ
-投資信託
-株式買付
 ";
 
         $ex_str = explode("\n", $str);
@@ -3197,6 +3193,11 @@ item = '投資信託'
             ->get();
 
         foreach ($result as $v) {
+
+            if ($v->year < 2020) {
+                continue;
+            }
+
             $ary["{$v->year}-{$v->month}"][] = $v->salary;
         }
         //---------------------------------------//
@@ -3851,11 +3852,11 @@ item = '投資信託'
                 'work_description' => $v['work'][0],
                 'work_point' => $v['work'][1],
 
-                'sachikoi_rank' => isset($ary2[$date])? $ary2[$date]['sachikoi_rank']:"",
-                'sachikoi_love' => isset($ary2[$date])?$ary2[$date]['sachikoi_love']:"",
-                'sachikoi_money' => isset($ary2[$date])?$ary2[$date]['sachikoi_money']:"",
-                'sachikoi_work' => isset($ary2[$date])?$ary2[$date]['sachikoi_work']:"",
-                'sachikoi_man' => isset($ary2[$date])?$ary2[$date]['sachikoi_man']:""
+                'sachikoi_rank' => isset($ary2[$date]) ? $ary2[$date]['sachikoi_rank'] : "",
+                'sachikoi_love' => isset($ary2[$date]) ? $ary2[$date]['sachikoi_love'] : "",
+                'sachikoi_money' => isset($ary2[$date]) ? $ary2[$date]['sachikoi_money'] : "",
+                'sachikoi_work' => isset($ary2[$date]) ? $ary2[$date]['sachikoi_work'] : "",
+                'sachikoi_man' => isset($ary2[$date]) ? $ary2[$date]['sachikoi_man'] : ""
             ];
         }
 
@@ -5225,9 +5226,11 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         $sql = " select year, month, day, name, hoyuu_suuryou, heikin_shutoku_kagaku, shutoku_sougaku, jika_hyoukagaku, kijun_kagaku from t_toushi_shintaku_datas order by name, year, month, day; ";
         $result = DB::select($sql);
 
+
         $ary = [];
         foreach ($result as $v) {
             $date = "{$v->year}-{$v->month}-{$v->day}";
+
             $num = strtr($v->hoyuu_suuryou, [',' => '', '口' => '']);
             $shutoku = strtr($v->heikin_shutoku_kagaku, [',' => '', '円' => '']);
             $cost = strtr($v->shutoku_sougaku, [',' => '', '円' => '']);
@@ -5972,35 +5975,6 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * @param Request $request
      * @return mixed
@@ -6098,10 +6072,8 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
             $flag = "x";
 
 
-
 //            $Bank_Arrival[$to_date] = "-|Bank_Arrival ({$ex_toBankUpper[1]})|-100000|{$flag}";
             $Bank_Arrival[$to_date][] = "-|Bank_Arrival ({$ex_toBankUpper[1]})|-100000|{$flag}";
-
 
 
             $ary4[$to_date][] = -100000;
@@ -6127,11 +6099,8 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         }
 
 
-
         $ary3['2022-07-01'][] = "-|Bank_Departure (D)|100000|{$flag}";//***
         $ary4['2022-07-01'][] = 100000;
-
-
 
 
         //-----------------------------//
@@ -6281,12 +6250,9 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
 //                    $ary3[$date][] = $Bank_Arrival[$date];
 
 
-                    foreach ($Bank_Arrival[$date] as $v100){
+                    foreach ($Bank_Arrival[$date] as $v100) {
                         $ary3[$date][] = $v100;
                     }
-
-
-
 
 
                 }
@@ -6327,33 +6293,6 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         return response()->json(['data' => $response]);
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     /**
@@ -7191,7 +7130,7 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
             ->get();
 
         $ary = [];
-        foreach ($result as $v){
+        foreach ($result as $v) {
 
             $playtime = "";
             if (trim($v->playtime) != "") {
@@ -7255,7 +7194,7 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         }
     }
 
-/**
+    /**
      * @param Request $request
      */
     public function bunruiYoutubeData(Request $request)
@@ -7455,14 +7394,6 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         return response()->json(['data' => $response]);
 
     }
-
-
-
-
-
-
-
-
 
 
     /**

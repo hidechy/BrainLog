@@ -106,6 +106,49 @@ Route::namespace('Api')->group(function () {
     Route::post('getYearSpend', 'ApiController@getYearSpend');
 
 
+
+
+
+    Route::post('getDutyData', 'ApiControllerSecond@getDutyData');
+    Route::post('benefit', 'ApiControllerSecond@benefit');
+    Route::post('getMoneyAll', 'ApiControllerSecond@getMoneyAll');
+    Route::post('balanceSheetRecord', 'ApiControllerSecond@balanceSheetRecord');
+    Route::post('getFund', 'ApiControllerSecond@getFund');
+    Route::post('gettrainrecord', 'ApiControllerSecond@gettrainrecord');
+    Route::post('getWells', 'ApiControllerSecond@getWells');
+    Route::post('homeFix', 'ApiControllerSecond@homeFix');
+    Route::post('moneydl', 'ApiControllerSecond@moneydl');
+    Route::post('spendMonthlyItem', 'ApiControllerSecond@spendMonthlyItem');
+    Route::post('getmonthlytimeplace', 'ApiControllerSecond@getmonthlytimeplace');
+    Route::post('getmonthlytraindata', 'ApiControllerSecond@getmonthlytraindata');
+    Route::post('getmonthlyweeknum', 'ApiControllerSecond@getmonthlyweeknum');
+    Route::post('getmonthSpendItem', 'ApiControllerSecond@getmonthSpendItem');
+    Route::post('getSeiyuuPurchaseItemList', 'ApiControllerSecond@getSeiyuuPurchaseItemList');
+    Route::post('getAllBank', 'ApiControllerSecond@getAllBank');
+    Route::post('getYearCreditSummaryItem', 'ApiControllerSecond@getYearCreditSummaryItem');
+    Route::post('getYearCreditSummarySummary', 'ApiControllerSecond@getYearCreditSummarySummary');
+    Route::post('getYearSpendSummaySummary', 'ApiControllerSecond@getYearSpendSummaySummary');
+    Route::post('getEverydayMoney', 'ApiControllerSecond@getEverydayMoney');
+    Route::post('getcompanycredit', 'ApiControllerSecond@getcompanycredit');
+    Route::post('getUdemyData', 'ApiControllerSecond@getUdemyData');
+    Route::post('getBankMove', 'ApiControllerSecond@getBankMove');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     //money // riverpod
     Route::post('creditCompanySearch', 'ApiController@creditCompanySearch');
     Route::post('bankSearch', 'ApiController@bankSearch');
@@ -137,6 +180,7 @@ Route::namespace('Api')->group(function () {
     Route::post('monthlyuranaidetail', 'ApiController@monthlyuranaidetail');
     Route::post('leofortune', 'ApiController@leofortune');
     Route::post('getMonthlyUranaiData', 'ApiController@getMonthlyUranaiData');
+    Route::post('getGooUranai', 'ApiControllerSecond@getGooUranai');
 
     //kotowaza
     Route::post('getkotowazacount', 'ApiController@getkotowazacount');

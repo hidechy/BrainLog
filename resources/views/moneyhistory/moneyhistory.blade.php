@@ -17,6 +17,12 @@
 
     <br>
 
+    @php
+        $ary = [];
+    @endphp
+
+
+
     <table class="table-bordered" id="tbl_display">
         @foreach($data as $v)
 
@@ -34,20 +40,41 @@
                     $ex_date = explode("-", trim($v['date']))
                 @endphp
 
-                @if($ex_record[2] > 0)
-                    <tr>
-                        <td>{{ $ex_date[0] }}</td>
-                        <td>{{ $ex_date[1] }}</td>
-                        <td>{{ $ex_date[2] }}</td>
-                        <td>{{ $ex_record[1] }}</td>
-                        <td class="alignRight">{{ $ex_record[2] }}</td>
-                    </tr>
-                @endif
+@if(isset($ex_record[2]))
+@if($ex_record[2] > 0)
+<tr>
+<td>{{ $ex_date[0] }}</td>
+<td>{{ $ex_date[1] }}</td>
+<td>{{ $ex_date[2]??'' }}</td>
+<td>{{ $ex_record[1] }}</td>
+<td class="alignRight">{{ $ex_record[2]??'' }}</td>
+</tr>
+@endif
+                @else
+    @php
+    $ary[] = trim($v['record']);
+    @endphp
+@endif
+
+
+
+
+
+
+
+
 
             @endforeach
 
         @endforeach
     </table>
+
+
+
+    @php
+print_r($ary);
+@endphp
+
 
     <br>
 

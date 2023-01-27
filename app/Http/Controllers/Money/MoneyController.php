@@ -3526,10 +3526,12 @@ GOLD
     {
 
         $result = DB::table('t_stock_datas')
+            ->where('year', date("Y"))
             ->orderBy('ticker')
-            ->orderBy('year')
-            ->orderBy('month')
-            ->orderBy('day')
+            ->orderBy('id')
+//            ->orderBy('year')
+//            ->orderBy('month')
+//            ->orderBy('day')
             ->get();
 
         return view('money.stockdatalist')
@@ -3630,10 +3632,12 @@ GOLD
     {
 
         $result = DB::table('t_toushi_shintaku_datas')
-            ->orderBy('name')
-            ->orderBy('year')
-            ->orderBy('month')
-            ->orderBy('day')
+            ->where('year', date("Y"))
+            ->orderBy('id')
+//            ->orderBy('name')
+//            ->orderBy('year')
+//            ->orderBy('month')
+//            ->orderBy('day')
             ->get();
 
         return view('money.shintakudatalist')
