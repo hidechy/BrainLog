@@ -2609,4 +2609,49 @@ GOLD
     }
 
 
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function spendItemInsert(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            list($year, $month, $day) = explode("-", $request->date);
+
+            DB::table('t_dailyspend')
+                ->where('year', '=', $year)
+                ->where('month', '=', $month)
+                ->where('day', '=', $day)
+                ->delete();
+
+            $insert = [];
+            foreach ($request->spend as $v) {
+                $insert[] = [
+                    "year" => $year,
+                    "month" => $month,
+                    "day" => $day,
+                    "ymd" => "{$year}{$month}{$day}",
+                    'koumoku' => $v["item"],
+                    'price' => $v["price"],
+                    'created_at' => date("Y-m-d"),
+                    'updated_at' => date("Y-m-d"),
+                    'flag' => "",
+                ];
+            }
+
+            DB::table('t_dailyspend')->insert($insert);
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
+    }
+
+
 }

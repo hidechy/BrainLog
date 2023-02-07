@@ -132,6 +132,7 @@ Route::namespace('Api')->group(function () {
     Route::post('getcompanycredit', 'ApiControllerSecond@getcompanycredit');
     Route::post('getUdemyData', 'ApiControllerSecond@getUdemyData');
     Route::post('getBankMove', 'ApiControllerSecond@getBankMove');
+    Route::post('spendItemInsert', 'ApiControllerSecond@spendItemInsert');
 
 
 
