@@ -2181,6 +2181,10 @@ class ApiControllerSecond extends Controller
             $im = "EBAY";
         }
 
+        if (preg_match("/^さくらインターネット/", $im)) {
+            $im = "さくらインターネット";
+        }
+
         return $im;
     }
 
@@ -2651,6 +2655,855 @@ GOLD
             DB::rollBack();
             abort(500, $e->getMessage());
         }
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function timeplaceInsert(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            list($year, $month, $day) = explode("-", $request->date);
+
+            DB::table('t_timeplace')
+                ->where('year', '=', $year)
+                ->where('month', '=', $month)
+                ->where('day', '=', $day)
+                ->delete();
+
+            $insert = [];
+            foreach ($request->timeplace as $v) {
+                $hour = substr($v['time'], 0, 2);
+                $minute = substr($v['time'], 2, 2);
+
+                $insert[] = [
+                    "year" => $year,
+                    "month" => $month,
+                    "day" => $day,
+                    "ymd" => "{$year}{$month}{$day}",
+                    "time" => $v['time'],
+                    "place" => $v['place'],
+                    "price" => $v['price'],
+                    'created_at' => date("Y-m-d")
+                ];
+            }
+
+            DB::table('t_timeplace')->insert($insert);
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getYoutubeCategoryTree()
+    {
+        $response = [];
+
+        $sql = " select category1, category2, bunrui from t_youtube_data where del=0 group by category1, category2, bunrui; ";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            $response[] = [
+                "category1" => $v->category1,
+                "category2" => $v->category2,
+                "bunrui" => $v->bunrui];
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @return void
+     */
+    public function updateYoutubeCategoryTree(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $update = [
+                "category1" => $request->category1,
+                "category2" => $request->category2
+            ];
+
+            DB::table('t_youtube_data')->where('bunrui', $request->bunrui)->update($update);
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
+    }
+
+
+    /**
+     * @return void
+     */
+    public function getBlankBunruiVideo()
+    {
+        $response = [];
+
+        $sql = " select * from t_youtube_data where (bunrui='' or bunrui is null) and del=0; ";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            $response[] = [
+                "youtube_id" => $v->youtube_id,
+                "title" => $v->title,
+            ];
+        }
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @return void
+     */
+    public function oneBunruiInput(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $update = [
+                "category1" => $request->category1,
+                "category2" => $request->category2,
+                "bunrui" => $request->bunrui,
+            ];
+
+            DB::table('t_youtube_data')->where('youtube_id', $request->youtube_id)->update($update);
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getStationStamp()
+    {
+        $response = [];
+
+        $result = DB::table('t_station_stamp')
+            ->orderBy('train_code')
+            ->orderBy('image_code')
+            ->get();
+
+
+        $keep_trainCode = '';
+
+
+        $ary = [];
+        foreach ($result as $v) {
+            if ($keep_trainCode != $v->train_code) {
+                $result2 = DB::table('t_station')
+                    ->where('train_number', $v->train_code)
+                    ->get();
+                $station = [];
+                foreach ($result2 as $v2) {
+                    $station[$v2->station_name] = [
+                        "lat" => $v2->lng,
+                        "lng" => $v2->lng,
+                    ];
+                }
+            }
+
+            $ary[] = [
+                "train_code" => $v->train_code,
+                "train_name" => $v->train_name,
+
+                "station_code" => $v->station_code,
+                "station_name" => $v->station_name,
+                "lat" => $station[$v->station_name]['lat'],
+                "lng" => $station[$v->station_name]['lng'],
+
+                "image_folder" => $v->image_folder,
+                "image_code" => $v->image_code,
+
+                "poster_position" => $v->poster_position,
+                "stamp_get_date" => $v->stamp_get_date,
+            ];
+
+            $keep_trainCode = $v->train_code;
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+
+    }
+
+
+    /**
+     * @return void
+     */
+    public function inputSpendCheckItem(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+//            list($year, $month, $day) = explode("-", trim($request->date));
+//            DB::table('t_spend_check_item')
+//                ->where('year', $year)
+//                ->where('month', $month)
+//                ->delete();
+//
+//            $sql = " ALTER TABLE t_spend_check_item auto_increment = 1; ";
+//            DB::statement($sql);
+
+            foreach ($request->items as $v) {
+                list($date, $item, $price, $type) = explode("|", trim($v));
+                list($v_year, $v_month, $v_day) = explode("-", trim($date));
+
+                //すでに入っているものは入れない
+                //新規追加のものしか入らない
+                $result99 = DB::table('t_spend_check_item')
+                    ->where('year', $v_year)->where('month', $v_month)->where('day', $v_day)
+                    ->where('item', $item)->where('price', $price)
+                    ->first();
+                if (!is_null($result99)) {
+                    continue;
+                }
+
+                $insert = [
+                    "year" => $v_year,
+                    "month" => $v_month,
+                    "day" => $v_day,
+                    "ymd" => trim(strtr($date, ['-' => ''])),
+                    "item" => $item,
+                    "price" => $price,
+                    "flag" => $type
+                ];
+
+                DB::table('t_spend_check_item')->insert($insert);
+            }
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getSpendCheckItem(Request $request)
+    {
+        $response = [];
+
+        list($year, $month, $day) = explode("-", trim($request->date));
+
+        $result = DB::table('t_spend_check_item')
+            ->where('year', $year)
+            ->where('month', $month)
+            ->orderBy('day')
+            ->get();
+
+        $ary = [];
+        foreach ($result as $v) {
+            $dt = [$v->year, $v->month, $v->day];
+            $ary2 = [implode("-", $dt), $v->item, $v->price, $v->flag];
+
+            $ary3 = [];
+            $ary3[] = implode("|", $ary2);
+            $ary3[] = $v->id;
+            $ary3[] = "{$v->category1}|{$v->category2}";
+
+            $ary[] = implode(";", $ary3);
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /***
+     * @param Request $request
+     * @return void
+     */
+    public function updateKeihiCategory(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $update = [];
+            $update['category1'] = $request->category1;
+            $update['category2'] = $request->category2;
+
+            DB::table('t_spend_check_item')->where('id', $request->id)->update($update);
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function selectSpendCheckItem(Request $request)
+    {
+        $response = [];
+
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $result = DB::table('t_spend_check_item')
+            ->where('year', $year)
+            ->orderBy('year')->orderBy('month')->orderBy('day')
+            ->get();
+
+
+        $ary = [];
+        foreach ($result as $k => $v) {
+
+
+            $ary[] = [
+                "id" => $v->id,
+                "date" => "{$v->year}-{$v->month}-{$v->day}",
+                "item" => $v->item,
+                "price" => $v->price,
+                "category1" => $v->category1,
+                "category2" => $v->category2,
+                "flag" => $v->flag,
+            ];
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @return void
+     */
+    public function getStationStampNotGet()
+    {
+        $response = [];
+
+        //-----------------------------//
+        $ary = [];
+
+        $sql = " select station_name, address, lat, lng from t_station where train_number in (select train_number from t_train where company_id = 18)";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            $ary[$v->station_name] = [
+                "lat" => $v->lat,
+                "lng" => $v->lng,
+                "address" => $v->address,
+            ];
+        }
+        //-----------------------------//
+
+        $ary2 = [];
+
+        $sql2 = " select station_name, poster_position from t_station_stamp where stamp_get_date = '' ";
+        $result2 = DB::select($sql2);
+
+        foreach ($result2 as $v2) {
+
+            $in_out = 0;
+            if (preg_match("/（改札外）/", trim($v2->poster_position))) {
+                $in_out = 1;
+            }
+
+            $ary2[] = [
+                "station_name" => $v2->station_name,
+                "lat" => $ary[$v2->station_name]['lat'],
+                "lng" => $ary[$v2->station_name]['lng'],
+                "address" => $ary[$v2->station_name]['address'],
+                "in_out" => $in_out,
+            ];
+        }
+
+        $response = $ary2;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getTaxPaymentItem(Request $request)
+    {
+        $response = [];
+
+        $ary = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $result = DB::table('t_tax_payment')
+            ->where('year', $year)->first();
+
+        $ary = $result;
+
+
+//        $result = DB::table('t_tax_payment_item')
+//            ->where('year', $year)
+//            ->get();
+//
+//        foreach ($result as $v) {
+//            $ary[] = [
+//                "item" => $v->item,
+//                "price" => $v->price,
+//            ];
+//        }
+
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getTimeLocation(Request $request)
+    {
+        $response = [];
+
+        $ary = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $result = DB::table('t_geoloc')
+            ->where('year', $year)
+            ->where('month', $month)
+            ->where('day', $day)
+            ->orderBy('time')
+            ->get();
+
+        $keepLatLng = "";
+        foreach ($result as $v) {
+
+            $_lat = substr(($v->latitude * 10000000), 0, 5);
+            $_lng = substr(($v->longitude * 10000000), 0, 6);
+
+            if ($keepLatLng != "{$_lat}|{$_lng}") {
+                $ary[] = [
+                    "date" => $request->date,
+                    "time" => date("H:i", strtotime($v->time)),
+                    "latitude" => $v->latitude,
+                    "longitude" => $v->longitude,
+                ];
+            }
+
+            $keepLatLng = "{$_lat}|{$_lng}";
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function insertGeoloc(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            list($year, $month, $day) = explode("-", $request->date);
+
+            $insert = [
+                "year" => $year,
+                "month" => $month,
+                "day" => $day,
+                "time" => $request->time,
+                "latitude" => $request->latitude,
+                "longitude" => $request->longitude
+            ];
+
+            DB::table('t_geoloc')->insert($insert);
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getGeoloc(Request $request)
+    {
+        $response = [];
+
+        $ary = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $result = DB::table('t_geoloc')
+            ->where('year', $year)
+            ->where('month', $month)
+            ->where('day', $day)
+            ->orderBy('time', 'desc')
+            ->get();
+
+        foreach ($result as $v) {
+            $ary[] = [
+                "date" => "{$v->year}-{$v->month}-{$v->day}",
+                "time" => $v->time,
+                "latitude" => $v->latitude,
+                "longitude" => $v->longitude,
+            ];
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getNearArtFacilities(Request $request)
+    {
+        $response = [];
+
+        $sql = ' select * from t_art_facilities where ';
+
+        $where = [];
+        if ($request->address != "") {
+            $where[] = ' address like "' . $request->address . '%" ';
+        } else {
+            if (($request->latitude != "") && ($request->longitude != "")) {
+                $search_lat = substr($request->latitude, 0, 4);
+                $search_lng = substr($request->longitude, 0, 5);
+
+                $where[] = ' latitude like "' . $search_lat . '%" and longitude like "' . $search_lng . '%" ';
+            }
+        }
+
+        if ($request->genre != "") {
+            $where[] = ' genre like "%' . $request->genre . '%" ';
+        }
+
+        $sql .= implode(" and ", $where);
+        $result = DB::select($sql);
+
+        if (count($result) > 30) {
+            return response()->json(['data' => [
+                [
+                    "id" => 99999999,
+                    "name" => '',
+                    "genre" => '',
+                    "address" => '',
+                    "latitude" => '',
+                    "longitude" => '',
+                    "dist" => '',
+                ]
+            ]]);
+        }
+
+        $ary = [];
+        $ary2 = [];
+
+        $facility_names = [];
+
+        $resultIds = [];
+
+        foreach ($result as $v) {
+
+            if (in_array($v->name, $facility_names)) {
+                continue;
+            }
+
+            if (trim($v->latitude) == "" || trim($v->longitude) == "") {
+                continue;
+            }
+
+            if (in_array($v->id, $resultIds)) {
+                continue;
+            }
+
+            $getDist = $this->getDistance(
+                $request->latitude,
+                $request->longitude,
+                $v->latitude,
+                $v->longitude
+            );
+
+            $_dist = $getDist[0] * 1000;
+            $disp_dist = $getDist[1];
+
+            $ary[$_dist][] = [
+                "id" => $v->id,
+                "name" => $v->name,
+                "genre" => $v->genre,
+                "address" => $v->address,
+                "latitude" => $v->latitude,
+                "longitude" => $v->longitude,
+                "dist" => $disp_dist,
+            ];
+
+            $ary2[] = $_dist;
+
+            $facility_names[] = $v->name;
+
+            $resultIds[] = $v->id;
+        }
+
+        $ary3 = [];
+        $a2 = array_unique($ary2);
+        if (count($a2) > 0) {
+            sort($a2);
+            foreach ($a2 as $v) {
+                foreach ($ary[$v] as $v2) {
+                    $ary3[] = $v2;
+                }
+            }
+        }
+
+        $response = $ary3;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getArtGenre(Request $request)
+    {
+        $response = [];
+
+        if (trim($request->address) != "") {
+            $sql = ' select genre from `t_art_facilities` where address like "' . $request->address . '%" group by genre; ';
+        } else {
+            $sql = " select genre from `t_art_facilities` group by genre; ";
+        }
+
+        $result = DB::select($sql);
+
+        $ary = [];
+        foreach ($result as $v) {
+            $ex_genre = explode("_", $v->genre);
+            foreach ($ex_genre as $v2) {
+                $ary[$v2] = "";
+            }
+        }
+
+        $keys = array_keys($ary);
+        sort($keys);
+
+        $ary2 = [];
+        foreach ($keys as $v) {
+
+            if (preg_match("/ギャラリー/", $v)) {
+                continue;
+            }
+
+            if (preg_match("/ミュージアム/", $v)) {
+                continue;
+            }
+
+            if (preg_match("/その他/", $v)) {
+                continue;
+            }
+
+            if (preg_match("/天王洲/", $v)) {
+                continue;
+            }
+
+            $ary2[] = $v;
+        }
+
+        $ary2[] = "ギャラリー";
+        $ary2[] = "ミュージアム";
+        $ary2[] = "その他";
+
+        $response = $ary2;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getArtCity(Request $request)
+    {
+        $response = [];
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER,
+            array(
+                'Content-Type: application/json',
+                'X-API-KEY: Ts179qBc5oStoDfIwKobqnZBH4nobSSbDGVX7CJq'
+            )
+        );
+
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        curl_setopt($ch, CURLOPT_URL,
+            "https://opendata.resas-portal.go.jp/api/v1/cities?prefCode={$request->prefCode}"
+        );
+
+        $result = curl_exec($ch);
+
+        $jsonStr = json_decode($result);
+
+        $ary = [];
+        foreach ($jsonStr->result as $v) {
+            $prefCity = "{$request->prefecture}{$v->cityName}";
+
+            $sql = ' select count(*) as cnt from t_art_facilities where address like "' . $prefCity . '%"; ';
+            $result2 = DB::select($sql);
+
+            $ary[] = [
+                "prefCode" => $v->prefCode,
+                "cityCode" => $v->cityCode,
+                "cityName" => $v->cityName,
+                "bigCityFlag" => $v->bigCityFlag,
+                "count" => $result2[0]->cnt,
+            ];
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getNearStation(Request $request)
+    {
+        $response = [];
+
+        $trainName = [];
+        $result = DB::table('t_train')->get();
+        foreach ($result as $v) {
+            $trainName[$v->train_number] = $v->train_name;
+        }
+
+        $ary = [];
+        $keepStation = [];
+        foreach ($request->searchStation as $v) {
+            list($lat, $lng) = explode("|", trim($v));
+
+            $result = DB::table('t_station')
+                ->where('lat', 'like', "{$lat}%")
+                ->where('lng', 'like', "{$lng}%")
+                ->get();
+
+            foreach ($result as $v) {
+
+                $dist = $this->getDistance(
+                    $lat,
+                    $lng,
+                    $v->lat,
+                    $v->lng
+                );
+
+                if ($dist[0] > 3) {
+                    continue;
+                }
+
+                if (!in_array($v->station_name, $keepStation)) {
+                    $ary[$v->id] = [
+//                    "trainName" => $trainName[$v->train_number],
+
+                        "id" => $v->id,
+                        "stationName" => $v->station_name,
+                        "lat" => $v->lat,
+                        "lng" => $v->lng
+                    ];
+                }
+
+                $keepStation[] = $v->station_name;
+            }
+        }
+
+        $ary2 = [];
+        foreach ($ary as $v) {
+            $ary2[] = $v;
+        }
+
+        $response = $ary2;
+
+        return response()->json(['data' => $response]);
+    }
+
+    /**
+     * @return array
+     */
+    private function getDistance($originLat, $originLng, $destLat, $destLng)
+    {
+        $distanceKm = 6371 *
+            acos(
+                cos($originLat / 180 * M_PI) *
+                cos(($destLng - $originLng) / 180 * M_PI) *
+                cos($destLat / 180 * M_PI) +
+                sin($originLat / 180 * M_PI) * sin($destLat / 180 * M_PI)
+            );
+
+        list($seisuu, $shousuu) = explode(".", $distanceKm);
+
+        $sho = substr($shousuu, 0, 2);
+
+        return [$seisuu, "{$seisuu}.{$sho} Km"];
     }
 
 

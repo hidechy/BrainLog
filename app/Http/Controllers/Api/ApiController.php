@@ -872,7 +872,7 @@ class ApiController extends Controller
         $summary4 = [];
         foreach ($summary3 as $koumoku => $v) {
             $summary4[$koumoku]['sum'] = $v['sum'];
-            $summary4[$koumoku]['percent'] = ($v['sum'] > 0) ? floor($v['sum'] / $total * 100) : 0;
+            $summary4[$koumoku]['percent'] = ($v['sum'] > 0) ? number_format($v['sum'] / $total * 100, 1) : 0;
         }
 
         $item = $this->getItemMidashi();
@@ -882,6 +882,7 @@ class ApiController extends Controller
             if (isset($summary4[$im])) {
                 $response[$i]['item'] = $im;
                 $response[$i]['sum'] = $summary4[$im]['sum'];
+//                $response[$i]['percent'] = number_format($summary4[$im]['percent'], 1);
                 $response[$i]['percent'] = $summary4[$im]['percent'];
                 $i++;
             }
@@ -979,7 +980,7 @@ GOLD
         $summary4 = [];
         foreach ($summary3 as $koumoku => $v) {
             $summary4[$koumoku]['sum'] = $v['sum'];
-            $summary4[$koumoku]['percent'] = floor($v['sum'] / $total * 100);
+            $summary4[$koumoku]['percent'] = number_format($v['sum'] / $total * 100, 1);
         }
 
         $item = $this->getItemMidashi();
@@ -989,7 +990,7 @@ GOLD
             if (isset($summary4[$im])) {
                 $response[$i]['item'] = $im;
                 $response[$i]['sum'] = $summary4[$im]['sum'];
-                $response[$i]['percent'] = $summary4[$im]['percent'];
+                $response[$i]['percent'] = number_format($summary4[$im]['percent'], 1);
                 $i++;
             }
         }
@@ -3238,8 +3239,12 @@ item = '投資信託'
 
         foreach ($result as $v) {
             $date = $v->year . '-' . $v->month . '-' . $v->day;
-            $response[$date]['work_start'] = date("H:i", strtotime($v->work_start));
-            $response[$date]['work_end'] = date("H:i", strtotime($v->work_end));
+
+            $response[] = [
+                "date" => $date,
+                'work_start' => date("H:i", strtotime($v->work_start)),
+                'work_end' => date("H:i", strtotime($v->work_end)),
+            ];
         }
 
         return response()->json(['data' => $response]);
@@ -3321,6 +3326,10 @@ item = '投資信託'
             '2019-09-09',
         ];
 
+
+        $lastYm = '';
+
+
         foreach ($result as $v) {
             ///////////////////////////
             $date = $v->year . "-" . $v->month . "-" . $v->day;
@@ -3361,10 +3370,19 @@ item = '投資信託'
             $ary2[$ym] = "";
 
             $ary3[$ym][] = ($seconds - ($rest * 60));
+
+            $lastYm = $ym;
         }
 
         $ary3["2019-11"][0] = "";
         $ary3["2021-10"][0] = "";
+        $ary3["2022-07"][0] = "";
+
+
+        if ($lastYm != date("Y-m")) {
+            $ary3[date("Y-m")][0] = "";
+        }
+
 
         $ary4 = [];
         foreach ($ary3 as $ym => $v) {
@@ -3599,8 +3617,15 @@ item = '投資信託'
 
                     $endTime = date("H:i", strtotime($startTime) + (60 * 60 * 9));
 
-                    $ary["{$company}-{$genba}"]['start'] = $startTime;
-                    $ary["{$company}-{$genba}"]['end'] = $endTime;
+
+                    $ary[] = [
+                        'company' => $company,
+                        'genba' => $genba,
+                        'start' => $startTime,
+                        'end' => $endTime,
+                    ];
+
+
                 }
             }
         }
@@ -7207,24 +7232,43 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
             switch ($request->bunrui) {
 
                 case "recycling":
-                    $sql = " update t_youtube_data set del = '0', bunrui = '' where youtube_id in ({$request->youtube_id}); ";
+                    $sql = " update t_youtube_data set del = '0', bunrui = '', category1='', category2='' where youtube_id in ({$request->youtube_id}); ";
                     break;
 
                 case "delete":
-                    $sql = " update t_youtube_data set del = '1' where youtube_id in ({$request->youtube_id}); ";
+                    $sql = " update t_youtube_data set del = '1', bunrui = '', category1='', category2='' where youtube_id in ({$request->youtube_id}); ";
                     break;
 
                 case "erase":
-                    $sql = " update t_youtube_data set bunrui = '' where youtube_id in ({$request->youtube_id}); ";
+                    $sql = " update t_youtube_data set bunrui = '', category1='', category2='' where youtube_id in ({$request->youtube_id}); ";
                     break;
 
                 case "special":
-                    $ex_val = explode(",", $request->youtube_id);
-                    foreach ($ex_val as $v) {
-                        $ex_v = explode("|", trim($v));
-                        $sql = " update t_youtube_data set special = '{$ex_v[1]}' where youtube_id = '{$ex_v[0]}'; ";
-                        DB::statement($sql);
-                    }
+//                    $ex_val = explode(",", $request->youtube_id);
+//                    foreach ($ex_val as $v) {
+//                        $ex_v = explode("|", trim($v));
+//                        $sql = " update t_youtube_data set special = '{$ex_v[1]}' where youtube_id = '{$ex_v[0]}'; ";
+//                        DB::statement($sql);
+//                    }
+
+                    $sql = " update t_youtube_data set special = '1' where youtube_id in ({$request->youtube_id}); ";
+
+//                    $ex_val = explode(",", $request->youtube_id);
+//                    foreach ($ex_val as $v) {
+//                        $yid = trim(strtr($v, ["'" => ""]));
+//
+//                        $result = DB::table('t_youtube_data')->where('youtube_id', $yid)->first();
+//
+//                        switch ($result->special) {
+//                            case 1:
+//                                $sql = " update t_youtube_data set special = '0' where youtube_id = '{$yid}'; ";
+//                                break;
+//                            case 0:
+//                                $sql = " update t_youtube_data set special = '1' where youtube_id = '{$yid}'; ";
+//                                break;
+//                        }
+//                        DB::statement($sql);
+//                    }
                     break;
 
                 default:
@@ -7232,10 +7276,15 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                     break;
             }
 
+//
+//            if ($request->bunrui != 'special') {
+//                DB::statement($sql);
+//            }
+//
+//
 
-            if ($request->bunrui != 'special') {
-                DB::statement($sql);
-            }
+
+            DB::statement($sql);
 
 
             DB::commit();
@@ -7332,11 +7381,12 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                 'title' => $v->title,
                 'getdate' => $v->getdate,
                 'url' => $v->url,
+                'bunrui' => $v->bunrui,
+                'special' => $v->special,
                 'pubdate' => $v->pubdate,
                 'channel_id' => $v->channel_id,
                 'channel_title' => $v->channel_title,
                 'playtime' => $v->playtime,
-                'special' => $v->special,
             ];
         }
 

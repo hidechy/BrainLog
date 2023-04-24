@@ -106,9 +106,6 @@ Route::namespace('Api')->group(function () {
     Route::post('getYearSpend', 'ApiController@getYearSpend');
 
 
-
-
-
     Route::post('getDutyData', 'ApiControllerSecond@getDutyData');
     Route::post('benefit', 'ApiControllerSecond@benefit');
     Route::post('getMoneyAll', 'ApiControllerSecond@getMoneyAll');
@@ -133,21 +130,14 @@ Route::namespace('Api')->group(function () {
     Route::post('getUdemyData', 'ApiControllerSecond@getUdemyData');
     Route::post('getBankMove', 'ApiControllerSecond@getBankMove');
     Route::post('spendItemInsert', 'ApiControllerSecond@spendItemInsert');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    Route::post('timeplaceInsert', 'ApiControllerSecond@timeplaceInsert');
+    Route::post('getSpendCheckItem', 'ApiControllerSecond@getSpendCheckItem');
+    Route::post('inputSpendCheckItem', 'ApiControllerSecond@inputSpendCheckItem');
+    Route::post('updateKeihiCategory', 'ApiControllerSecond@updateKeihiCategory');
+    Route::post('selectSpendCheckItem', 'ApiControllerSecond@selectSpendCheckItem');
+//    Route::post('inputTaxPaymentItem', 'ApiControllerSecond@inputTaxPaymentItem');
+    Route::post('getTaxPaymentItem', 'ApiControllerSecond@getTaxPaymentItem');
+    Route::post('getTimeLocation', 'ApiControllerSecond@getTimeLocation');
 
 
     //money // riverpod
@@ -218,6 +208,9 @@ Route::namespace('Api')->group(function () {
     Route::post('getTrainStation2', 'ApiController@getTrainStation2');
 //    Route::post('getTrainCompany2', 'ApiController@getTrainCompany2');
 
+    Route::post('getStationStamp', 'ApiControllerSecond@getStationStamp');
+    Route::post('getStationStampNotGet', 'ApiControllerSecond@getStationStampNotGet');
+
     //walk
     Route::post('getWalkRecord', 'ApiController@getWalkRecord');
     Route::match(['get', 'post'], "getWalkRecord2", "ApiController@getWalkRecord2");
@@ -235,9 +228,24 @@ Route::namespace('Api')->group(function () {
     Route::post('getDeletedVideo', 'ApiController@getDeletedVideo');
     Route::post('updateVideoPlayedAt', 'ApiController@updateVideoPlayedAt');
 
+    Route::post('getYoutubeCategoryTree', 'ApiControllerSecond@getYoutubeCategoryTree');
+    Route::post('updateYoutubeCategoryTree', 'ApiControllerSecond@updateYoutubeCategoryTree');
+    Route::post('getBlankBunruiVideo', 'ApiControllerSecond@getBlankBunruiVideo');
+    Route::post('oneBunruiInput', 'ApiControllerSecond@oneBunruiInput');
+
     //kigo
     Route::post('getKigoSeasonList', 'ApiControllerSecond@getKigoSeasonList');
     Route::post('getKigoSeasonRandomList', 'ApiControllerSecond@getKigoSeasonRandomList');
     Route::post('getKigoSearchedList', 'ApiControllerSecond@getKigoSearchedList');
+
+    //geoloc
+    Route::post('insertGeoloc', 'ApiControllerSecond@insertGeoloc');
+    Route::post('getGeoloc', 'ApiControllerSecond@getGeoloc');
+
+    //art
+    Route::post('getNearArtFacilities', 'ApiControllerSecond@getNearArtFacilities');
+    Route::post('getArtCity', 'ApiControllerSecond@getArtCity');
+    Route::post('getArtGenre', 'ApiControllerSecond@getArtGenre');
+    Route::post('getNearStation', 'ApiControllerSecond@getNearStation');
 
 });
