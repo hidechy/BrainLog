@@ -3567,8 +3567,8 @@ GOLD
 
         foreach ($result as $v) {
 
-            $cnt=0;
-            if (!empty($latLng_Temple["{$v->lat}|{$v->lng}"])){
+            $cnt = 0;
+            if (!empty($latLng_Temple["{$v->lat}|{$v->lng}"])) {
                 $cnt = count($latLng_Temple["{$v->lat}|{$v->lng}"]);
             }
 
@@ -3596,7 +3596,7 @@ GOLD
                 "latitude" => $v->lat,
                 "longitude" => $v->lng,
                 "dist" => $disp_dist,
-                "cnt"=>$cnt
+                "cnt" => $cnt
             ];
 
             $ary2[] = $_dist;
@@ -3614,6 +3614,81 @@ GOLD
         }
 
         $response = $ary3;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getTokyoTrainStation(Request $request)
+    {
+        $response = [];
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        curl_setopt($ch, CURLOPT_URL,
+            "https://geoapi.heartrails.com/api/json?method=getCities&prefecture=%E6%9D%B1%E4%BA%AC%E9%83%BD"
+        );
+
+        $result = curl_exec($ch);
+
+        $jsonStr = json_decode($result);
+
+        $city = [];
+        foreach ($jsonStr->response->location as $v) {
+            $city[] = $v->city;
+        }
+//        print_r($city);
+
+        $_train = [];
+        foreach ($city as $v) {
+            $result = DB::table('t_station')
+                ->where('address', 'like', "%東京都{$v}%")
+                ->get();
+
+            foreach ($result as $v2) {
+                $_train[$v2->train_number] = "";
+            }
+        }
+
+        $train = array_keys($_train);
+        sort($train);
+
+        $ary = [];
+        foreach ($train as $v) {
+            $result = DB::table('t_train')
+                ->where('train_number', $v)
+                ->first();
+
+            $result2 = DB::table('t_station')
+                ->where('train_number', $v)
+                ->get();
+
+            $station = [];
+            foreach ($result2 as $v2) {
+                $station[] = [
+                    "id" => "{$v2->train_number}-{$v2->id}",
+                    "station_name" => $v2->station_name,
+                    "address" => $v2->address,
+                    "lat" => $v2->lat,
+                    "lng" => $v2->lng
+                ];
+            }
+
+            $ary[] = [
+                "train_number" => $v,
+                "train_name" => $result->train_name,
+                "station" => $station
+            ];
+        }
+
+        $response = $ary;
 
         return response()->json(['data' => $response]);
     }

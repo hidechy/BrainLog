@@ -211,6 +211,7 @@ Route::namespace('Api')->group(function () {
 
     Route::post('getStationStamp', 'ApiControllerSecond@getStationStamp');
     Route::post('getStationStampNotGet', 'ApiControllerSecond@getStationStampNotGet');
+    Route::post('getTokyoTrainStation', 'ApiControllerSecond@getTokyoTrainStation');
 
     //walk
     Route::post('getWalkRecord', 'ApiController@getWalkRecord');
