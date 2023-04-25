@@ -3443,10 +3443,22 @@ GOLD
         foreach ($request->searchStation as $v) {
             list($lat, $lng) = explode("|", trim($v));
 
-            $result = DB::table('t_station')
-                ->where('lat', 'like', "{$lat}%")
-                ->where('lng', 'like', "{$lng}%")
-                ->get();
+            $p_lat = substr($lat, 0, 4);
+            $p_lng = substr($lng, 0, 5);
+
+            $s_lat = [];
+            $s_lng = [];
+            for ($i = 0; $i <= 9; $i++) {
+                $s_lat[] = "{$p_lat}{$i}";
+                $s_lng[] = "{$p_lng}{$i}";
+            }
+
+            $ss_lat = implode("','", $s_lat);
+            $ss_lng = implode("','", $s_lng);
+
+            $sql = " select * from t_station where substr(lat, 1, 5) in ('{$ss_lat}') and substr(lng, 1, 6) in ('{$ss_lng}'); ";
+
+            $result = DB::select($sql);
 
             foreach ($result as $v) {
 
@@ -3457,16 +3469,15 @@ GOLD
                     $v->lng
                 );
 
-                if ($dist[0] > 3) {
+                if ($dist[0] > 1) {
                     continue;
                 }
 
                 if (!in_array($v->station_name, $keepStation)) {
                     $ary[$v->id] = [
-//                    "trainName" => $trainName[$v->train_number],
-
                         "id" => $v->id,
                         "stationName" => $v->station_name,
+                        "address" => $v->address,
                         "lat" => $v->lat,
                         "lng" => $v->lng
                     ];
