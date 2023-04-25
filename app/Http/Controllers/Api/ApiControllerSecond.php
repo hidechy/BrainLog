@@ -3514,8 +3514,80 @@ GOLD
 
         $sho = substr($shousuu, 0, 2);
 
-        return [$seisuu, "{$seisuu}.{$sho} Km"];
+
+
+        return ["{$seisuu}.{$sho}", "{$seisuu}.{$sho} Km"];
     }
 
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getLatLngTemple(Request $request)
+    {
+        $response = [];
+
+        $sql = ' select * from t_temple_list where ';
+
+        $where = [];
+
+        $search_lat = substr($request->latitude, 0, 2);
+        $search_lng = substr($request->longitude, 0, 3);
+
+        $where[] = ' lat like "' . $search_lat . '%" and lng like "' . $search_lng . '%" ';
+
+        $sql .= implode(" and ", $where);
+        $result = DB::select($sql);
+
+        $ary = [];
+        $ary2 = [];
+
+        foreach ($result as $v) {
+
+            $getDist = $this->getDistance(
+                $request->latitude,
+                $request->longitude,
+                $v->lat,
+                $v->lng
+            );
+
+            if ($getDist[0] > 10) {
+                continue;
+            }
+
+            $_dist = $getDist[0] * 1000;
+            $disp_dist = $getDist[1];
+
+            $ary[$_dist][] = [
+                "id" => $v->id,
+                "city" => $v->city,
+                "jinjachou_id" => $v->jinjachou_id,
+                "url" => $v->url,
+                "name" => $v->name,
+                "address" => $v->address,
+                "latitude" => $v->lat,
+                "longitude" => $v->lng,
+                "dist" => $disp_dist,
+                "di"=>$_dist
+            ];
+
+            $ary2[] = $_dist;
+        }
+
+        $ary3 = [];
+        $a2 = array_unique($ary2);
+        if (count($a2) > 0) {
+            sort($a2);
+            foreach ($a2 as $v) {
+                foreach ($ary[$v] as $v2) {
+                    $ary3[] = $v2;
+                }
+            }
+        }
+
+        $response = $ary3;
+
+        return response()->json(['data' => $response]);
+    }
 
 }

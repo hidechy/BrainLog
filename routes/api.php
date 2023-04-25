@@ -197,6 +197,7 @@ Route::namespace('Api')->group(function () {
     Route::post('getDateTemple', 'ApiControllerSecond@getDateTemple');
     Route::post('getTempleLatLng', 'ApiControllerSecond@getTempleLatLng');
     Route::post('getTempleName', 'ApiControllerSecond@getTempleName');
+    Route::post('getLatLngTemple', 'ApiControllerSecond@getLatLngTemple');
 
     //train
     Route::post('getTrain', 'ApiController@getTrain');
