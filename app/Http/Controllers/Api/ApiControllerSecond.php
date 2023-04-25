@@ -3515,7 +3515,6 @@ GOLD
         $sho = substr($shousuu, 0, 2);
 
 
-
         return ["{$seisuu}.{$sho}", "{$seisuu}.{$sho} Km"];
     }
 
@@ -3526,6 +3525,30 @@ GOLD
     public function getLatLngTemple(Request $request)
     {
         $response = [];
+
+
+        ///////////////////////////////////////////////
+        $latLng_Temple = [];
+        $result = DB::table('t_temple')->get();
+        foreach ($result as $v) {
+            $tem = [$v->temple];
+
+            if (trim($v->memo) != "") {
+                $ex_memo = explode("、", $v->memo);
+                foreach ($ex_memo as $v2) {
+                    $tem[] = $v2;
+                }
+            }
+
+            foreach ($tem as $v2) {
+                $result2 = DB::table('t_temple_latlng')
+                    ->where('temple', $v2)
+                    ->first();
+
+                $latLng_Temple["{$result2->lat}|{$result2->lng}"][] = $v2;
+            }
+        }
+        ///////////////////////////////////////////////
 
         $sql = ' select * from t_temple_list where ';
 
@@ -3543,6 +3566,11 @@ GOLD
         $ary2 = [];
 
         foreach ($result as $v) {
+
+            $cnt=0;
+            if (!empty($latLng_Temple["{$v->lat}|{$v->lng}"])){
+                $cnt = count($latLng_Temple["{$v->lat}|{$v->lng}"]);
+            }
 
             $getDist = $this->getDistance(
                 $request->latitude,
@@ -3568,7 +3596,7 @@ GOLD
                 "latitude" => $v->lat,
                 "longitude" => $v->lng,
                 "dist" => $disp_dist,
-                "di"=>$_dist
+                "cnt"=>$cnt
             ];
 
             $ary2[] = $_dist;
