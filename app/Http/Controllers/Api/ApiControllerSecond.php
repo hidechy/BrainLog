@@ -3579,7 +3579,7 @@ GOLD
                 $v->lng
             );
 
-            if ($getDist[0] > 5) {
+            if ($getDist[0] > 10) {
                 continue;
             }
 
