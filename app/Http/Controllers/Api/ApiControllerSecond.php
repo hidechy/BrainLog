@@ -3653,6 +3653,11 @@ GOLD
                 ->get();
 
             foreach ($result as $v2) {
+
+                if (strlen($v2->train_number) == 4) {
+                    continue;
+                }
+
                 $_train[$v2->train_number] = "";
             }
         }
@@ -3660,8 +3665,34 @@ GOLD
         $train = array_keys($_train);
         sort($train);
 
-        $ary = [];
+        $train99 = [];
         foreach ($train as $v) {
+            $result99 = DB::table('t_station')
+                ->where('train_number', $v)
+                ->orderBy('id')
+                ->first();
+
+            $result98 = DB::table('t_station')
+                ->where('train_number', $v)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $getDist = $this->getDistance(
+                $result99->lat,
+                $result99->lng,
+                $result98->lat,
+                $result98->lng
+            );
+
+            if ($getDist[0] > 80) {
+                continue;
+            }
+
+            $train99[] = $v;
+        }
+
+        $ary = [];
+        foreach ($train99 as $v) {
             $result = DB::table('t_train')
                 ->where('train_number', $v)
                 ->first();
