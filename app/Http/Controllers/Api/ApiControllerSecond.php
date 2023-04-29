@@ -3236,19 +3236,19 @@ GOLD
         $sql .= implode(" and ", $where);
         $result = DB::select($sql);
 
-        if (count($result) > 30) {
-            return response()->json(['data' => [
-                [
-                    "id" => 99999999,
-                    "name" => '',
-                    "genre" => '',
-                    "address" => '',
-                    "latitude" => '',
-                    "longitude" => '',
-                    "dist" => '',
-                ]
-            ]]);
-        }
+//        if (count($result) > 30) {
+//            return response()->json(['data' => [
+//                [
+//                    "id" => 99999999,
+//                    "name" => '',
+//                    "genre" => '',
+//                    "address" => '',
+//                    "latitude" => '',
+//                    "longitude" => '',
+//                    "dist" => '',
+//                ]
+//            ]]);
+//        }
 
         $ary = [];
         $ary2 = [];
@@ -3279,6 +3279,13 @@ GOLD
             );
 
             $_dist = $getDist[0] * 1000;
+
+            if ($request->address == "") {
+                if ($_dist > ($request->radius * 1000)) {
+                    continue;
+                }
+            }
+
             $disp_dist = $getDist[1];
 
             $ary[$_dist][] = [
@@ -3297,6 +3304,22 @@ GOLD
 
             $resultIds[] = $v->id;
         }
+
+
+        if (count($ary) == 0) {
+            return response()->json(['data' => [
+                [
+                    "id" => 88888888,
+                    "name" => '',
+                    "genre" => '',
+                    "address" => '',
+                    "latitude" => '',
+                    "longitude" => '',
+                    "dist" => '',
+                ]
+            ]]);
+        }
+
 
         $ary3 = [];
         $a2 = array_unique($ary2);
@@ -3550,6 +3573,25 @@ GOLD
         }
         ///////////////////////////////////////////////
 
+        ///////////////////////////////////////////////
+        $name_Temple = [];
+        $result = DB::table('t_temple')->get();
+        foreach ($result as $v) {
+            $tem = [$v->temple];
+
+            if (trim($v->memo) != "") {
+                $ex_memo = explode("、", $v->memo);
+                foreach ($ex_memo as $v2) {
+                    $tem[] = $v2;
+                }
+            }
+
+            foreach ($tem as $v2) {
+                $name_Temple[$v2][] = $v2;
+            }
+        }
+        ///////////////////////////////////////////////
+
         $sql = ' select * from t_temple_list where ';
 
         $where = [];
@@ -3572,6 +3614,12 @@ GOLD
                 $cnt = count($latLng_Temple["{$v->lat}|{$v->lng}"]);
             }
 
+            if ($cnt == 0) {
+                if (!empty($name_Temple[$v->name])) {
+                    $cnt = count($name_Temple[$v->name]);
+                }
+            }
+
             $getDist = $this->getDistance(
                 $request->latitude,
                 $request->longitude,
@@ -3579,11 +3627,14 @@ GOLD
                 $v->lng
             );
 
-            if ($getDist[0] > 10) {
+            $_dist = $getDist[0] * 1000;
+
+
+            if ($_dist > ($request->radius * 1000)) {
                 continue;
             }
 
-            $_dist = $getDist[0] * 1000;
+
             $disp_dist = $getDist[1];
 
             $ary[$_dist][] = [
@@ -3600,6 +3651,23 @@ GOLD
             ];
 
             $ary2[] = $_dist;
+        }
+
+        if (count($ary) == 0) {
+            return response()->json(['data' => [
+                [
+                    "id" => '88888888',
+                    "city" => '',
+                    "jinjachou_id" => '',
+                    "url" => '',
+                    "name" => '',
+                    "address" => '',
+                    "latitude" => '',
+                    "longitude" => '',
+                    "dist" => '',
+                    "cnt" => 0
+                ]
+            ]]);
         }
 
         $ary3 = [];
