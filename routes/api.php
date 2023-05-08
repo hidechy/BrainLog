@@ -253,6 +253,7 @@ Route::namespace('Api')->group(function () {
     Route::post('getStationStampNotGet', 'ApiControllerSecond@getStationStampNotGet');
     Route::post('getTokyoTrainStation', 'ApiControllerSecond@getTokyoTrainStation');
 
+    Route::post('getAllStation', 'ApiControllerSecond@getAllStation');
 
 
 });

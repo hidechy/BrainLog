@@ -6506,6 +6506,12 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
     {
         $response = [];
 
+        //---------------------------------------//
+        $result2 = DB::table('t_train')
+            ->where('train_number', $request->train_number)
+            ->first();
+        //---------------------------------------//
+
         $result = DB::table('t_station')
             ->where('train_number', '=', $request->train_number)
             ->orderBy('id')
@@ -6518,7 +6524,8 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
             $ary[$k]['address'] = $v->address;
             $ary[$k]['lat'] = $v->lat;
             $ary[$k]['lng'] = $v->lng;
-            $ary[$k]['line_number'] = 0;
+            $ary[$k]['line_number'] = $result2->train_number;
+            $ary[$k]['line_name'] = $result2->train_name;
         }
 
         $response = $ary;

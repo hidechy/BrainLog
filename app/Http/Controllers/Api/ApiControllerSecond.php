@@ -3858,4 +3858,44 @@ GOLD
     }
 
 
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getAllStation(Request $request)
+    {
+
+        $response = [];
+
+        //---------------------------------------//
+        $trains = [];
+        $result2 = DB::table('t_train')->get();
+        foreach ($result2 as $v) {
+            $trains[$v->train_number] = $v->train_name;
+        }
+        //---------------------------------------//
+
+        $result = DB::table('t_station')
+            ->orderBy('station_name')
+            ->get();
+
+        $ary = [];
+        foreach ($result as $k => $v) {
+            $ary[] = [
+                'id' => $v->id,
+                'station_name' => $v->station_name,
+                'address' => $v->address,
+                'lat' => $v->lat,
+                'lng' => $v->lng,
+                'line_number' => $v->train_number,
+                'line_name' => $trains[$v->train_number],
+            ];
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+
+    }
+
 }
