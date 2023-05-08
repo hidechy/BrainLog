@@ -198,20 +198,7 @@ Route::namespace('Api')->group(function () {
     Route::post('getTempleLatLng', 'ApiControllerSecond@getTempleLatLng');
     Route::post('getTempleName', 'ApiControllerSecond@getTempleName');
     Route::post('getLatLngTemple', 'ApiControllerSecond@getLatLngTemple');
-
-    //train
-    Route::post('getTrain', 'ApiController@getTrain');
-    Route::post('getTrainStation', 'ApiController@getTrainStation');
-    Route::post('getTrainCompany', 'ApiController@getTrainCompany');
-    Route::post('updateTrainFlag', 'ApiController@updateTrainFlag');
-
-    Route::get('getTrain2', 'ApiController@getTrain2');
-    Route::post('getTrainStation2', 'ApiController@getTrainStation2');
-//    Route::post('getTrainCompany2', 'ApiController@getTrainCompany2');
-
-    Route::post('getStationStamp', 'ApiControllerSecond@getStationStamp');
-    Route::post('getStationStampNotGet', 'ApiControllerSecond@getStationStampNotGet');
-    Route::post('getTokyoTrainStation', 'ApiControllerSecond@getTokyoTrainStation');
+    Route::post('insertTempleRoute', 'ApiControllerSecond@insertTempleRoute');
 
     //walk
     Route::post('getWalkRecord', 'ApiController@getWalkRecord');
@@ -249,5 +236,23 @@ Route::namespace('Api')->group(function () {
     Route::post('getArtCity', 'ApiControllerSecond@getArtCity');
     Route::post('getArtGenre', 'ApiControllerSecond@getArtGenre');
     Route::post('getNearStation', 'ApiControllerSecond@getNearStation');
+
+
+
+    //train
+    Route::post('getTrain', 'ApiController@getTrain');
+    Route::post('getTrainStation', 'ApiController@getTrainStation');
+    Route::post('getTrainCompany', 'ApiController@getTrainCompany');
+    Route::post('updateTrainFlag', 'ApiController@updateTrainFlag');
+
+    Route::get('getTrain2', 'ApiController@getTrain2');
+    Route::post('getTrainStation2', 'ApiController@getTrainStation2');
+//    Route::post('getTrainCompany2', 'ApiController@getTrainCompany2');
+
+    Route::post('getStationStamp', 'ApiControllerSecond@getStationStamp');
+    Route::post('getStationStampNotGet', 'ApiControllerSecond@getStationStampNotGet');
+    Route::post('getTokyoTrainStation', 'ApiControllerSecond@getTokyoTrainStation');
+
+
 
 });

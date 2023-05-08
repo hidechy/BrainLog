@@ -3792,4 +3792,70 @@ GOLD
         return response()->json(['data' => $response]);
     }
 
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function insertTempleRoute(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            list($year, $month, $day) = explode("-", $request->date);
+
+            $result = DB::table("t_article{$year}")
+                ->where('year', $year)
+                ->where('month', $month)
+                ->where('day', $day)
+                ->get();
+            $cnt = count($result);
+
+            $str = "";
+            $st = [];
+            foreach ($request->data as $v) {
+                if (
+                    preg_match("/start/", trim($v)) ||
+                    preg_match("/goal/", trim($v))
+                ) {
+                    continue;
+                }
+
+                $result2 = DB::table('t_temple_list')
+                    ->where('id', $v)
+                    ->first();
+
+                $st[] = $v;
+                $st[] = $result2->name;
+                $st[] = $result2->address;
+                $st[] = "　";
+            }
+
+            $str = implode("\n", $st);
+
+            $insert = [
+                "year" => $year,
+                "month" => $month,
+                "day" => $day,
+                "num" => $cnt,
+                "article" => $str,
+                "hide" => 0,
+                "tag" => "",
+                "created_at" => date("Y-m-d"),
+                "updated_at" => date("Y-m-d")
+            ];
+
+            DB::table("t_article{$year}")->insert($insert);
+
+            DB::commit();
+
+            $response = $request->all();
+            return response()->json(['data' => $response]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            abort(500, $e->getMessage());
+        }
+    }
+
+
 }

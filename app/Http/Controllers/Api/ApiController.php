@@ -6513,6 +6513,7 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
 
         $ary = [];
         foreach ($result as $k => $v) {
+            $ary[$k]['id'] = $v->id;
             $ary[$k]['station_name'] = $v->station_name;
             $ary[$k]['address'] = $v->address;
             $ary[$k]['lat'] = $v->lat;
