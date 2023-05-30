@@ -3804,23 +3804,13 @@ GOLD
 
             list($year, $month, $day) = explode("-", $request->date);
 
-
-
-
-
             //----------------------------//
-
-
-
-
+            $station = [];
+            $result = DB::table('t_station')->get();
+            foreach ($result as $v) {
+                $station[$v->id] = "{$v->station_name}\n{$v->address}";
+            }
             //----------------------------//
-
-
-
-
-
-
-
 
             $result = DB::table("t_article{$year}")
                 ->where('year', $year)
@@ -3832,21 +3822,47 @@ GOLD
             $str = "";
             $st = [];
             foreach ($request->data as $v) {
+
                 if (
                     preg_match("/start/", trim($v)) ||
                     preg_match("/goal/", trim($v))
                 ) {
-                    continue;
+                    if (
+                        preg_match("/start/", trim($v))
+                    ) {
+                        $ex_start = explode("-", $v);
+                        if (isset($station[$ex_start[1]])) {
+                            $st[] = $ex_start[1];
+                            $st[] = $station[$ex_start[1]];
+                            $st[] = "　";
+                        } else {
+                            continue;
+                        }
+                    }
+
+                    if (
+                        preg_match("/goal/", trim($v))
+                    ) {
+                        $ex_goal = explode("-", $v);
+                        if (isset($station[$ex_goal[1]])) {
+                            $st[] = $ex_goal[1];
+                            $st[] = $station[$ex_goal[1]];
+                            $st[] = "　";
+                        } else {
+                            continue;
+                        }
+                    }
+                } else {
+                    $result2 = DB::table('t_temple_list')
+                        ->where('id', $v)
+                        ->first();
+
+                    $st[] = $v;
+                    $st[] = $result2->name;
+                    $st[] = $result2->address;
+                    $st[] = "　";
                 }
 
-                $result2 = DB::table('t_temple_list')
-                    ->where('id', $v)
-                    ->first();
-
-                $st[] = $v;
-                $st[] = $result2->name;
-                $st[] = $result2->address;
-                $st[] = "　";
             }
 
             $str = implode("\n", $st);
