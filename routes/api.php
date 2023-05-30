@@ -138,6 +138,7 @@ Route::namespace('Api')->group(function () {
 //    Route::post('inputTaxPaymentItem', 'ApiControllerSecond@inputTaxPaymentItem');
     Route::post('getTaxPaymentItem', 'ApiControllerSecond@getTaxPaymentItem');
     Route::post('getTimeLocation', 'ApiControllerSecond@getTimeLocation');
+    Route::post('getSameYearMonthDay', 'ApiControllerSecond@getSameYearMonthDay');
 
 
     //money // riverpod
@@ -238,7 +239,6 @@ Route::namespace('Api')->group(function () {
     Route::post('getNearStation', 'ApiControllerSecond@getNearStation');
 
 
-
     //train
     Route::post('getTrain', 'ApiController@getTrain');
     Route::post('getTrainStation', 'ApiController@getTrainStation');
@@ -254,6 +254,10 @@ Route::namespace('Api')->group(function () {
     Route::post('getTokyoTrainStation', 'ApiControllerSecond@getTokyoTrainStation');
 
     Route::post('getAllStation', 'ApiControllerSecond@getAllStation');
+
+
+    // park
+    Route::post('getMetropolitanPark', 'ApiControllerSecond@getMetropolitanPark');
 
 
 });

@@ -3804,6 +3804,24 @@ GOLD
 
             list($year, $month, $day) = explode("-", $request->date);
 
+
+
+
+
+            //----------------------------//
+
+
+
+
+            //----------------------------//
+
+
+
+
+
+
+
+
             $result = DB::table("t_article{$year}")
                 ->where('year', $year)
                 ->where('month', $month)
@@ -3897,5 +3915,133 @@ GOLD
         return response()->json(['data' => $response]);
 
     }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getMetropolitanPark()
+    {
+        $response = [];
+
+        $result = DB::table('t_metropolitan_park')->get();
+
+        $ary = [];
+        foreach ($result as $v) {
+            $ary[] = [
+                "id" => $v->id,
+                "name" => $v->name,
+                "address" => $v->address,
+                "latitude" => $v->latitude,
+                "longitude" => $v->longitude,
+            ];
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function getSameYearMonthDay(Request $request)
+    {
+        $response = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $file = public_path() . "/mySetting/MoneyTotal.data";
+        $content = file_get_contents($file);
+        $ex_content = explode("\n", $content);
+
+        //---------------------------------------------//
+        $ary = [];
+        foreach ($ex_content as $k => $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+
+            list($date, $x, $total, $spend) = explode("|", trim($v));
+            list($mYear, $mMonth, $mDay) = explode("-", $date);
+
+            if ($mYear < 2020) {
+                continue;
+            }
+
+            if (preg_match("/01-01/", $date)) {
+                $ary[$mYear]['start'] = $k;
+            }
+        }
+
+        foreach ($ex_content as $k => $v) {
+            if (trim($v) == "") {
+                continue;
+            }
+
+            list($date, $x, $total, $spend) = explode("|", trim($v));
+            list($mYear, $mMonth, $mDay) = explode("-", $date);
+
+            if ($mYear < 2020) {
+                continue;
+            }
+
+            if (preg_match("/{$month}-{$day}/", $date)) {
+                $ary[$mYear]['end'] = $k;
+            }
+        }
+        //---------------------------------------------//
+
+        $ary3 = [];
+        $result = DB::table('t_salary')->get();
+        foreach ($result as $v) {
+            $ary3["{$v->year}-{$v->month}"][] = $v->salary;
+        }
+
+        $ary4 = [];
+        foreach ($ary3 as $ym => $v) {
+            $ary4[$ym] = array_sum($v);
+        }
+
+        ////////////////////////////
+        $ary2 = [];
+        foreach ($ary as $year => $v) {
+            $sum = 0;
+            $sal = 0;
+
+
+            if (isset($v['start']) && isset($v['end'])) {
+                for ($i = $v['start']; $i <= $v['end']; $i++) {
+                    list($date, $x, $total, $spend) = explode("|", trim($ex_content[$i]));
+                    list($mYear, $mMonth, $mDay) = explode("-", $date);
+
+                    if ($mDay == "01") {
+                        if (isset($ary4["{$mYear}-{$mMonth}"])) {
+                            $sal += $ary4["{$mYear}-{$mMonth}"];
+                        }
+                    }
+
+                    $sum += $spend;
+                }
+            }
+
+            $ary2[] = [
+                "year" => $year,
+                "spend" => $sum,
+                "salary" => $sal
+            ];
+        }
+
+        ////////////////////////////
+
+
+        $response = $ary2;
+
+        return response()->json(['data' => $response]);
+    }
+
 
 }
