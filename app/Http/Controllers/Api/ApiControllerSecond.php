@@ -1899,7 +1899,7 @@ class ApiControllerSecond extends Controller
                     }
 
                     $im = trim($ex_val[3]);
-                    $im = $this->makeItemName($im);
+//                    $im = $this->makeItemName($im);
                     $ary[$im][$v2->month][] = $price;
 
                 }
@@ -1926,7 +1926,7 @@ class ApiControllerSecond extends Controller
                     }
 
                     $im = trim($ex_val[1]);
-                    $im = $this->makeItemName($im);
+//                    $im = $this->makeItemName($im);
                     $ary[$im][$v2->month][] = $price;
 
                 }
@@ -1953,7 +1953,7 @@ class ApiControllerSecond extends Controller
                     }
 
                     $im = trim($ex_val[1]);
-                    $im = $this->makeItemName($im);
+//                    $im = $this->makeItemName($im);
                     $ary[$im][$v2->month][] = $price;
 
                 }
@@ -1980,7 +1980,7 @@ class ApiControllerSecond extends Controller
                     }
 
                     $im = trim($ex_val[1]);
-                    $im = $this->makeItemName($im);
+//                    $im = $this->makeItemName($im);
                     $ary[$im][$v2->month][] = $price;
 
                 }
@@ -2004,6 +2004,15 @@ class ApiControllerSecond extends Controller
         return [$item, $ary2];
 
     }
+
+
+
+
+
+
+    /*
+
+
 
 
     private function makeItemName($im)
@@ -2187,6 +2196,16 @@ class ApiControllerSecond extends Controller
 
         return $im;
     }
+
+
+
+
+
+    */
+
+
+
+
 
 
     public function getYearCreditSummaryItem(Request $request)

@@ -1395,7 +1395,7 @@ GOLD
                     }
 
                     $keyItem = (preg_match("/^ＮＴＴ/", trim($ex_val[3]))) ? "NTT" : trim($ex_val[3]);
-                    $keyItem = $this->makeItemName($keyItem);
+//                    $keyItem = $this->makeItemName($keyItem);
 
                     $ary[$keyItem . "|" . $date][] = [
                         'pay_month' => $v2->year . '-' . $v2->month,
@@ -1444,7 +1444,7 @@ GOLD
                     }
 
                     $keyItem = (preg_match("/^ＮＴＴ/", trim($ex_val[1]))) ? "NTT" : trim($ex_val[1]);
-                    $keyItem = $this->makeItemName($keyItem);
+//                    $keyItem = $this->makeItemName($keyItem);
 
                     $ary[$keyItem . "|" . $date][] = [
                         'pay_month' => $v2->year . '-' . $v2->month,
@@ -1493,7 +1493,7 @@ GOLD
                     }
 
                     $keyItem = (preg_match("/^ＮＴＴ/", trim($ex_val[1]))) ? "NTT" : trim($ex_val[1]);
-                    $keyItem = $this->makeItemName($keyItem);
+//                    $keyItem = $this->makeItemName($keyItem);
 
                     $ary[$keyItem . "|" . $date][] = [
                         'pay_month' => $v2->year . '-' . $v2->month,
@@ -1542,7 +1542,7 @@ GOLD
                     }
 
                     $keyItem = (preg_match("/^ＮＴＴ/", trim($ex_val[1]))) ? "NTT" : trim($ex_val[1]);
-                    $keyItem = $this->makeItemName($keyItem);
+//                    $keyItem = $this->makeItemName($keyItem);
 
                     $ary[$keyItem . "|" . $date][] = [
                         'pay_month' => $v2->year . '-' . $v2->month,
@@ -1578,6 +1578,11 @@ GOLD
     /**
      *
      */
+
+
+    /*
+
+
     private function makeItemName($im)
     {
         $im = mb_convert_kana($im, "aK");
@@ -1696,6 +1701,12 @@ GOLD
 
         return $im;
     }
+
+
+
+    */
+
+
 
     /**
      * @param Request $request
@@ -2951,7 +2962,7 @@ item = '投資信託'
                     }
 
                     $im = trim($ex_val[3]);
-                    $im = $this->makeItemName($im);
+//                    $im = $this->makeItemName($im);
                     $ary[$im][$v2->month][] = $price;
 
                 }
@@ -2978,7 +2989,7 @@ item = '投資信託'
                     }
 
                     $im = trim($ex_val[1]);
-                    $im = $this->makeItemName($im);
+//                    $im = $this->makeItemName($im);
                     $ary[$im][$v2->month][] = $price;
 
                 }
@@ -3005,7 +3016,7 @@ item = '投資信託'
                     }
 
                     $im = trim($ex_val[1]);
-                    $im = $this->makeItemName($im);
+//                    $im = $this->makeItemName($im);
                     $ary[$im][$v2->month][] = $price;
 
                 }
@@ -3032,7 +3043,7 @@ item = '投資信託'
                     }
 
                     $im = trim($ex_val[1]);
-                    $im = $this->makeItemName($im);
+//                    $im = $this->makeItemName($im);
                     $ary[$im][$v2->month][] = $price;
 
                 }
@@ -5169,15 +5180,11 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         $ary = [];
         foreach ($result as $v) {
 
+            $date = "{$v->year}-{$v->month}-{$v->day}";
 
-//
-//
-//
-//            $_name = strtr($v->name, ['\\t\\t決算発表日' => '']);
-//
-//            $name = "[{$v->ticker}] {$_name}";
-//
-//
+            if (strtotime($date) > strtotime($request->date)) {
+                continue;
+            }
 
             $ex_name = explode("\t", $v->name);
             if (count($ex_name) > 1) {
@@ -5186,8 +5193,6 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                 $name = "[{$v->ticker}] {$v->name}";
             }
 
-
-            $date = "{$v->year}-{$v->month}-{$v->day}";
             $oneStock = strtr($v->heikin_shutoku_kagaku, [',' => '']);
             $cost = ($v->hoyuu_suuryou * $oneStock);
             $price = strtr($v->jika_hyoukagaku, [',' => '']);
@@ -5251,10 +5256,13 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         $sql = " select year, month, day, name, hoyuu_suuryou, heikin_shutoku_kagaku, shutoku_sougaku, jika_hyoukagaku, kijun_kagaku from t_toushi_shintaku_datas order by name, year, month, day; ";
         $result = DB::select($sql);
 
-
         $ary = [];
         foreach ($result as $v) {
             $date = "{$v->year}-{$v->month}-{$v->day}";
+
+            if (strtotime($date) > strtotime($request->date)) {
+                continue;
+            }
 
             $num = strtr($v->hoyuu_suuryou, [',' => '', '口' => '']);
             $shutoku = strtr($v->heikin_shutoku_kagaku, [',' => '', '円' => '']);
@@ -5908,7 +5916,7 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                         $date = sprintf("%04d", $year) . "-" . sprintf("%02d", $month) . "-" . sprintf("%02d", $day);
                     }
 
-                    $item = $this->makeItemName($item);
+//                    $item = $this->makeItemName($item);
 
                     $ary[] = [
                         'ym' => $ym,
@@ -6171,9 +6179,11 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                         continue;
                     }
 
-                    $item = $this->makeItemName(trim($ex_val[3]));
 
-                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'uc card'];
+                    $ary99[$date][] = ['item' => trim($ex_val[3]), 'price' => $price, 'date' => $date, 'kind' => 'uc card'];
+//                    $item = $this->makeItemName(trim($ex_val[3]));
+
+//                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'uc card'];
                 }
             }
         }
@@ -6196,9 +6206,11 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                         continue;
                     }
 
-                    $item = $this->makeItemName(trim($ex_val[1]));
 
-                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
+                    $ary99[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
+//                    $item = $this->makeItemName(trim($ex_val[1]));
+
+//                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
                 }
             }
         }
@@ -6221,9 +6233,11 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                         continue;
                     }
 
-                    $item = $this->makeItemName(trim($ex_val[1]));
 
-                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'amex'];
+                    $ary99[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'amex'];
+//                    $item = $this->makeItemName(trim($ex_val[1]));
+
+//                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'amex'];
                 }
             }
         }
@@ -6246,9 +6260,11 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                         continue;
                     }
 
-                    $item = $this->makeItemName(trim($ex_val[1]));
 
-                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
+                    $ary99[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
+//                    $item = $this->makeItemName(trim($ex_val[1]));
+
+//                    $ary99[$date][] = ['item' => $item, 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
                 }
             }
         }
