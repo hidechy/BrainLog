@@ -2006,10 +2006,6 @@ class ApiControllerSecond extends Controller
     }
 
 
-
-
-
-
     /*
 
 
@@ -2202,10 +2198,6 @@ class ApiControllerSecond extends Controller
 
 
     */
-
-
-
-
 
 
     public function getYearCreditSummaryItem(Request $request)
@@ -4076,6 +4068,134 @@ GOLD
         $response = $ary2;
 
         return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @return void
+     */
+    public function templeNotReached()
+    {
+        $response = [];
+
+        //============================//
+        $latLngTemple_name = [];
+        $latLngTemple_address = [];
+        $latLngTemple_latLng = [];
+        $result = DB::table('t_temple_latlng')->get();
+        foreach ($result as $v) {
+            $latLngTemple_name[] = $v->temple;
+            $latLngTemple_address[] = strtr($v->address, ['東京都' => '']);
+            $latLngTemple_latLng[] = "{$v->lat}|{$v->lng}";
+        }
+        //============================//
+
+
+        $ary = [];
+        $result = DB::table('t_temple_list')->get();
+        foreach ($result as $v) {
+
+            if (in_array($v->name, $latLngTemple_name)) {
+                continue;
+            }
+
+            if (in_array($v->address, $latLngTemple_address)) {
+                continue;
+            }
+
+            if (in_array("{$v->lat}|{$v->lng}", $latLngTemple_latLng)) {
+                continue;
+            }
+
+            $ary[] = $v;
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @return void
+     */
+    public function goshuin()
+    {
+
+        $response = [];
+
+        ///////////////////////////////////////////////
+        $_tables = [];
+
+        $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = database();";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            if (preg_match("/t_article/", $v->table_name)) {
+                $_tables[] = $v->table_name;
+            }
+        }
+        ///////////////////////////////////////////////
+
+        $_sql = [];
+        foreach ($_tables as $table) {
+            $_sql[] = " select * from " . $table . " where article like '%御朱印%' ";
+        }
+        $sql = implode(" union all ", $_sql);
+        $result = DB::select($sql);
+
+        $ary = [];
+
+        foreach ($result as $v2) {
+            $exV2 = explode("\n", $v2->article);
+            foreach ($exV2 as $v3) {
+
+                if (trim($v3) == '===') {
+                    continue;
+                }
+
+                $exV3 = explode("\t", trim($v3));
+
+                if (count($exV3) == 1) {
+                    continue;
+                }
+
+                $_lat = "";
+                $_lng = "";
+
+                try {
+
+                    $url9 = "https://maps.googleapis.com/maps/api/geocode/json?address=" . trim($exV3[2]) . "&components=country:JP&key=AIzaSyD9PkTM1Pur3YzmO-v4VzS0r8ZZ0jRJTIU";
+
+                    $content9 = file_get_contents($url9);
+                    $jsonStr = json_decode($content9);
+
+                    if (isset($jsonStr->results[0]->geometry->location->lat) and trim($jsonStr->results[0]->geometry->location->lat) != "") {
+                        $_lat = $jsonStr->results[0]->geometry->location->lat;
+                    }
+
+                    if (isset($jsonStr->results[0]->geometry->location->lng) and trim($jsonStr->results[0]->geometry->location->lng) != "") {
+                        $_lng = $jsonStr->results[0]->geometry->location->lng;
+                    }
+
+                } catch (Exception $e) {
+                }
+
+                $ary[] = [
+                    "id" => trim($exV3[0]),
+                    "name" => trim($exV3[1]),
+                    "address" => trim($exV3[2]),
+                    "lat" => $_lat,
+                    "lng" => $_lng,
+                    "flag" => trim($exV3[3]),
+                ];
+            }
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+
     }
 
 

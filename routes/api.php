@@ -200,6 +200,7 @@ Route::namespace('Api')->group(function () {
     Route::post('getTempleName', 'ApiControllerSecond@getTempleName');
     Route::post('getLatLngTemple', 'ApiControllerSecond@getLatLngTemple');
     Route::post('insertTempleRoute', 'ApiControllerSecond@insertTempleRoute');
+    Route::post('templeNotReached', 'ApiControllerSecond@templeNotReached');
 
     //walk
     Route::post('getWalkRecord', 'ApiController@getWalkRecord');
@@ -258,6 +259,10 @@ Route::namespace('Api')->group(function () {
 
     // park
     Route::post('getMetropolitanPark', 'ApiControllerSecond@getMetropolitanPark');
+
+
+    // goshuin
+    Route::post('goshuin', 'ApiControllerSecond@goshuin');
 
 
 });
