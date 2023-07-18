@@ -4074,51 +4074,6 @@ GOLD
     /**
      * @return void
      */
-    public function templeNotReached()
-    {
-        $response = [];
-
-        //============================//
-        $latLngTemple_name = [];
-        $latLngTemple_address = [];
-        $latLngTemple_latLng = [];
-        $result = DB::table('t_temple_latlng')->get();
-        foreach ($result as $v) {
-            $latLngTemple_name[] = $v->temple;
-            $latLngTemple_address[] = strtr($v->address, ['東京都' => '']);
-            $latLngTemple_latLng[] = "{$v->lat}|{$v->lng}";
-        }
-        //============================//
-
-
-        $ary = [];
-        $result = DB::table('t_temple_list')->get();
-        foreach ($result as $v) {
-
-            if (in_array($v->name, $latLngTemple_name)) {
-                continue;
-            }
-
-            if (in_array($v->address, $latLngTemple_address)) {
-                continue;
-            }
-
-            if (in_array("{$v->lat}|{$v->lng}", $latLngTemple_latLng)) {
-                continue;
-            }
-
-            $ary[] = $v;
-        }
-
-        $response = $ary;
-
-        return response()->json(['data' => $response]);
-    }
-
-
-    /**
-     * @return void
-     */
     public function goshuin()
     {
 
@@ -4196,6 +4151,177 @@ GOLD
 
         return response()->json(['data' => $response]);
 
+    }
+
+
+    /**
+     * @return void
+     */
+    public function templeNotReached()
+    {
+        $response = [];
+
+        $response = $this->geTempleNearStation();
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @return void
+     */
+    private function geTempleNearStation()
+    {
+
+
+        $ary = [];
+
+        //============================//
+        $latLngTemple_name = [];
+        $latLngTemple_address = [];
+        $latLngTemple_latLng = [];
+        $result = DB::table('t_temple_latlng')->get();
+        foreach ($result as $v) {
+            $latLngTemple_name[] = $v->temple;
+            $latLngTemple_address[] = strtr($v->address, ['東京都' => '']);
+            $latLngTemple_latLng[] = "{$v->lat}|{$v->lng}";
+        }
+        //============================//
+
+        $result = DB::table('t_temple_list')->get();
+        foreach ($result as $v) {
+
+            if (in_array($v->name, $latLngTemple_name)) {
+                continue;
+            }
+
+            if (in_array($v->address, $latLngTemple_address)) {
+                continue;
+            }
+
+            if (in_array("{$v->lat}|{$v->lng}", $latLngTemple_latLng)) {
+                continue;
+            }
+
+            $ary[] = [
+                'id' => $v->id,
+                'city' => $v->city,
+                'jinjachou_id' => $v->jinjachou_id,
+                'url' => $v->url,
+                'name' => $v->name,
+                'address' => $v->address,
+                'lat' => $v->lat,
+                'lng' => $v->lng,
+                'near_station' => $v->near_station,
+            ];
+        }
+
+
+        return $ary;
+
+
+    }
+
+
+    /**
+     * @return void
+     */
+    public function nearStation()
+    {
+        $response = [];
+
+        $staId = [];
+        $result = DB::table('t_temple_list')->orderBy('id')->get();
+        foreach ($result as $v) {
+            $exNearStation = explode(",", trim($v->near_station));
+            foreach ($exNearStation as $v2) {
+                if (trim($v2) == "") {
+                    continue;
+                }
+                $staId[trim($v2)] = "";
+            }
+        }
+
+        $sid = array_keys($staId);
+        sort($sid);
+
+
+        $ary = $sid;
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    public function notReachedTempleStation()
+    {
+        $response = [];
+
+
+        ////////////////////////////////////////
+        $train = [];
+        $result = DB::table('t_train')->get();
+        foreach ($result as $v) {
+            $train[$v->train_number] = $v->train_name;
+        }
+        ////////////////////////////////////////
+
+        $ary = [];
+        $ary4 = [];
+        $templeNearStation = $this->geTempleNearStation();
+        foreach ($templeNearStation as $v) {
+            if (trim($v['near_station']) == "") {
+                continue;
+            }
+
+            $exNearStation = explode(",", $v['near_station']);
+            foreach ($exNearStation as $v2) {
+                $exV2 = explode("-", trim($v2));
+                $ary[$exV2[0]] = "";
+
+                $ary4[trim($v2)][] = "";
+            }
+        }
+
+        $ary2 = array_keys($ary);
+        sort($ary2);
+
+        $ary3 = [];
+        foreach ($ary2 as $v) {
+            $result2 = DB::table('t_station')
+                ->where('train_number', $v)
+                ->orderBy('id')
+                ->get();
+
+
+            $ary5 = [];
+            foreach ($result2 as $v2) {
+                $tra_sta = $v . "-" . $v2->id;
+
+                if (isset($ary4[$tra_sta])) {
+                    $ary5[] = [
+                        "station_id" => $tra_sta,
+                        "station_name" => $v2->station_name,
+                        "lat" => $v2->lat,
+                        "lng" => $v2->lng,
+                        "count" => count($ary4[$tra_sta]),
+                    ];
+                }
+            }
+
+            if (count($ary5) > 0) {
+                $ary3[] = [
+                    "train_number" => $v,
+                    "train_name" => $train[$v],
+                    "list" => $ary5,
+                ];
+            }
+        }
+
+        $response = $ary3;
+
+        return response()->json(['data' => $response]);
     }
 
 

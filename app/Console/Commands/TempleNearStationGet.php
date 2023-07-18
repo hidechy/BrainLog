@@ -27,6 +27,7 @@ class TempleNearStationGet extends Command
                 "lng" => $v->lng,
                 "station_name" => $v->station_name,
                 "address" => $v->address,
+                "train_number" => $v->train_number,
             ];
         }
         ////////////////////////////
@@ -60,7 +61,7 @@ class TempleNearStationGet extends Command
             foreach ($kilo as $v2) {
                 foreach ($ary[$v2] as $v3) {
                     $ary2[] = [
-                        'id' => $v3['id'],
+                        'id' => "{$v3['train_number']}-{$v3['id']}",
                         'lat' => $v3['lat'],
                         'lng' => $v3['lng'],
                         'station_name' => $v3['station_name'],
