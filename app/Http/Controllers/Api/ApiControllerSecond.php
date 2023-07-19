@@ -4303,6 +4303,7 @@ GOLD
                     $ary5[] = [
                         "station_id" => $tra_sta,
                         "station_name" => $v2->station_name,
+                        "address" => $v2->address,
                         "lat" => $v2->lat,
                         "lng" => $v2->lng,
                         "count" => count($ary4[$tra_sta]),
