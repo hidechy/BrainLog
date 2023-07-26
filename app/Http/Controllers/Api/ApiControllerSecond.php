@@ -3222,6 +3222,58 @@ GOLD
      * @param Request $request
      * @return void
      */
+    public function getAllGeoloc(Request $request)
+    {
+
+        $response = [];
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        if ($request->flag == "year") {
+            $result = DB::table('t_geoloc')
+                ->where('year', $year)
+                ->orderBy('month')
+                ->orderBy('day')
+                ->orderBy('time', 'desc')
+                ->get();
+        } else {
+            $result = DB::table('t_geoloc')
+                ->where('year', $year)
+                ->where('month', $month)
+                ->orderBy('month')
+                ->orderBy('time', 'desc')
+                ->get();
+        }
+
+        $ary = [];
+
+        $keepLL = [];
+        foreach ($result as $v) {
+            $genLat = substr($v->latitude, 0, 5);
+            $genLng = substr($v->longitude, 0, 6);
+
+            if (!in_array("{$genLat}|{$genLng}", $keepLL)) {
+
+
+                $ary[] = [
+                    "latitude" => $v->latitude,
+                    "longitude" => $v->longitude
+                ];
+            }
+
+            $keepLL[] = "{$genLat}|{$genLng}";
+        }
+
+        $response = $ary;
+
+        return response()->json(['data' => $response]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return void
+     */
     public function getNearArtFacilities(Request $request)
     {
         $response = [];

@@ -234,6 +234,7 @@ Route::namespace('Api')->group(function () {
     //geoloc
     Route::post('insertGeoloc', 'ApiControllerSecond@insertGeoloc');
     Route::post('getGeoloc', 'ApiControllerSecond@getGeoloc');
+    Route::post('getAllGeoloc', 'ApiControllerSecond@getAllGeoloc');
 
     //art
     Route::post('getNearArtFacilities', 'ApiControllerSecond@getNearArtFacilities');
