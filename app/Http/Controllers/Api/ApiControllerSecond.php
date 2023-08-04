@@ -2857,6 +2857,11 @@ GOLD
 
                 "poster_position" => $v->poster_position,
                 "stamp_get_date" => $v->stamp_get_date,
+
+
+                "stamp_get_order" => $v->stamp_get_order,
+
+
             ];
 
             $keep_trainCode = $v->train_code;
