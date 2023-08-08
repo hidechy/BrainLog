@@ -1006,115 +1006,150 @@ GOLD
     {
         $response = [];
 
-        list($year, $month, $day) = explode("-", $request->date);
-        $table = 't_article' . $year;
+        ///////////////////////////////////////////////
+        $_tables = [];
+
+        $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = database();";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            if (preg_match("/t_article/", $v->table_name)) {
+                $_tables[] = $v->table_name;
+            }
+        }
+        ///////////////////////////////////////////////
 
         $ary = [];
 
-        //------------------------------------------//
-        $result = DB::table($table)
-            ->where('year', $year)->where('month', $month)
-            ->where('article', 'like', '%ユーシーカード内訳%')->get();
+        foreach ($_tables as $table) {
 
-        foreach ($result as $v2) {
-            $ex_result = explode("\n", $v2->article);
-            foreach ($ex_result as $v) {
-                $val = trim(strip_tags($v));
-                if (preg_match("/円.+円/", trim($val))) {
-                    $ex_val = explode("\t", $val);
-                    $date = strtr(trim($ex_val[1]), ['/' => '-']);
-                    $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
+            /////////////////////////////////////////////////
+            $result = DB::table($table)
+                ->where('article', 'like', '%ユーシーカード内訳%')->get();
+            foreach ($result as $v2) {
+                $ex_result = explode("\n", $v2->article);
+                $genDate = "{$v2->year}-{$v2->month}-{$v2->day}";
+                foreach ($ex_result as $v) {
+                    $val = trim(strip_tags($v));
+                    if (preg_match("/円.+円/", trim($val))) {
+                        $ex_val = explode("\t", $val);
+                        $date = strtr(trim($ex_val[1]), ['/' => '-']);
+                        $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
 
-                    if (trim($price) == "") {
-                        continue;
+                        if (trim($price) == "") {
+                            continue;
+                        }
+
+                        $ary[$genDate][] = [
+                            'item' => trim($ex_val[3]),
+                            'price' => $price,
+                            'date' => $date,
+                            'kind' => 'uc'
+                        ];
                     }
+                }
+            }
+            /////////////////////////////////////////////////
 
-                    $ary[$date][] = ['item' => trim($ex_val[3]), 'price' => $price, 'date' => $date, 'kind' => 'uc'];
+            /////////////////////////////////////////////////
+            $result = DB::table($table)
+                ->where('article', 'like', '%楽天カード内訳%')->get();
+            foreach ($result as $v2) {
+                $ex_result = explode("\n", $v2->article);
+                $genDate = "{$v2->year}-{$v2->month}-{$v2->day}";
+                foreach ($ex_result as $v) {
+                    $val = trim(strip_tags($v));
+                    if (preg_match("/本人/", trim($val))) {
+                        $ex_val = explode("\t", $val);
+                        $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                        $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
+
+                        if (trim($price) == "") {
+                            continue;
+                        }
+
+                        $ary[$genDate][] = [
+                            'item' => trim($ex_val[1]),
+                            'price' => $price,
+                            'date' => $date,
+                            'kind' => 'rakuten'
+                        ];
+                    }
+                }
+            }
+            /////////////////////////////////////////////////
+
+            /////////////////////////////////////////////////
+            $result = DB::table($table)
+                ->where('article', 'like', '%Amexカード内訳%')->get();
+            foreach ($result as $v2) {
+                $ex_result = explode("\n", $v2->article);
+                $genDate = "{$v2->year}-{$v2->month}-{$v2->day}";
+                foreach ($ex_result as $v) {
+                    $val = trim(strip_tags($v));
+                    if (preg_match("/本人/", trim($val))) {
+                        $ex_val = explode("\t", $val);
+                        $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                        $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
+
+                        if (trim($price) == "") {
+                            continue;
+                        }
+
+                        $ary[$genDate][] = [
+                            'item' => trim($ex_val[1]),
+                            'price' => $price,
+                            'date' => $date,
+                            'kind' => 'amex'
+                        ];
+                    }
+                }
+            }
+            /////////////////////////////////////////////////
+
+            /////////////////////////////////////////////////
+            $result = DB::table($table)
+                ->where('article', 'like', '%住友カード内訳%')->get();
+            foreach ($result as $v2) {
+                $ex_result = explode("\n", $v2->article);
+                $genDate = "{$v2->year}-{$v2->month}-{$v2->day}";
+                foreach ($ex_result as $v) {
+                    $val = trim(strip_tags($v));
+                    if (preg_match("/◎/", trim($val))) {
+                        $ex_val = explode("\t", $val);
+                        $date = strtr("20" . trim($ex_val[0]), ['/' => '-']);
+                        $price = strtr(trim($ex_val[2]), [',' => '']);
+
+                        if (trim($price) == "") {
+                            continue;
+                        }
+
+                        $ary[$genDate][] = [
+                            'item' => trim($ex_val[1]),
+                            'price' => $price,
+                            'date' => $date,
+                            'kind' => 'sumitomo'
+                        ];
+                    }
+                }
+            }
+            /////////////////////////////////////////////////
+        }
+
+        list($year, $month, $day) = explode("-", $request->date);
+
+        $ary2 = [];
+        foreach ($ary as $date => $v) {
+            $ex_date = explode("-", trim($date));
+
+            if ($year == $ex_date[0] && $month == $ex_date[1]) {
+                foreach ($v as $val) {
+                    $ary2[] = $val;
                 }
             }
         }
-        //------------------------------------------//
 
-        //------------------------------------------//
-        $result = DB::table($table)
-            ->where('year', $year)->where('month', $month)
-            ->where('article', 'like', '%楽天カード内訳%')->get();
-
-        foreach ($result as $v2) {
-            $ex_result = explode("\n", $v2->article);
-            foreach ($ex_result as $v) {
-                $val = trim(strip_tags($v));
-                if (preg_match("/本人/", trim($val))) {
-                    $ex_val = explode("\t", $val);
-                    $date = strtr(trim($ex_val[0]), ['/' => '-']);
-                    $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
-
-                    if (trim($price) == "") {
-                        continue;
-                    }
-
-                    $ary[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'rakuten'];
-                }
-            }
-        }
-        //------------------------------------------//
-
-        //------------------------------------------//
-        $result = DB::table($table)
-            ->where('year', $year)->where('month', $month)
-            ->where('article', 'like', '%Amexカード内訳%')->get();
-
-        foreach ($result as $v2) {
-            $ex_result = explode("\n", $v2->article);
-            foreach ($ex_result as $v) {
-                $val = trim(strip_tags($v));
-                if (preg_match("/本人/", trim($val))) {
-                    $ex_val = explode("\t", $val);
-                    $date = strtr(trim($ex_val[0]), ['/' => '-']);
-                    $price = strtr(trim($ex_val[4]), [',' => '', '¥' => '']);
-
-                    if (trim($price) == "") {
-                        continue;
-                    }
-
-                    $ary[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'amex'];
-                }
-            }
-        }
-        //------------------------------------------//
-
-        //------------------------------------------//
-        $result = DB::table($table)
-            ->where('year', $year)->where('month', $month)
-            ->where('article', 'like', '%住友カード内訳%')->get();
-
-        foreach ($result as $v2) {
-            $ex_result = explode("\n", $v2->article);
-            foreach ($ex_result as $v) {
-                $val = trim(strip_tags($v));
-                if (preg_match("/◎/", trim($val))) {
-                    $ex_val = explode("\t", $val);
-                    $date = strtr("20" . trim($ex_val[0]), ['/' => '-']);
-                    $price = strtr(trim($ex_val[2]), [',' => '']);
-
-                    if (trim($price) == "") {
-                        continue;
-                    }
-
-                    $ary[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'sumitomo'];
-                }
-            }
-        }
-        //------------------------------------------//
-
-        $keys = array_keys($ary);
-        sort($keys);
-
-        foreach ($keys as $key) {
-            foreach ($ary[$key] as $v) {
-                $response[] = $v;
-            }
-        }
+        $response = $ary2;
 
         return response()->json(['data' => $response]);
     }

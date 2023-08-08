@@ -2837,12 +2837,14 @@ GOLD
                 $station = [];
                 foreach ($result2 as $v2) {
                     $station[$v2->station_name] = [
-                        "lat" => $v2->lng,
+                        "lat" => $v2->lat,
                         "lng" => $v2->lng,
                     ];
                 }
             }
 
+
+            
             $ary[] = [
                 "train_code" => $v->train_code,
                 "train_name" => $v->train_name,
