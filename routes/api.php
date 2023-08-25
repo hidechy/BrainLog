@@ -140,7 +140,7 @@ Route::namespace('Api')->group(function () {
     Route::post('getTimeLocation', 'ApiControllerSecond@getTimeLocation');
     Route::post('getSameYearMonthDay', 'ApiControllerSecond@getSameYearMonthDay');
 
-
+    
     //money // riverpod
     Route::post('creditCompanySearch', 'ApiController@creditCompanySearch');
     Route::post('bankSearch', 'ApiController@bankSearch');
