@@ -29,8 +29,10 @@ class YoutubeInfoGet extends Command
 //                DB::table('t_youtube_data')->where('del', '=', '1')->delete();
                 //---------------------------------------//
 
+                $exYoutubeId = explode("?si=", trim($v->youtube_id));
+                $YId = (count($exYoutubeId) == 1) ? $v->youtube_id : $exYoutubeId[0];
 
-                $url = "https://www.googleapis.com/youtube/v3/videos?id={$v->youtube_id}&part=snippet,contentDetails&key=AIzaSyD9PkTM1Pur3YzmO-v4VzS0r8ZZ0jRJTIU";
+                $url = "https://www.googleapis.com/youtube/v3/videos?id={$YId}&part=snippet,contentDetails&key=AIzaSyD9PkTM1Pur3YzmO-v4VzS0r8ZZ0jRJTIU";
 
                 $content = file_get_contents($url);
                 $jsonStr = json_decode($content);
@@ -40,11 +42,7 @@ class YoutubeInfoGet extends Command
                 $v3_channelTitle = $jsonStr->items[0]->snippet->channelTitle;
                 $v3_playtime = $jsonStr->items[0]->contentDetails->duration;
 
-
-
                 $v3_title = $jsonStr->items[0]->snippet->title;
-
-
 
                 echo "////////////////////////////\n";
                 print_r([
@@ -63,15 +61,11 @@ class YoutubeInfoGet extends Command
                 $update['channel_title'] = $v3_channelTitle;
                 $update['playtime'] = $v3_playtime;
 
+                $update['youtube_id'] = $YId;
 
-                if (trim($v->title) == ""){
+                if (trim($v->title) == "") {
                     $update['title'] = $v3_title;
                 }
-
-
-
-
-
 
                 DB::table('t_youtube_data')->where('youtube_id', '=', $v->youtube_id)->update($update);
 

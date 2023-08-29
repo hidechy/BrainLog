@@ -290,6 +290,9 @@ class ApiControllerSecond extends Controller
                     'memo' => (trim($result->memo) != "") ? $result->memo : "",
                     'gohonzon' => (trim($result->gohonzon) != "") ? $result->gohonzon : "",
 
+                    'start_point' => trim($result->start_point),
+                    'end_point' => trim($result->end_point),
+
                     'thumbnail' => $thumbnail,
                     'lat' => $_lat,
                     'lng' => $_lng,
@@ -2844,7 +2847,6 @@ GOLD
             }
 
 
-            
             $ary[] = [
                 "train_code" => $v->train_code,
                 "train_name" => $v->train_name,
@@ -3980,7 +3982,7 @@ GOLD
         //---------------------------------------//
 
         $result = DB::table('t_station')
-            ->orderBy('station_name')
+            ->orderBy('id')
             ->get();
 
         $ary = [];
