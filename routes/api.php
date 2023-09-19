@@ -140,7 +140,7 @@ Route::namespace('Api')->group(function () {
     Route::post('getTimeLocation', 'ApiControllerSecond@getTimeLocation');
     Route::post('getSameYearMonthDay', 'ApiControllerSecond@getSameYearMonthDay');
 
-    
+
     //money // riverpod
     Route::post('creditCompanySearch', 'ApiController@creditCompanySearch');
     Route::post('bankSearch', 'ApiController@bankSearch');
@@ -193,6 +193,7 @@ Route::namespace('Api')->group(function () {
     //dice
     Route::post('dice', 'ApiController@dice');
 
+
     //temple
     Route::post('getAllTemple', 'ApiControllerSecond@getAllTemple');
     Route::post('getDateTemple', 'ApiControllerSecond@getDateTemple');
@@ -203,6 +204,7 @@ Route::namespace('Api')->group(function () {
     Route::post('templeNotReached', 'ApiControllerSecond@templeNotReached');
     Route::post('nearStation', 'ApiControllerSecond@nearStation');
     Route::post('notReachedTempleStation', 'ApiControllerSecond@notReachedTempleStation');
+    Route::post('getTempleDatePhoto', 'ApiControllerSecond@getTempleDatePhoto');
 
     //walk
     Route::post('getWalkRecord', 'ApiController@getWalkRecord');

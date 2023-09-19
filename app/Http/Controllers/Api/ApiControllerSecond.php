@@ -4387,4 +4387,72 @@ GOLD
     }
 
 
+    /**
+     * @return void
+     */
+    public function getTempleDatePhoto()
+    {
+        $response = [];
+
+        ///////////////////////////////////////////////
+        $_tables = [];
+
+        $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = database();";
+        $result = DB::select($sql);
+
+        foreach ($result as $v) {
+            if (preg_match("/t_article/", $v->table_name)) {
+                $_tables[] = $v->table_name;
+            }
+        }
+        ///////////////////////////////////////////////
+
+
+        $ary = [];
+        foreach ($_tables as $table) {
+            $result = DB::table($table)
+                ->where("article", "like", "%神社写真%")
+                ->get();
+
+            foreach ($result as $v) {
+                $date = "{$v->year}-{$v->month}-{$v->day}";
+
+                $exArticle = explode("\n", $v->article);
+                $photos = [];
+                $temple = '';
+
+                foreach ($exArticle as $k => $atcl) {
+
+                    if (trim($atcl) == '---') {
+                        $photos = [];
+                        $temple = trim($exArticle[$k + 1]);
+                    }
+
+                    if (preg_match("/^http/", trim($atcl))) {
+                        $photos[] = trim($atcl);
+                    }
+
+                    if (count($photos) > 0) {
+                        $ary["{$date}|{$temple}"] = $photos;
+                    }
+                }
+            }
+        }
+
+        $ary2 = [];
+        foreach ($ary as $dt => $photos) {
+            list($date, $temple) = explode("|", $dt);
+            $ary2[] = [
+                'date' => $date,
+                'temple' => $temple,
+                'templephotos' => $photos,
+            ];
+        }
+
+        $response = $ary2;
+
+        return response()->json(['data' => $response]);
+    }
+
+
 }
