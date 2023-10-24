@@ -65,10 +65,13 @@ class GoogleSpreadSheet extends Command
 
             $youtube_id = trim($m[1]);
 
+            $exYoutubeId = explode("?si=", trim($youtube_id));
+            $YId = (count($exYoutubeId) == 1) ? $youtube_id : $exYoutubeId[0];
+
             $m = null;
 
             $result = DB::table('t_youtube_data')
-                ->where('youtube_id', '=', $youtube_id)
+                ->where('youtube_id', '=', $YId)
                 ->first();
 
             if (isset($result->id)) {
@@ -106,7 +109,6 @@ class GoogleSpreadSheet extends Command
         }
 
 
-
         //----------------------------------//
         $file = public_path() . "/mySetting/self_youtube.data";
         $content = file_get_contents($file);
@@ -122,14 +124,14 @@ class GoogleSpreadSheet extends Command
             $ex_v_1 = explode("&", trim($ex_v[1]));
 
             $youtube_id = "";
-            foreach ($ex_v_1 as $v2){
-                if (preg_match("/v=(.+)/", trim($v2), $m)){
+            foreach ($ex_v_1 as $v2) {
+                if (preg_match("/v=(.+)/", trim($v2), $m)) {
                     $youtube_id = $m[1];
                     break;
                 }
             }
 
-            if ($youtube_id == ""){
+            if ($youtube_id == "") {
                 continue;
             }
 

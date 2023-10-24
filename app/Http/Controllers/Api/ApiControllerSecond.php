@@ -4429,7 +4429,7 @@ GOLD
                     }
 
                     if (preg_match("/^http/", trim($atcl))) {
-                        $photos[] = trim($atcl);
+                        $photos[] = strtr(trim($atcl), ['160.16.145.135' => 'toyohide.work']);
                     }
 
                     if (count($photos) > 0) {
