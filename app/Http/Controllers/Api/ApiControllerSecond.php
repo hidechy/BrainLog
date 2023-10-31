@@ -3142,11 +3142,18 @@ GOLD
             $_lng = substr(($v->longitude * 10000000), 0, 6);
 
             if ($keepLatLng != "{$_lat}|{$_lng}") {
+
+                list($lat1, $lat2) = explode('.', $v->latitude);
+                list($lng1, $lng2) = explode('.', $v->longitude);
+
+                $_lat2 = substr($lat2, 0, 5);
+                $_lng2 = substr($lng2, 0, 5);
+
                 $ary[] = [
                     "date" => $request->date,
                     "time" => date("H:i", strtotime($v->time)),
-                    "latitude" => $v->latitude,
-                    "longitude" => $v->longitude,
+                    "latitude" => "{$lat1}.{$_lat2}",
+                    "longitude" => "{$lng1}.{$_lng2}",
                 ];
             }
 
@@ -3212,11 +3219,18 @@ GOLD
             ->get();
 
         foreach ($result as $v) {
+
+            list($lat1, $lat2) = explode('.', $v->latitude);
+            list($lng1, $lng2) = explode('.', $v->longitude);
+
+            $_lat2 = substr($lat2, 0, 5);
+            $_lng2 = substr($lng2, 0, 5);
+
             $ary[] = [
                 "date" => "{$v->year}-{$v->month}-{$v->day}",
                 "time" => $v->time,
-                "latitude" => $v->latitude,
-                "longitude" => $v->longitude,
+                "latitude" => "{$lat1}.{$_lat2}",
+                "longitude" => "{$lng1}.{$_lng2}",
             ];
         }
 
@@ -3263,10 +3277,15 @@ GOLD
 
             if (!in_array("{$genLat}|{$genLng}", $keepLL)) {
 
+                list($lat1, $lat2) = explode('.', $v->latitude);
+                list($lng1, $lng2) = explode('.', $v->longitude);
+
+                $_lat2 = substr($lat2, 0, 5);
+                $_lng2 = substr($lng2, 0, 5);
 
                 $ary[] = [
-                    "latitude" => $v->latitude,
-                    "longitude" => $v->longitude
+                    "latitude" => "{$lat1}.{$_lat2}",
+                    "longitude" => "{$lng1}.{$_lng2}"
                 ];
             }
 
