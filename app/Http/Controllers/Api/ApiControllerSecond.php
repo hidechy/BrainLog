@@ -807,30 +807,44 @@ class ApiControllerSecond extends Controller
             'assets_total_deposit_debit',
             'assets_total_deposit_credit',
             'assets_total_deposit_end',
+
             'assets_total_receivable_start',
             'assets_total_receivable_debit',
             'assets_total_receivable_credit',
             'assets_total_receivable_end',
+
             'assets_total_fixed_start',
             'assets_total_fixed_debit',
             'assets_total_fixed_credit',
             'assets_total_fixed_end',
+
             'assets_total_lending_start',
             'assets_total_lending_debit',
             'assets_total_lending_credit',
             'assets_total_lending_end',
+
+
+            'assets_consumption_tax_start',
+            'assets_consumption_tax_debit',
+            'assets_consumption_tax_credit',
+            'assets_consumption_tax_end',
+
+
             'capital_total_liabilities_start',
             'capital_total_liabilities_debit',
             'capital_total_liabilities_credit',
             'capital_total_liabilities_end',
+
             'capital_total_borrow_start',
             'capital_total_borrow_debit',
             'capital_total_borrow_credit',
             'capital_total_borrow_end',
+
             'capital_total_principal_start',
             'capital_total_principal_debit',
             'capital_total_principal_credit',
             'capital_total_principal_end',
+
             'capital_total_income_start',
             'capital_total_income_debit',
             'capital_total_income_credit',
@@ -847,6 +861,18 @@ class ApiControllerSecond extends Controller
             $capital_total = 0;
 
             foreach ($midashi as $v2) {
+
+
+                if (preg_match("/^assets_consumption_tax_/", $v2)) {
+                    $ary[$v2] = (is_null($v->$v2)) ? 0 : $v->$v2;
+                    if (preg_match("/_end$/", $v2)) {
+                        if (!is_null($v->$v2)) {
+                            $assets_total += $v->$v2;
+                        }
+                    }
+                }
+
+
                 if (preg_match("/^assets_total_/", $v2)) {
 //                    $ary[] = $v2 . ":" . $v->$v2;
                     $ary[$v2] = $v->$v2;
@@ -1882,12 +1908,46 @@ class ApiControllerSecond extends Controller
 
         $table = 't_article' . $year;
 
+
+        //------------------------------------------//
+        $result = DB::table($table)
+            ->where('year', $year)
+            ->where('article', 'like', '%paypayカード内訳%')->get();
+
+        $ary = [];
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+
+
+                if (preg_match("/paypayカード内訳/", $val)) {
+                    continue;
+                }
+
+                $ex_val = explode("\t", $val);
+
+                $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                $price = strtr(trim($ex_val[4]), [',' => '', '円' => '']);
+
+                if (trim($price) == "") {
+                    continue;
+                }
+
+                $im = trim($ex_val[1]);
+                $ary[$im][$v2->month][] = $price;
+
+            }
+        }
+
+        //------------------------------------------//
+
+
         //------------------------------------------//
         $result = DB::table($table)
             ->where('year', $year)
             ->where('article', 'like', '%ユーシーカード内訳%')->get();
 
-        $ary = [];
         foreach ($result as $v2) {
             $ex_result = explode("\n", $v2->article);
             foreach ($ex_result as $v) {
@@ -2404,6 +2464,56 @@ GOLD
 
         $ary = [];
         for ($i = 1; $i <= 12; $i++) {
+
+
+            //------------------------------------------//
+            $result = DB::table($table)
+                ->where('year', $year)->where('month', sprintf("%02d", $i))
+                ->where('article', 'like', '%paypayカード内訳%')->get();
+
+            $sum = 0;
+            foreach ($result as $v2) {
+                $ex_result = explode("\n", $v2->article);
+                foreach ($ex_result as $v) {
+                    $val = trim(strip_tags($v));
+
+                    if (preg_match("/paypayカード内訳/", $val)) {
+                        continue;
+                    }
+
+                    $ex_val = explode("\t", $val);
+
+                    $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[4]), [',' => '', '円' => '']);
+
+                    if (trim($price) == "") {
+                        continue;
+                    }
+
+//                    $ary[$genDate][] = [
+//                        'item' => trim($ex_val[1]),
+//                        'price' => $price,
+//                        'date' => $date,
+//                        'kind' => 'paypay'
+//                    ];
+
+
+                    $sum += $price;
+
+
+                }
+            }
+
+
+            $sum_paypay = [
+                "company" => "paypay",
+                "sum" => $sum,
+            ];
+
+
+            //------------------------------------------//
+
+
             //------------------------------------------//
             $result = DB::table($table)
                 ->where('year', $year)->where('month', sprintf("%02d", $i))
@@ -2530,7 +2640,8 @@ GOLD
 
                 "ym" => $ym,
                 "list" => [
-                    $sum_uc, $sum_rakuten, $sum_sumitomo, $sum_amex
+                    $sum_uc, $sum_rakuten, $sum_sumitomo, $sum_amex,
+                    $sum_paypay
                 ],
 
 
@@ -3218,7 +3329,8 @@ GOLD
             ->orderBy('time', 'desc')
             ->get();
 
-        foreach ($result as $v) {
+
+        foreach ($result as $k => $v) {
 
             list($lat1, $lat2) = explode('.', $v->latitude);
             list($lng1, $lng2) = explode('.', $v->longitude);
@@ -3226,12 +3338,31 @@ GOLD
             $_lat2 = substr($lat2, 0, 5);
             $_lng2 = substr($lng2, 0, 5);
 
+            $returnLat = "{$lat1}.{$_lat2}";
+            $returnLng = "{$lng1}.{$_lng2}";
+
             $ary[] = [
                 "date" => "{$v->year}-{$v->month}-{$v->day}",
                 "time" => $v->time,
-                "latitude" => "{$lat1}.{$_lat2}",
-                "longitude" => "{$lng1}.{$_lng2}",
+                "latitude" => $returnLat,
+                "longitude" => $returnLng,
             ];
+
+
+        }
+
+        $cnt_ary = count($ary);
+
+        for ($i = 0; $i < count($ary); $i++) {
+            $percent = 0;
+
+            if ($i < count($ary) - 1) {
+                $str_a = "{$ary[$i]['latitude']}|{$ary[$i]['longitude']}";
+                $str_b = "{$ary[$i+1]['latitude']}|{$ary[$i+1]['longitude']}";
+                similar_text($str_a, $str_b, $percent);
+            }
+
+            $ary[$i]['similarPercent'] = round($percent);
         }
 
         $response = $ary;

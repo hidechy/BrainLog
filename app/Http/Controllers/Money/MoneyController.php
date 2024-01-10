@@ -3267,6 +3267,16 @@ GOLD
                 $ex_v = explode("\t", trim($v));
 
                 switch ($ex_v[0]) {
+
+
+                    case "assets_consumption_tax":
+                        $insert["assets_consumption_tax_start"] = trim($ex_v[1]);
+                        $insert["assets_consumption_tax_debit"] = trim($ex_v[2]);
+                        $insert["assets_consumption_tax_credit"] = trim($ex_v[3]);
+                        $insert["assets_consumption_tax_end"] = (trim($ex_v[1]) + trim($ex_v[2]) - trim($ex_v[3]));
+                        break;
+
+
                     case "assets_total_deposit":
                         $insert["assets_total_deposit_start"] = trim($ex_v[1]);
                         $insert["assets_total_deposit_debit"] = trim($ex_v[2]);
@@ -3655,19 +3665,28 @@ GOLD
     /**
      *
      */
+
     public function shintakudatainputexecute()
     {
 
         if (trim($_POST['shintakudata']) != "") {
 
-            $columns_a = ["name", "bunpaikin_course", "hoyuu_suuryou", "heikin_shutoku_kagaku", "shutoku_sougaku", "kijun_kagaku", "zenjitsuhi_zengetsuhi", "jika_hyoukagaku", "hyouka_soneki", "total_return", "bbb"];
-            $columns_b = ["name", "bunpaikin_course", "hoyuu_suuryou", "xxx", "heikin_shutoku_kagaku", "shutoku_sougaku", "kijun_kagaku", "zenjitsuhi_zengetsuhi", "jika_hyoukagaku", "hyouka_soneki", "total_return"];
-            if (preg_match("/積立設定中/", trim($_POST['shintakudata']))) {
-                $columns = $columns_b;
-            } else {
-                $columns = $columns_a;
-            }
+            $columns = [
+                "name",
+                "bunpaikin_course",
+                "hoyuu_suuryou",
 
+                "heikin_shutoku_kagaku",
+                "shutoku_sougaku",
+                "kijun_kagaku",
+
+                "zenjitsuhi_zengetsuhi",
+                "jika_hyoukagaku",
+                "hyouka_soneki",
+                "total_return",
+            ];
+
+            //================================
             $year = date("Y");
             $month = date("m");
             $day = date("d");
@@ -3677,6 +3696,7 @@ GOLD
                 ->where("month", "=", $month)
                 ->where("day", "=", $day)
                 ->delete();
+            //================================
 
             $ex_postdata = explode("\n", $_POST['shintakudata']);
 
@@ -3693,32 +3713,137 @@ GOLD
                     continue;
                 }
 
-                if ($columns[$i] != "xxx") {
-                    switch ($columns[$i]) {
-                        case "hoyuu_suuryou":
-                            $ary[$j][$columns[$i]] = trim(strtr($v, ['保有数量の内訳' => '']));
-                            break;
-
-                        default:
-                            $ary[$j][$columns[$i]] = trim($v);
-                            break;
+                if (trim($v) != '積立設定中') {
+                    if ($columns[$i] == "hoyuu_suuryou") {
+                        $ary[$j][$columns[$i]] = trim(strtr(trim($v), ['保有数量の内訳' => '']));
+                    } else {
+                        $ary[$j][$columns[$i]] = trim($v);
                     }
+
+                    $i++;
+                }
+            }
+
+            $tawara_inserted = false;
+
+            foreach ($ary as $v) {
+
+                if ($v['name'] == 'たわらノーロード S&P500') {
+                    if (!$tawara_inserted) {
+                        $v['name'] = "{$v['name']} - NISAつみたて投資枠";
+                    }
+
+                    $tawara_inserted = true;
                 }
 
-                $i++;
-            }
+                $v['year'] = $year;
+                $v['month'] = $month;
+                $v['day'] = $day;
+                $v['time'] = date("H");
 
-            foreach ($ary as $k => $v) {
-                $ary[$k]['year'] = $year;
-                $ary[$k]['month'] = $month;
-                $ary[$k]['day'] = $day;
-                $ary[$k]['time'] = date("H");
-            }
+                echo "<pre>";
+                print_r($v);
+                echo "</pre>";
 
-            DB::table("t_toushi_shintaku_datas")->insert($ary);
+                DB::table("t_toushi_shintaku_datas")->insert($v);
+            }
         }
 
         return redirect('/money/shintakudatalist');
     }
+
+
+//
+//
+//    public function shintakudatainputexecute()
+//    {
+//
+//        if (trim($_POST['shintakudata']) != "") {
+//
+//            $columns_a = ["name", "bunpaikin_course", "hoyuu_suuryou", "heikin_shutoku_kagaku", "shutoku_sougaku", "kijun_kagaku", "zenjitsuhi_zengetsuhi", "jika_hyoukagaku", "hyouka_soneki", "total_return", "bbb"];
+//            $columns_b = ["name", "bunpaikin_course", "hoyuu_suuryou", "xxx", "heikin_shutoku_kagaku", "shutoku_sougaku", "kijun_kagaku", "zenjitsuhi_zengetsuhi", "jika_hyoukagaku", "hyouka_soneki", "total_return"];
+//            if (preg_match("/積立設定中/", trim($_POST['shintakudata']))) {
+//                $columns = $columns_b;
+//            } else {
+//                $columns = $columns_a;
+//            }
+//
+//            $year = date("Y");
+//            $month = date("m");
+//            $day = date("d");
+//
+//            DB::table("t_toushi_shintaku_datas")
+//                ->where("year", "=", $year)
+//                ->where("month", "=", $month)
+//                ->where("day", "=", $day)
+//                ->delete();
+//
+//            $ex_postdata = explode("\n", $_POST['shintakudata']);
+//
+//            $ary = [];
+//            $j = 0;
+//            $i = 0;
+//            foreach ($ex_postdata as $v) {
+//                if (trim($v) == "") {
+//                    continue;
+//                }
+//                if (trim($v) == "@") {
+//                    $i = 0;
+//                    $j++;
+//                    continue;
+//                }
+//
+//                if ($columns[$i] != "xxx") {
+//                    switch ($columns[$i]) {
+//                        case "hoyuu_suuryou":
+//                            $ary[$j][$columns[$i]] = trim(strtr($v, ['保有数量の内訳' => '']));
+//                            break;
+//
+//                        default:
+//                            $ary[$j][$columns[$i]] = trim($v);
+//                            break;
+//                    }
+//                }
+//
+//                $i++;
+//            }
+//
+//            foreach ($ary as $k => $v) {
+//                $ary[$k]['year'] = $year;
+//                $ary[$k]['month'] = $month;
+//                $ary[$k]['day'] = $day;
+//                $ary[$k]['time'] = date("H");
+//            }
+//
+//
+//
+//            foreach ($ary as $k => $v) {
+//
+//                if (is_null($v['total_return'])){
+//                    $v['total_return'] = $v['hyouka_soneki'];
+//                }
+//
+//
+//                print_r($v);
+//
+//
+//                DB::table("t_toushi_shintaku_datas")->insert($v);
+//            }
+//
+//
+//
+//
+//
+//
+////            DB::table("t_toushi_shintaku_datas")->insert($ary);
+//        }
+//
+//     return redirect('/money/shintakudatalist');
+//    }
+//
+//
+//
+//
+
 
 }

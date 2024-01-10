@@ -52,7 +52,15 @@
             'capital_total_income_start',
             'capital_total_income_debit',
             'capital_total_income_credit',
-            'capital_total_income_end'
+            'capital_total_income_end',
+
+
+            'assets_consumption_tax_start',
+            'assets_consumption_tax_debit',
+            'assets_consumption_tax_credit',
+            'assets_consumption_tax_end'
+            
+
         ];
 
         echo "<table class='table table-bordered'>";
@@ -86,7 +94,7 @@
         crossorigin="anonymous"></script>
 
 <style type="text/css">
-    body{
+    body {
         font-size: 12px;
     }
 

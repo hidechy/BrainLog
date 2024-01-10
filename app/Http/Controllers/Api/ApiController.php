@@ -1023,6 +1023,42 @@ GOLD
 
         foreach ($_tables as $table) {
 
+
+            /////////////////////////////////////////////////
+            $result = DB::table($table)
+                ->where('article', 'like', '%paypayカード内訳%')->get();
+            foreach ($result as $v2) {
+                $ex_result = explode("\n", $v2->article);
+                $genDate = "{$v2->year}-{$v2->month}-{$v2->day}";
+                foreach ($ex_result as $v) {
+                    $val = trim(strip_tags($v));
+
+                    if (preg_match("/paypayカード内訳/", $val)) {
+                        continue;
+                    }
+
+                    $ex_val = explode("\t", $val);
+
+                    $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                    $price = strtr(trim($ex_val[4]), [',' => '', '円' => '']);
+
+                    if (trim($price) == "") {
+                        continue;
+                    }
+
+                    $ary[$genDate][] = [
+                        'item' => trim($ex_val[1]),
+                        'price' => $price,
+                        'date' => $date,
+                        'kind' => 'paypay'
+                    ];
+
+
+                }
+            }
+            /////////////////////////////////////////////////
+
+
             /////////////////////////////////////////////////
             $result = DB::table($table)
                 ->where('article', 'like', '%ユーシーカード内訳%')->get();
@@ -1175,6 +1211,51 @@ GOLD
         ///////////////////////////////////////////////
 
         $ary = [];
+
+
+        //------------------------------------------//
+        $_sql = [];
+        foreach ($_tables as $table) {
+            $_sql[] = " select * from " . $table . " where article like '%paypayカード内訳%' ";
+        }
+        $sql = implode(" union all ", $_sql);
+        $result = DB::select($sql);
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+
+                if (preg_match("/paypayカード内訳/", $val)) {
+                    continue;
+                }
+
+                $ex_val = explode("\t", $val);
+
+                $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                $price = strtr(trim($ex_val[4]), [',' => '', '円' => '']);
+
+                if (trim($price) == "") {
+                    continue;
+                }
+
+                if (count(explode("-", $date)) > 0) {
+                    $monthDiff = $this->getMonthDiff($date, $v2->year . '-' . $v2->month);
+                } else {
+                    $monthDiff = "";
+                }
+
+                $ary[$date][] = [
+                    'pay_month' => $v2->year . '-' . $v2->month,
+                    'item' => trim($ex_val[1]),
+                    'price' => $price,
+                    'date' => $date,
+                    'kind' => 'paypay',
+                    'month_diff' => $monthDiff
+                ];
+            }
+        }
+        //------------------------------------------//
+
 
         //------------------------------------------//
         $_sql = [];
@@ -1398,6 +1479,53 @@ GOLD
         ///////////////////////////////////////////////
 
         $ary = [];
+
+
+        //------------------------------------------//
+        $_sql = [];
+        foreach ($_tables as $table) {
+            $_sql[] = " select * from " . $table . " where article like '%paypayカード内訳%' ";
+        }
+        $sql = implode(" union all ", $_sql) . " order by year, month, day; ";
+        $result = DB::select($sql);
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+
+                if (preg_match("/paypayカード内訳/", $val)) {
+                    continue;
+                }
+
+                $ex_val = explode("\t", $val);
+
+                $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                $price = strtr(trim($ex_val[4]), [',' => '', '円' => '']);
+
+                if (trim($price) == "") {
+                    continue;
+                }
+
+                if (count(explode("-", $date)) > 0) {
+                    $monthDiff = $this->getMonthDiff($date, $v2->year . '-' . $v2->month);
+                } else {
+                    $monthDiff = "";
+                }
+
+                $keyItem = trim($ex_val[1]);
+
+                $ary[$keyItem . "|" . $date][] = [
+                    'pay_month' => $v2->year . '-' . $v2->month,
+                    'item' => trim($ex_val[1]),
+                    'price' => $price,
+                    'date' => $date,
+                    'kind' => 'paypay',
+                    'month_diff' => $monthDiff
+                ];
+            }
+        }
+        //------------------------------------------//
+
 
         //------------------------------------------//
         $_sql = [];
@@ -4326,30 +4454,44 @@ item = '投資信託'
             'assets_total_deposit_debit',
             'assets_total_deposit_credit',
             'assets_total_deposit_end',
+
             'assets_total_receivable_start',
             'assets_total_receivable_debit',
             'assets_total_receivable_credit',
             'assets_total_receivable_end',
+
             'assets_total_fixed_start',
             'assets_total_fixed_debit',
             'assets_total_fixed_credit',
             'assets_total_fixed_end',
+
             'assets_total_lending_start',
             'assets_total_lending_debit',
             'assets_total_lending_credit',
             'assets_total_lending_end',
+
+
+            'assets_consumption_tax_start',
+            'assets_consumption_tax_debit',
+            'assets_consumption_tax_credit',
+            'assets_consumption_tax_end',
+
+
             'capital_total_liabilities_start',
             'capital_total_liabilities_debit',
             'capital_total_liabilities_credit',
             'capital_total_liabilities_end',
+
             'capital_total_borrow_start',
             'capital_total_borrow_debit',
             'capital_total_borrow_credit',
             'capital_total_borrow_end',
+
             'capital_total_principal_start',
             'capital_total_principal_debit',
             'capital_total_principal_credit',
             'capital_total_principal_end',
+
             'capital_total_income_start',
             'capital_total_income_debit',
             'capital_total_income_credit',
@@ -4366,6 +4508,18 @@ item = '投資信託'
             $capital_total = 0;
 
             foreach ($midashi as $v2) {
+
+
+                if (preg_match("/^assets_consumption_tax_/", $v2)) {
+                    $ary[] = $v2 . ":" . (is_null($v->$v2)) ? 0 : $v->$v2;
+                    if (preg_match("/_end$/", $v2)) {
+                        if (!is_null($v->$v2)) {
+                            $assets_total += $v->$v2;
+                        }
+                    }
+                }
+
+
                 if (preg_match("/^assets_total_/", $v2)) {
                     $ary[] = $v2 . ":" . $v->$v2;
                     if (preg_match("/_end$/", $v2)) {
@@ -5710,6 +5864,8 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
     {
         $response = [];
 
+        $ary = [];
+
         list($year, $month, $day) = explode("-", $request->date);
 
         $result2 = DB::table('t_article' . $year)
@@ -5865,6 +6021,10 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
 
         $searchCompany = "";
         switch ($request->company) {
+            case "paypay":
+                $searchCompany = "paypayカード内訳";
+                break;
+
             case "uc":
                 $searchCompany = "ユーシーカード内訳";
                 break;
@@ -5896,6 +6056,20 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                 $ary2 = [];
                 foreach ($ex_article as $v2) {
                     switch ($request->company) {
+
+
+                        case "paypay":
+
+
+                            if (!preg_match("/paypayカード内訳/", trim($v2))) {
+
+                                $ary2[] = trim($v2);
+                            }
+
+
+                            break;
+
+
                         case "uc":
                             if (preg_match("/円.+円/", trim($v2))) {
                                 $ary2[] = trim($v2);
@@ -5923,6 +6097,13 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
                     $ex_val = explode("\t", $v2);
 
                     switch ($request->company) {
+
+                        case "paypay":
+                            $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                            $price = strtr(trim($ex_val[4]), [',' => '', '円' => '']);
+                            $item = trim($ex_val[1]);
+                            break;
+
                         case "uc":
                             $date = strtr(trim($ex_val[1]), ['/' => '-']);
                             $price = strtr(trim($ex_val[6]), [',' => '', '円' => '']);
@@ -6198,6 +6379,36 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
         $table = 't_article' . $year;
 
         $ary99 = [];
+
+
+        //------------------------------------------//
+        $result = DB::table($table)
+            ->where('article', 'like', '%paypayカード内訳%')->get();
+
+        foreach ($result as $v2) {
+            $ex_result = explode("\n", $v2->article);
+            foreach ($ex_result as $v) {
+                $val = trim(strip_tags($v));
+
+                if (preg_match("/paypayカード内訳/", $val)) {
+                    continue;
+                }
+
+                $ex_val = explode("\t", $val);
+                $date = strtr(trim($ex_val[0]), ['/' => '-']);
+                $price = strtr(trim($ex_val[4]), [',' => '', '円' => '']);
+
+                if (trim($price) == "") {
+                    continue;
+                }
+
+                $ary99[$date][] = ['item' => trim($ex_val[1]), 'price' => $price, 'date' => $date, 'kind' => 'paypay'];
+
+
+            }
+        }
+        //------------------------------------------//
+
 
         //------------------------------------------//
         $result = DB::table($table)
@@ -6579,6 +6790,7 @@ t_tarotdraw.year, t_tarotdraw.month, t_tarotdraw.day;
             $ary[$k]['lng'] = $v->lng;
             $ary[$k]['line_number'] = $result2->train_number;
             $ary[$k]['line_name'] = $result2->train_name;
+            $ary[$k]['prefecture'] = $v->prefecture;
         }
 
         $response = $ary;

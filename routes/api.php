@@ -139,6 +139,10 @@ Route::namespace('Api')->group(function () {
     Route::post('getTaxPaymentItem', 'ApiControllerSecond@getTaxPaymentItem');
     Route::post('getTimeLocation', 'ApiControllerSecond@getTimeLocation');
     Route::post('getSameYearMonthDay', 'ApiControllerSecond@getSameYearMonthDay');
+    Route::post('getLifetimeRecordItem', 'ApiControllerThird@getLifetimeRecordItem');
+    Route::post('insertLifetime', 'ApiControllerThird@insertLifetime');
+    Route::post('getLifetimeDateRecord', 'ApiControllerThird@getLifetimeDateRecord');
+    Route::post('getLifetimeYearlyRecord', 'ApiControllerThird@getLifetimeYearlyRecord');
 
 
     //money // riverpod
@@ -209,6 +213,7 @@ Route::namespace('Api')->group(function () {
     //walk
     Route::post('getWalkRecord', 'ApiController@getWalkRecord');
     Route::match(['get', 'post'], "getWalkRecord2", "ApiController@getWalkRecord2");
+    Route::match(['get', 'post'], "getWalkRecord3", "ApiControllerThird@getWalkRecord3");
 
     //agent
     Route::post('getAgentName', 'ApiController@getAgentName');
@@ -260,6 +265,8 @@ Route::namespace('Api')->group(function () {
     Route::post('getTokyoTrainStation', 'ApiControllerSecond@getTokyoTrainStation');
 
     Route::post('getAllStation', 'ApiControllerSecond@getAllStation');
+    Route::post('getPrefecture', 'ApiControllerThird@getPrefecture');
+    Route::post('getPrefectureTrainCompany', 'ApiControllerThird@getPrefectureTrainCompany');
 
 
     // park
@@ -269,5 +276,7 @@ Route::namespace('Api')->group(function () {
     // goshuin
     Route::post('goshuin', 'ApiControllerSecond@goshuin');
 
+    // BrainLog
+    Route::post('getOnedayArticle', 'ApiControllerBrainLog@getOnedayArticle');
 
 });
